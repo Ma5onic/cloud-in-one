@@ -2,6 +2,6 @@ language: python
 python:
   - "3.4.1"
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install: 
+install: pip install nose
 # command to run tests, e.g. python setup.py test
-script:  
+script:  nosetests
