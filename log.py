@@ -19,20 +19,20 @@ class Logger(object):
 
         self.logger = logging.getLogger(name)
 
-    def debug(self, msg):
-        self.logger.debug(msg)
+    def debug(self, *args):
+        self.logger.debug(*args)
 
-    def info(self, msg):
-        self.logger.info(msg)
+    def info(self, *args):
+        self.logger.info(*args)
 
-    def warn(self, msg):
-        self.logger.warn(msg)
+    def warn(self, *args):
+        self.logger.warn(*args)
 
-    def error(self, msg):
-        self.logger.error(msg)
+    def error(self, *args):
+        self.logger.error(*args)
 
-    def exception(self, msg):
-        self.logger.error(msg, exc_info=True)
+    def exception(self, *args):
+        self.logger.error(*args, exc_info=True)
 
-    def critical(self, msg):
-        self.logger.critical(msg)
+    def critical(self, *args):
+        self.logger.critical(*args)
