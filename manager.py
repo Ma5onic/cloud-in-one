@@ -1,4 +1,5 @@
 from log import *
+import account
 
 
 class Manager():
@@ -19,6 +20,8 @@ class Manager():
         self.logger.info("Adding new account")
         self.logger.debug("type = %s", type)
         self.logger.debug("user = %s", user)
+
+        cuentas.append(account.Create(type, user))
         # Do whatever it's needed to add a new account
         return True
 
