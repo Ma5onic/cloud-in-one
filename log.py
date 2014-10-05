@@ -18,6 +18,7 @@ class Logger(object):
             logging.basicConfig(level=logging.DEBUG)
 
         self.logger = logging.getLogger(name)
+        self.logger.info("Creating logger")
 
     def debug(self, *args):
         self.logger.debug(*args)

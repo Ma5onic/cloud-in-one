@@ -6,7 +6,7 @@ class Manager():
     It is responsible for the control flow and coordination of components"""
     def __init__(self, user, password):
         self.logger = Logger(__name__)
-        self.logger.debug("Creating Manager")
+        self.logger.info("Creating Manager")
 
         self.user = user
         self.password = password
@@ -16,9 +16,14 @@ class Manager():
         self.fileSystemModule = None
 
     def newAccount(self, type, user):
+        self.logger.info("Adding new account")
+        self.logger.debug("type = %s", type)
+        self.logger.debug("user = %s", user)
         # Do whatever it's needed to add a new account
         return True
 
     def deleteAccount(self, account):
+        self.logger.info("Deleting account")
+        self.logger.debug("account = %s", account)
         # Do things to delete an account
         return True
