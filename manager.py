@@ -1,5 +1,10 @@
 from log import *
-import account
+import dropboxAccount
+
+
+def Create(type, user):
+    if type is "Dropbox":
+        return dropboxAccount.DropboxAccount(user)
 
 
 class Manager():
@@ -21,7 +26,7 @@ class Manager():
         self.logger.debug("type = %s", type)
         self.logger.debug("user = %s", user)
 
-        cuentas.append(account.Create(type, user))
+        self.cuentas.append(Create(type, user))
         # Do whatever it's needed to add a new account
         return True
 

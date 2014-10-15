@@ -23,3 +23,9 @@ class DropboxAccount(account.Account):
         self.access_token, self.user_id = flow.finish(code)
         # TODO: guardar el token y user_id de forma segura
         self.client = dropbox.client.DropboxClient(self.access_token)
+
+
+class DropboxAccountStub(DropboxAccount):
+    """Stub for testing the DBAccount"""
+    def __init__(self, user):
+        self.user = user

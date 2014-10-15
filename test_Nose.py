@@ -10,5 +10,5 @@ def test_Ok():
 
 def test_manager():
     manager = man.Manager('user', 'password')
-    assert manager.newAccount('DB', 'user') is True
+    assert manager.newAccount('DBStub', 'user') is True
     assert manager.deleteAccount('user') is True
