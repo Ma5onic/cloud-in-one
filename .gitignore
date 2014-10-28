@@ -53,5 +53,9 @@ docs/_build/
 # PyBuilder
 target/
 
+# Sublime
+*.sublime-project
+*.sublime-workspace
+
 # Cloud-In-One
 dropbox_token.txt
