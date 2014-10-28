@@ -39,7 +39,8 @@ class TestFSModule(object):
         assert_true(os.path.isdir(fullpath))
 
     def test_existingDirInHomeDir(self):
-        """Test to create a directory in the default (home) directory when it exists already"""
+        """Test to create a directory in the default (home) directory
+        when it exists already"""
         dirName = "testDirectory"
         self.test_createDirInHomeDir(dirName)
         fs = FileSystemModule()
@@ -47,3 +48,17 @@ class TestFSModule(object):
         self.dirFullPath = fullpath = fs.getFullPath(fs.getHomeDir(), dirName)
         assert_true(os.path.isdir(fullpath))
 
+    @raises(PermissionError)
+    def test_createDirNotAllowed(self):
+        """Test to create a directory in a disallowed path. Raises exception"""
+        from sys import platform as _platform
+        if _platform == "linux" or _platform == "linux2":
+            path = "/root/"
+        elif _platform == "darwin":
+            path = "/root/"
+            #whatever...
+        elif _platform == "win32":
+            path = "C:/Windows"
+
+        fs = FileSystemModule()
+        fs.createDirectory("notAllowed", path)
