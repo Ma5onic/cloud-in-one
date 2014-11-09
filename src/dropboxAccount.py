@@ -5,7 +5,7 @@ from log import *
 
 app_key = os.getenv("APP_KEY")
 app_secret = os.getenv("APP_SECRET")
-TOKEN_FILE = "dropbox_token.txt"
+TOKEN_FILE = "config/dropbox_token.txt"
 
 
 class DropboxAccount(account.Account):
@@ -14,11 +14,14 @@ class DropboxAccount(account.Account):
         self.logger = Logger(__name__)
         self.logger.info("Creating Dropbox Account")
         self.user = user
+        self.access_token = None
+        self.client = None
+        self.access_token = self.user_id = None
+
         self.__startOAuthFlow()
 
     def __startOAuthFlow(self):
         self.logger.info("starting OAuth Flow")
-        self.access_token = ''
         if(os.path.isfile(TOKEN_FILE)):
             self.logger.debug("Found existing token")
             token_file = open(TOKEN_FILE, "r")
@@ -44,6 +47,12 @@ class DropboxAccount(account.Account):
         self.logger.info("Getting User Info")
         self.logger.info("INFO:")
         self.logger.info(self.client.account_info())
+
+    def getMetadata(self, folder):
+        self.logger.info("Getting metadata from <" + folder + ">")
+        metadata = self.client.metadata(folder)
+        # for now, it will return all what Dropbox sends, but as we move forward we will return a custom metadata dict
+        return metadata
 
 
 class DropboxAccountStub(DropboxAccount):

@@ -28,7 +28,8 @@ class Manager():
         self.logger.debug("===== END Config contents: ======")
 
         self.fileSystemModule = FileSystemModule()
-        self.fileSystemModule.createDirectory(self.config["sync_folder_name"])
+        self.sync_folder = self.config["sync_folder_name"]
+        self.fileSystemModule.createDirectory(self.sync_folder)
 
         #TODO: inicializar los módulos de seguridad y FS
         self.securityModule = None
@@ -48,8 +49,15 @@ class Manager():
         # Do things to delete an account
         return True
 
+    def updateLocalSyncFolder(self):
+        self.logger.info("Updating local sync folder")
+        for account in self.cuentas:
+            metadataDict = account.getMetadata("/")
+            print(metadataDict)
+
 
 if __name__ == '__main__':
     man = Manager('user', 'password')
     man.newAccount('Dropbox', 'user')
     man.cuentas[0].getUserInfo()
+    man.updateLocalSyncFolder()
