@@ -30,6 +30,7 @@ class TestFSModule(object):
         if self.dirFullPath is not None:
             import shutil
             shutil.rmtree(self.dirFullPath)
+            self.dirFullPath = None
 
     def test_createDirInHomeDir(self, dirName="testDirectory"):
         """Test to create a directory in the default (home) directory"""
