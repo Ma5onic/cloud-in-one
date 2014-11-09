@@ -1,5 +1,9 @@
 from log import Logger
+import json
 import dropboxAccount
+from fileSystemModule import FileSystemModule
+
+config_file = "config/config.json"
 
 
 def Create(type, user):
@@ -17,9 +21,17 @@ class Manager():
         self.user = user
         self.password = password
         self.cuentas = []
+        self.config = json.load(open(config_file))
+        self.logger.info("Loaded config file")
+        self.logger.debug("===== Config contents: ======")
+        self.logger.debug(self.config)
+        self.logger.debug("===== END Config contents: ======")
+
+        self.fileSystemModule = FileSystemModule()
+        self.fileSystemModule.createDirectory(self.config["sync_folder_name"])
+
         #TODO: inicializar los módulos de seguridad y FS
         self.securityModule = None
-        self.fileSystemModule = None
 
     def newAccount(self, type, user):
         self.logger.info("Adding new account")
