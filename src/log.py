@@ -3,7 +3,7 @@ import os
 import json
 import logging.config
 
-default_config_file = "log.json"
+default_config_file = "config/log.json"
 
 
 class Logger(object):

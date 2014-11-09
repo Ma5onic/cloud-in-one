@@ -1,4 +1,4 @@
-from log import *
+from log import Logger
 import dropboxAccount
 
 
@@ -35,3 +35,9 @@ class Manager():
         self.logger.debug("account = %s", account)
         # Do things to delete an account
         return True
+
+
+if __name__ == '__main__':
+    man = Manager('user', 'password')
+    man.newAccount('Dropbox', 'user')
+    man.cuentas[0].getUserInfo()
