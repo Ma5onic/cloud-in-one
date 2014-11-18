@@ -40,21 +40,28 @@ class Manager():
         self.logger.debug("user = %s", user)
 
         self.cuentas.append(Create(type, user))
-        # Do whatever it's needed to add a new account
+        #TODO: Do whatever it's needed to add a new account
         return True
 
     def deleteAccount(self, account):
         self.logger.info("Deleting account")
         self.logger.debug("account = %s", account)
-        # Do things to delete an account
+        #TODO: Do things to delete an account
         return True
 
-    def updateLocalSyncFolder(self):
-        self.logger.info("Updating local sync folder")
+    def updateLocalSyncFolder(self, folder="/"):
+        self.logger.info("Updating sync folder")
+        self.logger.debug("Folder = <" + folder + ">")
         for account in self.cuentas:
-            metadataDict = account.getMetadata("/")
-            print(metadataDict)
-
+            metadataDict = account.getMetadata(folder)
+            self.logger.debug(metadataDict)
+            for element in metadataDict['contents']:
+                if element["is_dir"]:
+                    #TODO: create local dir
+                    self.updateLocalSyncFolder(element['path'])
+                else:
+                    #TODO: download and save file
+                    self.logger.debug("no folder!" + element['path'])
 
 if __name__ == '__main__':
     man = Manager('user', 'password')
