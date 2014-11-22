@@ -28,8 +28,7 @@ class Manager():
         self.logger.debug("===== END Config contents: ======")
 
         self.fileSystemModule = FileSystemModule()
-        self.sync_folder = self.config["sync_folder_name"]
-        self.fileSystemModule.createDirectory(self.sync_folder)
+        self.sync_folder = self.fileSystemModule.createDirectory(self.config["sync_folder_name"])
 
         #TODO: inicializar los módulos de seguridad y FS
         self.securityModule = None

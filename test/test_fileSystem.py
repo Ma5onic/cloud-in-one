@@ -35,8 +35,7 @@ class TestFSModule(object):
     def test_createDirInHomeDir(self, dirName="testDirectory"):
         """Test to create a directory in the default (home) directory"""
         fs = FileSystemModule()
-        fs.createDirectory(dirName)
-        self.dirFullPath = fullpath = fs.getFullPath(fs.getHomeDir(), dirName)
+        self.dirFullPath = fullpath = fs.createDirectory(dirName)
         assert_true(os.path.isdir(fullpath))
 
     def test_existingDirInHomeDir(self):
@@ -45,8 +44,7 @@ class TestFSModule(object):
         dirName = "testDirectory"
         self.test_createDirInHomeDir(dirName)
         fs = FileSystemModule()
-        fs.createDirectory(dirName)
-        self.dirFullPath = fullpath = fs.getFullPath(fs.getHomeDir(), dirName)
+        self.dirFullPath = fullpath = fs.createDirectory(dirName)
         assert_true(os.path.isdir(fullpath))
 
     @raises(PermissionError)

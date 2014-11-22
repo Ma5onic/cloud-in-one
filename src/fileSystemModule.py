@@ -18,7 +18,7 @@ class FileSystemModule():
         fullpath = self.getFullPath(path, dirname)
         self.logger.debug("Creating directory <" + fullpath + ">")
         os.makedirs(fullpath, exist_ok=True)
-        return True
+        return fullpath
 
     def getFullPath(self, path, name):
         return os.path.join(path, name)
