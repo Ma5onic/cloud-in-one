@@ -52,16 +52,18 @@ class Manager():
         self.logger.info("Updating sync folder")
         self.logger.debug("Folder = <" + folder + ">")
         for account in self.cuentas:
-            metadataDict = account.getMetadata(folder)
-            self.logger.debug(metadataDict)
-            for element in metadataDict['contents']:
-                if element["is_dir"]:
-                    dirname = element['path']
-                    self.fileSystemModule.createDirectory(dirname, path=self.sync_folder)
-                    self.updateLocalSyncFolder(dirname)
+            deltaDict = account.delta()
+            self.logger.debug(deltaDict)
+            for filePath, metadata in deltaDict['entries']:
+                if metadata["is_dir"]:
+                    self.fileSystemModule.createDirectory(metadata["path"], path=self.sync_folder)
                 else:
                     #TODO: download and save file
-                    self.logger.debug("no folder!" + element['path'])
+
+                    self.logger.debug("no folder!" + filePath)
+
+    def callDeltas(self):
+        self.cuentas[0].delta()
 
 if __name__ == '__main__':
     man = Manager('user', 'password')

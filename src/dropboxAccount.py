@@ -17,6 +17,7 @@ class DropboxAccount(account.Account):
         self.access_token = None
         self.client = None
         self.access_token = self.user_id = None
+        self.last_cursor = None
 
         self.__startOAuthFlow()
 
@@ -53,6 +54,26 @@ class DropboxAccount(account.Account):
         metadata = self.client.metadata(folder)
         # for now, it will return all what Dropbox sends, but as we move forward we will return a custom metadata dict
         return metadata
+
+    def delta(self, returnDict=dict()):
+        self.logger.info("Calling delta")
+        self.logger.debug("Last cursor = <" + str(self.last_cursor) + ">")
+        returnDict["entries"] = []
+        returnDict["reset"] = False
+
+        deltaDict = self.client.delta(cursor=self.last_cursor)
+        self.last_cursor = deltaDict["cursor"]
+        self.logger.debug(deltaDict)
+
+        returnDict["entries"] += deltaDict["entries"]
+
+        if deltaDict["has_more"]:
+            delta(returnDict)
+
+        self.logger.debug("returnDict = <" + str(returnDict) + ">")
+        return returnDict
+
+
 
 
 class DropboxAccountStub(DropboxAccount):
