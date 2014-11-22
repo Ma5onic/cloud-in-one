@@ -56,8 +56,9 @@ class Manager():
             self.logger.debug(metadataDict)
             for element in metadataDict['contents']:
                 if element["is_dir"]:
-                    #TODO: create local dir
-                    self.updateLocalSyncFolder(element['path'])
+                    dirname = element['path']
+                    self.fileSystemModule.createDirectory(dirname, path=self.sync_folder)
+                    self.updateLocalSyncFolder(dirname)
                 else:
                     #TODO: download and save file
                     self.logger.debug("no folder!" + element['path'])

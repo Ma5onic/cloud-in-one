@@ -21,7 +21,13 @@ class FileSystemModule():
         return fullpath
 
     def getFullPath(self, path, name):
-        return os.path.join(path, name)
+        self.logger.debug("GetFullPath Path = <" + path + ">, Name = <" + name + ">")
+        path = path.strip("/").strip("\\")
+        name = name.strip("/").strip("\\")
+
+        path = os.path.join(path, name)
+        self.logger.debug(path)
+        return path
 
     def getHomeDir(self):
         return os.path.expanduser("~")
