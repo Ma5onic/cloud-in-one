@@ -12,6 +12,7 @@ from nose.tools import assert_true
 
 class TestFSModule(object):
     def __init__(self):
+        self.homeDir = os.path.expanduser("~")
         self.dirFullPath = None
 
     @classmethod
@@ -34,7 +35,7 @@ class TestFSModule(object):
 
     def test_createDirInHomeDir(self, dirName="testDirectory"):
         """Test to create a directory in the default (home) directory"""
-        fs = FileSystemModule()
+        fs = FileSystemModule(self.homeDir)
         self.dirFullPath = fullpath = fs.createDirectory(dirName)
         assert_true(os.path.isdir(fullpath))
 
@@ -43,7 +44,7 @@ class TestFSModule(object):
         when it exists already"""
         dirName = "testDirectory"
         self.test_createDirInHomeDir(dirName)
-        fs = FileSystemModule()
+        fs = FileSystemModule(self.homeDir)
         self.dirFullPath = fullpath = fs.createDirectory(dirName)
         assert_true(os.path.isdir(fullpath))
 
@@ -59,5 +60,5 @@ class TestFSModule(object):
         elif _platform == "win32":
             path = "C:/Windows"
 
-        fs = FileSystemModule()
-        fs.createDirectory("notAllowed", path)
+        fs = FileSystemModule(path)
+        fs.createDirectory("notAllowed")

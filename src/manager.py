@@ -27,8 +27,7 @@ class Manager():
         self.logger.debug(self.config)
         self.logger.debug("===== END Config contents: ======")
 
-        self.fileSystemModule = FileSystemModule()
-        self.sync_folder = self.fileSystemModule.createDirectory(self.config["sync_folder_name"])
+        self.fileSystemModule = FileSystemModule(self.config["sync_folder_name"])
 
         #TODO: inicializar los módulos de seguridad y FS
         self.securityModule = None
@@ -56,7 +55,7 @@ class Manager():
             self.logger.debug(deltaDict)
             for filePath, metadata in deltaDict['entries']:
                 if metadata["is_dir"]:
-                    self.fileSystemModule.createDirectory(metadata["path"], path=self.sync_folder)
+                    self.fileSystemModule.createDirectory(metadata["path"])
                 else:
                     #TODO: download and save file
 
