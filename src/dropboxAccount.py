@@ -73,7 +73,12 @@ class DropboxAccount(account.Account):
         self.logger.debug("returnDict = <" + str(returnDict) + ">")
         return returnDict
 
-
+    def getFile(self, file_path):
+        self.logger.info("Calling getFile")
+        self.logger.debug("file_path = <" + file_path + ">")
+        outputFile = self.client.get_file(file_path)
+        self.logger.debug("outputFile = <" + str(outputFile) + ">")
+        return outputFile
 
 
 class DropboxAccountStub(DropboxAccount):

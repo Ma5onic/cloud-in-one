@@ -57,9 +57,8 @@ class Manager():
                 if metadata["is_dir"]:
                     self.fileSystemModule.createDirectory(metadata["path"])
                 else:
-                    #TODO: download and save file
-
-                    self.logger.debug("no folder!" + filePath)
+                    streamFile = account.getFile(metadata["path"])
+                    self.fileSystemModule.createFile(metadata["path"], streamFile)
 
     def callDeltas(self):
         self.cuentas[0].delta()
