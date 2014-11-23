@@ -35,7 +35,7 @@ class FileSystemModule():
 
     def getFullPath(self, path, name):
         self.logger.debug("GetFullPath Path = <" + path + ">, Name = <" + name + ">")
-        path = path.strip("/").strip("\\")
+        path = path.rstrip("/").strip("\\")
         name = name.strip("/").strip("\\")
 
         path = os.path.join(path, name)
