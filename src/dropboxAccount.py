@@ -66,6 +66,7 @@ class DropboxAccount(account.Account):
         self.logger.debug(deltaDict)
 
         returnDict["entries"] += deltaDict["entries"]
+        returnDict["reset"] = deltaDict["reset"]
 
         if deltaDict["has_more"]:
             delta(returnDict)
