@@ -62,3 +62,29 @@ class TestFSModule(object):
 
         fs = FileSystemModule(path)
         fs.createDirectory("notAllowed")
+
+    def test_createSeveralDirs(self):
+        """Test to create several directory in different deepness in
+        the default (home) directory"""
+        dirName = "testDirectory/level1/level2/level3"
+        fs = FileSystemModule(self.homeDir)
+        self.dirFullPath = fullpath = fs.createDirectory(dirName)
+        assert_true(os.path.isdir(fullpath))
+
+    def test_removeDirectory(self):
+        """Test to remove an existing empty directory in
+        the default (home) directory"""
+        dirName = "toRemove"
+        fs = FileSystemModule(self.homeDir)
+        self.dirFullPath = fs.createDirectory(dirName)
+        fs.removeRecursive(self.dirFullPath)
+        self.dirFullPath = None
+
+    def test_removeFilledDirectory(self):
+        """Test to remove an existing NOT empty directory in
+        the default (home) directory"""
+        dirName = "toRemove/otherThings"
+        fs = FileSystemModule(self.homeDir)
+        self.dirFullPath = fs.createDirectory(dirName)
+        fs.removeRecursive("toRemove")
+        self.dirFullPath = None

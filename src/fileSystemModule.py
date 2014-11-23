@@ -33,6 +33,12 @@ class FileSystemModule():
         out.close()
         stream.close()
 
+    def removeRecursive(self, path):
+        fullpath = self.getFullPath(self.main_path, path)
+        self.logger.debug("Removing folder <" + fullpath + ">")
+        import shutil
+        shutil.rmtree(fullpath)
+
     def getFullPath(self, path, name):
         self.logger.debug("GetFullPath Path = <" + path + ">, Name = <" + name + ">")
         path = path.rstrip("/").strip("\\")
