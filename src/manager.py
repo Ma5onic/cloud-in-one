@@ -53,6 +53,10 @@ class Manager():
         for account in self.cuentas:
             deltaDict = account.delta()
             self.logger.debug(deltaDict)
+            if deltaDict['reset']:
+                pass
+                #TODO: get all files & folders from account
+                #TODO: remove all files & folders from account
             for filePath, metadata in deltaDict['entries']:
                 if metadata["is_dir"]:
                     self.fileSystemModule.createDirectory(metadata["path"])
