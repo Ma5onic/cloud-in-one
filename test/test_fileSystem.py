@@ -77,7 +77,7 @@ class TestFSModule(object):
         dirName = "toRemove"
         fs = FileSystemModule(self.homeDir)
         self.dirFullPath = fs.createDirectory(dirName)
-        fs.removeRecursive(self.dirFullPath)
+        fs.removeRecursive(dirName)
         self.dirFullPath = None
 
     def test_removeFilledDirectory(self):
