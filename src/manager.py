@@ -63,6 +63,7 @@ class Manager():
                 else:
                     streamFile = account.getFile(metadata["path"])
                     self.fileSystemModule.createFile(metadata["path"], streamFile)
+                    streamFile.close()
 
     def callDeltas(self):
         self.cuentas[0].delta()

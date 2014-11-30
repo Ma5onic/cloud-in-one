@@ -31,7 +31,6 @@ class FileSystemModule():
         out = open(fullpath, 'wb')
         out.write(stream.read())
         out.close()
-        stream.close()
 
     def removeRecursive(self, path):
         fullpath = self.getFullPath(self.main_path, path)
