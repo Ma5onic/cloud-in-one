@@ -15,6 +15,7 @@ class TestFSModule(object):
     def __init__(self):
         self.homeDir = os.path.expanduser("~")
         self.dirFullPath = None
+        self.fileFullPath = None
 
     @classmethod
     def setup_class(klass):
@@ -29,6 +30,10 @@ class TestFSModule(object):
 
     def teardown(self):
         """This method is run once after _each_ test method is executed"""
+        if self.fileFullPath is not None:
+            os.remove(self.fileFullPath)
+            self.fileFullPath = None
+
         if self.dirFullPath is not None:
             import shutil
             shutil.rmtree(self.dirFullPath)
@@ -91,3 +96,29 @@ class TestFSModule(object):
         fs.removeRecursive("toRemove")
         assert_false(os.path.exists(self.dirFullPath))
         self.dirFullPath = None
+
+    def test_createFile(self):
+        """Test to create a file in
+        the default (home) directory"""
+        fs = FileSystemModule(self.homeDir)
+        # we use the current file to get a file to write
+        stream = open(os.path.realpath(__file__))
+        filePath = 'testFile'
+        self.fileFullPath = fs.createFile(filePath, stream)
+        assert_true(os.path.isfile(self.fileFullPath))
+        stream.close()
+
+    def test_createFileWithPath(self):
+        """Test to create a file in a subfolder in
+        the default (home) directory"""
+        fs = FileSystemModule(self.homeDir)
+        stream = open(os.path.realpath(__file__))
+        filePath = 'dir1/dir2/testFile'
+
+        self.fileFullPath = fs.createFile(filePath, stream)
+        self.dirFullPath = fs.getFullPath(name="dir1")
+        assert_true(os.path.isdir(self.dirFullPath))
+        assert_true(os.path.isfile(self.fileFullPath))
+        stream.close()
+        import time
+        time.sleep(10)

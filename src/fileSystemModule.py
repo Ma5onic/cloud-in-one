@@ -26,11 +26,15 @@ class FileSystemModule():
         return fullpath
 
     def createFile(self, file_path, stream):
+        self.logger.debug("Creating file <" + file_path + ">")
         fullpath = self.getFullPath(self.main_path, file_path)
-        self.logger.debug("Creating file <" + fullpath + ">")
+        self.logger.debug("File fullpath <" + fullpath + ">")
+        if "/" in file_path:
+            self.createDirectory(os.path.dirname(file_path))
         out = open(fullpath, 'wb')
-        out.write(stream.read())
+        out.write(bytes(stream.read(), 'UTF-8'))
         out.close()
+        return fullpath
 
     def removeRecursive(self, path):
         fullpath = self.getFullPath(self.main_path, path)
@@ -38,13 +42,17 @@ class FileSystemModule():
         import shutil
         shutil.rmtree(fullpath)
 
-    def getFullPath(self, path, name):
-        self.logger.debug("GetFullPath Path = <" + path + ">, Name = <" + name + ">")
-        path = path.rstrip("/").strip("\\")
-        name = name.strip("/").strip("\\")
+    def getFullPath(self, path=None, name=None):
+        self.logger.debug("GetFullPath Path = <" + str(path) + ">, Name = <" + str(name) + ">")
+        if path is None:
+            path = self.main_path
+        if name is not None:
+            path = path.rstrip("/").strip("\\")
+            name = name.strip("/").strip("\\")
 
-        path = os.path.join(path, name)
-        self.logger.debug("FullPath = <" + path + ">")
+            path = os.path.join(path, name)
+
+        self.logger.debug("FullPath = <" + str(path) + ">")
         return path
 
     def getHomeDir(self):
