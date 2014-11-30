@@ -5,6 +5,7 @@ from nose.tools import assert_not_equal
 from nose.tools import assert_raises
 from nose.tools import raises
 from nose.tools import assert_true
+from nose.tools import assert_false
 
 
 # Creates a dir in ~. There wasn't nothing with the same name inside previously
@@ -78,6 +79,7 @@ class TestFSModule(object):
         fs = FileSystemModule(self.homeDir)
         self.dirFullPath = fs.createDirectory(dirName)
         fs.removeRecursive(dirName)
+        assert_false(os.path.exists(self.dirFullPath))
         self.dirFullPath = None
 
     def test_removeFilledDirectory(self):
@@ -87,4 +89,5 @@ class TestFSModule(object):
         fs = FileSystemModule(self.homeDir)
         self.dirFullPath = fs.createDirectory(dirName)
         fs.removeRecursive("toRemove")
+        assert_false(os.path.exists(self.dirFullPath))
         self.dirFullPath = None
