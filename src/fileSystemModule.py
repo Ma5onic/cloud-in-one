@@ -32,7 +32,7 @@ class FileSystemModule():
         if "/" in file_path:
             self.createDirectory(os.path.dirname(file_path))
         out = open(fullpath, 'wb')
-        out.write(bytes(stream.read(), 'UTF-8'))
+        out.write(bytes(stream.read()))
         out.close()
         return fullpath
 

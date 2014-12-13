@@ -102,7 +102,7 @@ class TestFSModule(object):
         the default (home) directory"""
         fs = FileSystemModule(self.homeDir)
         # we use the current file to get a file to write
-        stream = open(os.path.realpath(__file__))
+        stream = open(os.path.realpath(__file__), 'rb')
         filePath = 'testFile'
         self.fileFullPath = fs.createFile(filePath, stream)
         assert_true(os.path.isfile(self.fileFullPath))
@@ -112,7 +112,7 @@ class TestFSModule(object):
         """Test to create a file in a subfolder in
         the default (home) directory"""
         fs = FileSystemModule(self.homeDir)
-        stream = open(os.path.realpath(__file__))
+        stream = open(os.path.realpath(__file__), 'rb')
         filePath = 'dir1/dir2/testFile'
 
         self.fileFullPath = fs.createFile(filePath, stream)
@@ -120,5 +120,3 @@ class TestFSModule(object):
         assert_true(os.path.isdir(self.dirFullPath))
         assert_true(os.path.isfile(self.fileFullPath))
         stream.close()
-        import time
-        time.sleep(10)
