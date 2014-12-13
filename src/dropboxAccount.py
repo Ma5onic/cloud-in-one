@@ -81,6 +81,9 @@ class DropboxAccount(account.Account):
         self.logger.debug("outputFile = <" + str(outputFile) + ">")
         return outputFile
 
+    def getAccountType(self):
+        return "dropbox"
+
 
 class DropboxAccountStub(DropboxAccount):
     """Stub for testing the DBAccount"""

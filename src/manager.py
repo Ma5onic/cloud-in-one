@@ -1,6 +1,7 @@
 from log import Logger
 import json
 import dropboxAccount
+import dataset
 from fileSystemModule import FileSystemModule
 
 config_file = "config/config.json"
@@ -27,6 +28,8 @@ class Manager():
         self.logger.debug(self.config)
         self.logger.debug("===== END Config contents: ======")
 
+        self.database = self.connectDB('db/manager.db')
+
         self.fileSystemModule = FileSystemModule(self.config["sync_folder_name"])
 
         #TODO: inicializar los módulos de seguridad y FS
@@ -37,13 +40,18 @@ class Manager():
         self.logger.debug("type = %s", type)
         self.logger.debug("user = %s", user)
 
-        self.cuentas.append(Create(type, user))
+        newAcc = Create(type, user)
+        self.cuentas.append(newAcc)
+        self.saveAccount(newAcc)
+
         #TODO: Do whatever it's needed to add a new account
         return True
 
     def deleteAccount(self, account):
         self.logger.info("Deleting account")
         self.logger.debug("account = %s", account)
+
+        self.deleteAccountDB(account)
         #TODO: Do things to delete an account
         return True
 
@@ -67,6 +75,18 @@ class Manager():
 
     def callDeltas(self):
         self.cuentas[0].delta()
+
+    def saveAccount(self, account):
+        accounts_table = self.database['accounts']
+        accounts_table.insert(dict(accountType=account.getAccountType(), user=account.user))
+
+    def deleteAccountDB(self, account):
+        accounts_table = self.database['accounts']
+        accounts_table.delete(dict(accountType=account.getAccountType(), user=account.user))
+
+    def connectDB(self, database):
+        return dataset.connect('sqlite:///' + database)
+
 
 if __name__ == '__main__':
     man = Manager('user', 'password')
