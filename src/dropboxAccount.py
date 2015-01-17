@@ -47,7 +47,8 @@ class DropboxAccount(account.Account):
     def getUserInfo(self):
         self.logger.info("Getting User Info")
         self.logger.info("INFO:")
-        self.logger.info(self.client.account_info())
+        user_info = self.client.account_info()
+        self.logger.info(user_info)
 
     def getMetadata(self, folder):
         self.logger.info("Getting metadata from <" + folder + ">")
@@ -89,3 +90,16 @@ class DropboxAccountStub(DropboxAccount):
     """Stub for testing the DBAccount"""
     def __init__(self, user):
         self.user = user
+
+    def getUserInfo(self):
+        self.logger.info("Getting User Info")
+        self.logger.info("INFO:")
+        self.logger.info(self.client.account_info())
+
+    def delta(self, returnDict=dict()):
+        returnDict["entries"] = []
+        returnDict["reset"] = False
+        return returnDict
+
+    def getAccountType(self):
+        return "dropbox_stub"
