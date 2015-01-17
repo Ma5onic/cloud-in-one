@@ -28,7 +28,7 @@ class Manager():
         self.logger.debug(self.config)
         self.logger.debug("===== END Config contents: ======")
 
-        self.database = self.connectDB('db/manager.db')
+        self.database = self.connectDB(self.config["database"])
 
         self.fileSystemModule = FileSystemModule(self.config["sync_folder_name"])
 
