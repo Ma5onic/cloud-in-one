@@ -11,7 +11,7 @@ def Create(type, user):
     if type is "Dropbox":
         return dropboxAccount.DropboxAccount(user)
     elif type is "dropbox_stub":
-        return dropboxAccount.DropboxAccount(user)
+        return dropboxAccount.DropboxAccountStub(user)
 
 
 class Manager():
