@@ -80,7 +80,7 @@ class Manager():
 
     def saveAccount(self, account):
         accounts_table = self.database['accounts']
-        accounts_table.insert(dict(accountType=account.getAccountType(), user=account.user))
+        accounts_table.insert(dict(accountType=account.getAccountType(), user=account.user, token=account.access_token, userid=account.user_id))
 
     def deleteAccountDB(self, account):
         accounts_table = self.database['accounts']

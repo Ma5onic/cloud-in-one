@@ -10,7 +10,7 @@ TOKEN_FILE = "config/dropbox_token.txt"
 
 class DropboxAccount(account.Account):
     """docstring for DropboxAccount"""
-    def __init__(self, user):
+    def __init__(self, user, doOAuth=True):
         self.logger = Logger(__name__)
         self.logger.info("Creating Dropbox Account")
         self.user = user
@@ -19,7 +19,8 @@ class DropboxAccount(account.Account):
         self.access_token = self.user_id = None
         self.last_cursor = None
 
-        self.__startOAuthFlow()
+        if doOAuth:
+            self.__startOAuthFlow()
 
     def __startOAuthFlow(self):
         self.logger.info("starting OAuth Flow")
@@ -89,7 +90,7 @@ class DropboxAccount(account.Account):
 class DropboxAccountStub(DropboxAccount):
     """Stub for testing the DBAccount"""
     def __init__(self, user):
-        self.user = user
+        super(DropboxAccountStub, self).__init__(user, False)
 
     def getUserInfo(self):
         self.logger.info("Getting User Info")
