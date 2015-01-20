@@ -10,13 +10,12 @@ TOKEN_FILE = "config/dropbox_token.txt"
 
 class DropboxAccount(account.Account):
     """docstring for DropboxAccount"""
-    def __init__(self, user, doOAuth=True):
+    def __init__(self, user, access_token=None, user_id=None, doOAuth=True):
         self.logger = Logger(__name__)
         self.logger.info("Creating Dropbox Account")
         self.user = user
-        self.access_token = None
-        self.client = None
-        self.access_token = self.user_id = None
+        self.access_token = access_token
+        self.user_id = user_id
         self.last_cursor = None
 
         if doOAuth:

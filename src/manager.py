@@ -23,7 +23,7 @@ class Manager():
 
         self.user = user
         self.password = password
-        self.cuentas = []
+
         self.config = json.load(open(config_file))
         self.logger.info("Loaded config file")
         self.logger.debug("===== Config contents: ======")
@@ -31,6 +31,8 @@ class Manager():
         self.logger.debug("===== END Config contents: ======")
 
         self.database = self.connectDB(self.config["database"])
+
+        self.cuentas = []
 
         self.fileSystemModule = FileSystemModule(self.config["sync_folder_name"])
 
@@ -77,6 +79,14 @@ class Manager():
 
     def callDeltas(self):
         self.cuentas[0].delta()
+
+    def getAccounts(self):
+        accounts_table = self.database['accounts']
+        accounts_data = accounts_table.all()
+        cuentas_list = []
+        for acc in accounts_data:
+            if acc["accountType"] == 'dropbox':
+                cuentas_list.append(dropboxAccount.DropboxAccount(acc['user'], acc['access_token'], acc['user_id'], False))
 
     def saveAccount(self, account):
         accounts_table = self.database['accounts']
