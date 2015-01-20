@@ -29,12 +29,6 @@ class DropboxAccount(account.Account):
 
     def __startOAuthFlow(self):
         self.logger.info("starting OAuth Flow")
-        # if(os.path.isfile(TOKEN_FILE)):
-        #     self.logger.debug("Found existing token")
-        #     token_file = open(TOKEN_FILE, "r")
-        #     self.access_token, self.user_id = token_file.read().split('|')
-        #     token_file.close()
-        # else:
         self.logger.debug("Token not found, asking for one")
         token_file = open(TOKEN_FILE, "w")
         flow = dropbox.client.DropboxOAuth2FlowNoRedirect(app_key, app_secret)
