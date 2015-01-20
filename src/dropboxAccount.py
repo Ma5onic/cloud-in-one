@@ -35,10 +35,13 @@ class DropboxAccount(account.Account):
         token_file.write("%s|%s" % (self.access_token, self.user_id))
 
     def __getDropboxClient(self):
+        self.logger.info("Getting Dropbox Client")
+        self.logger.debug("__client <" + str(self.__client) + ">")
         if self.__client is None:
+            self.logger.debug("access_token =<" + str(self.access_token) + ">, user_id =<" + str(self.user_id) + ">")
             if self.access_token is None or self.user_id is None:
                 self.__startOAuthFlow()
-            self.logger.debug("Creating Client. Token = <" + self.access_token + "> user_id = <" + self.user_id + ">")
+            self.logger.debug("Creating Client. Token = <" + str(self.access_token) + "> user_id = <" + str(self.user_id) + ">")
             self.__client = dropbox.client.DropboxClient(self.access_token)
 
         return self.__client

@@ -78,7 +78,8 @@ class Manager():
                     streamFile.close()
 
     def callDeltas(self):
-        self.cuentas[0].delta()
+        for cuenta in self.cuentas:
+            cuenta.delta()
 
     def getAccounts(self):
         accounts_table = self.database['accounts']
@@ -96,7 +97,7 @@ class Manager():
 
     def deleteAccountDB(self, account):
         accounts_table = self.database['accounts']
-        accounts_table.delete(dict(accountType=account.getAccountType(), user=account.user))
+        accounts_table.delete(accountType=account.getAccountType(), user=account.user)
 
     def connectDB(self, database):
         return dataset.connect('sqlite:///' + database)
@@ -107,3 +108,4 @@ if __name__ == '__main__':
     #man.newAccount('dropbox', 'user')
     man.cuentas[0].getUserInfo()
     man.updateLocalSyncFolder()
+    man.deleteAccount(man.cuentas[0])
