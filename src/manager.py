@@ -86,7 +86,7 @@ class Manager():
         cuentas_list = []
         for acc in accounts_data:
             if acc["accountType"] == 'dropbox':
-                cuentas_list.append(dropboxAccount.DropboxAccount(acc['user'], acc['token'], acc['userid'], False))
+                cuentas_list.append(dropboxAccount.DropboxAccount(acc['user'], acc['token'], acc['userid']))
 
         return cuentas_list
 

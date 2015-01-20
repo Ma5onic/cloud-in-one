@@ -10,22 +10,15 @@ TOKEN_FILE = "config/dropbox_token.txt"
 
 class DropboxAccount(account.Account):
     """docstring for DropboxAccount"""
-    def __init__(self, user, access_token=None, user_id=None, doOAuth=True):
+    def __init__(self, user, access_token=None, user_id=None):
         self.logger = Logger(__name__)
         self.logger.info("Creating Dropbox Account")
         self.user = user
         self.access_token = access_token
         self.user_id = user_id
         self.last_cursor = None
-
-        if doOAuth:
-            self.__startOAuthFlow()
-
-        if self.access_token is None or self.user_id is None:
-            raise ValueError("No access_token or user_id after OAuth")
-        self.logger.debug("Creating Client. Token = <" + self.access_token + "> user_id = <" + self.user_id + ">")
-        self.client = dropbox.client.DropboxClient(self.access_token)
-
+        # You shouldn't use self.__client, call __getDropboxClient() to get it safely
+        self.__client = None
 
     def __startOAuthFlow(self):
         self.logger.info("starting OAuth Flow")
@@ -41,25 +34,37 @@ class DropboxAccount(account.Account):
         self.access_token, self.user_id = flow.finish(code)
         token_file.write("%s|%s" % (self.access_token, self.user_id))
 
+    def __getDropboxClient(self):
+        if self.__client is None:
+            if self.access_token is None or self.user_id is None:
+                self.__startOAuthFlow()
+            self.logger.debug("Creating Client. Token = <" + self.access_token + "> user_id = <" + self.user_id + ">")
+            self.__client = dropbox.client.DropboxClient(self.access_token)
+
+        return self.__client
+
     def getUserInfo(self):
+        client = self.__getDropboxClient()
         self.logger.info("Getting User Info")
         self.logger.info("INFO:")
-        user_info = self.client.account_info()
+        user_info = client.account_info()
         self.logger.info(user_info)
 
     def getMetadata(self, folder):
+        client = self.__getDropboxClient()
         self.logger.info("Getting metadata from <" + folder + ">")
-        metadata = self.client.metadata(folder)
+        metadata = client.metadata(folder)
         # for now, it will return all what Dropbox sends, but as we move forward we will return a custom metadata dict
         return metadata
 
     def delta(self, returnDict=dict()):
+        client = self.__getDropboxClient()
         self.logger.info("Calling delta")
         self.logger.debug("Last cursor = <" + str(self.last_cursor) + ">")
         returnDict["entries"] = []
         returnDict["reset"] = False
 
-        deltaDict = self.client.delta(cursor=self.last_cursor)
+        deltaDict = client.delta(cursor=self.last_cursor)
         self.last_cursor = deltaDict["cursor"]
         self.logger.debug(deltaDict)
 
@@ -73,9 +78,10 @@ class DropboxAccount(account.Account):
         return returnDict
 
     def getFile(self, file_path):
+        client = self.__getDropboxClient()
         self.logger.info("Calling getFile")
         self.logger.debug("file_path = <" + file_path + ">")
-        outputFile = self.client.get_file(file_path)
+        outputFile = client.get_file(file_path)
         self.logger.debug("outputFile = <" + str(outputFile) + ">")
         return outputFile
 
@@ -91,7 +97,7 @@ class DropboxAccountStub(DropboxAccount):
     def getUserInfo(self):
         self.logger.info("Getting User Info")
         self.logger.info("INFO:")
-        self.logger.info(self.client.account_info())
+        #self.logger.info(self.client.account_info())
 
     def delta(self, returnDict=dict()):
         returnDict["entries"] = []
