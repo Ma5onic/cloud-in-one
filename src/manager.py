@@ -8,7 +8,7 @@ config_file = "config/config.json"
 
 
 def Create(type, user):
-    if type is "Dropbox":
+    if type is "dropbox":
         return dropboxAccount.DropboxAccount(user)
     elif type is "dropbox_stub":
         return dropboxAccount.DropboxAccountStub(user)
@@ -32,7 +32,7 @@ class Manager():
 
         self.database = self.connectDB(self.config["database"])
 
-        self.cuentas = []
+        self.cuentas = self.getAccounts()
 
         self.fileSystemModule = FileSystemModule(self.config["sync_folder_name"])
 
@@ -86,7 +86,9 @@ class Manager():
         cuentas_list = []
         for acc in accounts_data:
             if acc["accountType"] == 'dropbox':
-                cuentas_list.append(dropboxAccount.DropboxAccount(acc['user'], acc['access_token'], acc['user_id'], False))
+                cuentas_list.append(dropboxAccount.DropboxAccount(acc['user'], acc['token'], acc['userid'], False))
+
+        return cuentas_list
 
     def saveAccount(self, account):
         accounts_table = self.database['accounts']
@@ -102,6 +104,6 @@ class Manager():
 
 if __name__ == '__main__':
     man = Manager('user', 'password')
-    man.newAccount('Dropbox', 'user')
+    #man.newAccount('dropbox', 'user')
     man.cuentas[0].getUserInfo()
     man.updateLocalSyncFolder()

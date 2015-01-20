@@ -21,28 +21,31 @@ class DropboxAccount(account.Account):
         if doOAuth:
             self.__startOAuthFlow()
 
-    def __startOAuthFlow(self):
-        self.logger.info("starting OAuth Flow")
-        if(os.path.isfile(TOKEN_FILE)):
-            self.logger.debug("Found existing token")
-            token_file = open(TOKEN_FILE, "r")
-            self.access_token, self.user_id = token_file.read().split('|')
-            token_file.close()
-        else:
-            self.logger.debug("Token not found, asking for one")
-            token_file = open(TOKEN_FILE, "w")
-            flow = dropbox.client.DropboxOAuth2FlowNoRedirect(app_key, app_secret)
-            # Have the user sign in and authorize this token
-            authorize_url = flow.start()
-            print('1. Go to: ' + authorize_url)
-            print('2. Click "Allow" (you might have to log in first)')
-            print('3. Copy the authorization code.')
-            code = input("Enter the authorization code here: ").strip()
-            self.access_token, self.user_id = flow.finish(code)
-            token_file.write("%s|%s" % (self.access_token, self.user_id))
-
+        if self.access_token is None or self.user_id is None:
+            raise ValueError("No access_token or user_id after OAuth")
         self.logger.debug("Creating Client. Token = <" + self.access_token + "> user_id = <" + self.user_id + ">")
         self.client = dropbox.client.DropboxClient(self.access_token)
+
+
+    def __startOAuthFlow(self):
+        self.logger.info("starting OAuth Flow")
+        # if(os.path.isfile(TOKEN_FILE)):
+        #     self.logger.debug("Found existing token")
+        #     token_file = open(TOKEN_FILE, "r")
+        #     self.access_token, self.user_id = token_file.read().split('|')
+        #     token_file.close()
+        # else:
+        self.logger.debug("Token not found, asking for one")
+        token_file = open(TOKEN_FILE, "w")
+        flow = dropbox.client.DropboxOAuth2FlowNoRedirect(app_key, app_secret)
+        # Have the user sign in and authorize this token
+        authorize_url = flow.start()
+        print('1. Go to: ' + authorize_url)
+        print('2. Click "Allow" (you might have to log in first)')
+        print('3. Copy the authorization code.')
+        code = input("Enter the authorization code here: ").strip()
+        self.access_token, self.user_id = flow.finish(code)
+        token_file.write("%s|%s" % (self.access_token, self.user_id))
 
     def getUserInfo(self):
         self.logger.info("Getting User Info")
