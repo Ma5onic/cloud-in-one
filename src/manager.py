@@ -99,6 +99,10 @@ class Manager():
         accounts_table = self.database['accounts']
         accounts_table.delete(accountType=account.getAccountType(), user=account.user)
 
+    def saveFile(self, account, metadata, file_hash=None):
+        files_table = self.database['files']
+        files_table.insert(dict(accountType=account.getAccountType(), user=account.user, path=metadata['path'], hash=file_hash))
+
     def connectDB(self, database):
         return dataset.connect('sqlite:///' + database)
 
