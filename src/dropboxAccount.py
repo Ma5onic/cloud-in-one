@@ -95,17 +95,41 @@ class DropboxAccount(account.Account):
 class DropboxAccountStub(DropboxAccount):
     """Stub for testing the DBAccount"""
     def __init__(self, user):
-        super(DropboxAccountStub, self).__init__(user, False)
+        # super(DropboxAccountStub, self).__init__(user)
+        self.logger = Logger(__name__)
+        self.logger.info("Creating Dropbox Account")
+        self.user = user
+        self.access_token = None
+        self.user_id = None
+        self.last_cursor = None
+        # You shouldn't use self.__client, call __getDropboxClient() to get it safely
+        self.__client = None
 
     def getUserInfo(self):
         self.logger.info("Getting User Info")
         self.logger.info("INFO:")
         #self.logger.info(self.client.account_info())
 
+    def getMetadata(self, folder):
+        raise NotImplemented()
+
     def delta(self, returnDict=dict()):
+        returnDict["entries"] = []
+        returnDict["entries"].append(['test/muerte.txt', {'is_dir': False, 'path': 'test/muerte.txt'}])
+        returnDict["reset"] = False
+        return returnDict
+
+    def deltaEmpty(self, returnDict=dict()):
         returnDict["entries"] = []
         returnDict["reset"] = False
         return returnDict
 
+    def getFile(self, file_path):
+        f = open('test/muerte.txt', 'rb')
+        return f
+
     def getAccountType(self):
         return "dropbox_stub"
+
+
+

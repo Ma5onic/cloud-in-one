@@ -15,7 +15,7 @@ class TestManager(object):
         man = manager.Manager('user', 'password')
         assert_false(man is None)
 
-    # def test_newAccount_dropbox(self):
-    #     man = manager.Manager('user', 'password')
-    #     man.newAccount('dropbox_stub', 'user')
-    #     assert_true(man.cuentas)
+    def test_newAccount_dropbox(self):
+        man = manager.Manager('user', 'password')
+        man.newAccount('dropbox_stub', 'user')
+        assert_true(man.cuentas)

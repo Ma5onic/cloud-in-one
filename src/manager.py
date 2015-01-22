@@ -105,7 +105,10 @@ class Manager():
 
 if __name__ == '__main__':
     man = Manager('user', 'password')
-    #man.newAccount('dropbox', 'user')
+    if not man.cuentas:
+        man.newAccount('dropbox_stub', 'user')
     man.cuentas[0].getUserInfo()
     man.updateLocalSyncFolder()
-    man.deleteAccount(man.cuentas[0])
+    if len(man.cuentas) > 1:
+        for i in range(1, len(man.cuentas)):
+            man.deleteAccount(man.cuentas[i])
