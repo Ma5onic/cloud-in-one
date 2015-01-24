@@ -19,6 +19,7 @@ class DropboxAccount(account.Account):
         self.last_cursor = None
         # You shouldn't use self.__client, call __getDropboxClient() to get it safely
         self.__client = None
+        self.__client = self.__getDropboxClient()
 
     def __startOAuthFlow(self):
         self.logger.info("starting OAuth Flow")

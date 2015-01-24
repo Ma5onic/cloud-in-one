@@ -99,7 +99,7 @@ class Manager():
 
     def saveAccount(self, account):
         accounts_table = self.database['accounts']
-        accounts_table.insert(dict(accountType=account.getAccountType(), user=account.user, token=account.access_token, userid=account.user_id))
+        accounts_table.upsert(dict(accountType=account.getAccountType(), user=account.user, token=account.access_token, userid=account.user_id), ['accountType', 'user'])
 
     def deleteAccountDB(self, account):
         accounts_table = self.database['accounts']
@@ -107,7 +107,7 @@ class Manager():
 
     def saveFile(self, account, metadata, file_hash=None):
         files_table = self.database['files']
-        files_table.insert(dict(accountType=account.getAccountType(), user=account.user, path=metadata['path'], hash=file_hash))
+        files_table.upsert(dict(accountType=account.getAccountType(), user=account.user, path=metadata['path'], hash=file_hash), ['accountType', 'user', 'path'])
 
     def connectDB(self, database):
         return dataset.connect('sqlite:///' + database)
