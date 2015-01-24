@@ -39,6 +39,90 @@ class TestFSModule(object):
             shutil.rmtree(self.dirFullPath)
             self.dirFullPath = None
 
+    def test_getFullPath(self):
+        """Test for getting the absolute path of out files"""
+        fs = FileSystemModule(self.homeDir)
+        fullpath = fs.getFullPath(self.homeDir, 'file')
+        assert_equal(fullpath, self.homeDir + os.sep + 'file')
+
+    def test_getFullPath2(self):
+        """Test for getting the absolute path of out files"""
+        fs = FileSystemModule(self.homeDir)
+        fullpath = fs.getFullPath(self.homeDir, '/file')
+        assert_equal(fullpath, os.path.abspath('/file'))
+
+    def test_getFullPath3(self):
+        """Test for getting the absolute path of out files"""
+        fs = FileSystemModule(self.homeDir)
+        fullpath = fs.getFullPath(self.homeDir, 'file/')
+        assert_equal(fullpath, self.homeDir + os.sep + 'file')
+
+    def test_getFullPath4(self):
+        """Test for getting the absolute path of out files"""
+        fs = FileSystemModule(self.homeDir)
+        fullpath = fs.getFullPath(self.homeDir, self.homeDir + os.sep + 'file')
+        assert_equal(fullpath, self.homeDir + os.sep + 'file')
+
+    def test_getFullPath5(self):
+        """Test for getting the absolute path of out files"""
+        fs = FileSystemModule(self.homeDir)
+        fullpath = fs.getFullPath(self.homeDir, self.homeDir + os.sep + '/file')
+        assert_equal(fullpath, self.homeDir + os.sep + 'file')
+
+    def test_getFullPath6(self):
+        """Test for getting the absolute path of out files"""
+        fs = FileSystemModule(self.homeDir)
+        fullpath = fs.getFullPath(self.homeDir, self.homeDir + os.sep + 'file/')
+        assert_equal(fullpath, self.homeDir + os.sep + 'file')
+
+    def test_getFullPath7(self):
+        """Test for getting the absolute path of out files"""
+        fs = FileSystemModule(self.homeDir)
+        fullpath = fs.getFullPath(None, 'file')
+        assert_equal(fullpath, self.homeDir + os.sep + 'file')
+
+    def test_getFullPath8(self):
+        """Test for getting the absolute path of out files"""
+        fs = FileSystemModule(self.homeDir)
+        fullpath = fs.getFullPath(None, self.homeDir + os.sep + 'file')
+        assert_equal(fullpath, self.homeDir + os.sep + 'file')
+
+    def test_getFullPath9(self):
+        """Test for getting the absolute path of out files"""
+        fs = FileSystemModule(self.homeDir)
+        fullpath = fs.getFullPath(self.homeDir, None)
+        assert_equal(fullpath, self.homeDir)
+
+    def test_getFullPath10(self):
+        """Test for getting the absolute path of out files"""
+        fs = FileSystemModule(self.homeDir)
+        fullpath = fs.getFullPath(None, None)
+        assert_equal(fullpath, self.homeDir)
+
+    def test_getFullPath11(self):
+        """Test for getting the absolute path of out files"""
+        fs = FileSystemModule(self.homeDir)
+        fullpath = fs.getFullPath('folder', 'file')
+        assert_equal(fullpath, self.homeDir + os.sep + 'folder' + os.sep + 'file')
+
+    def test_getFullPath12(self):
+        """Test for getting the absolute path of out files"""
+        fs = FileSystemModule(self.homeDir)
+        fullpath = fs.getFullPath(None, '/file')
+        assert_equal(fullpath, os.path.abspath('/file'))
+
+    def test_getFullPath13(self):
+        """Test for getting the absolute path of out files"""
+        fs = FileSystemModule(self.homeDir)
+        fullpath = fs.getFullPath('folder', None)
+        assert_equal(fullpath, self.homeDir + os.sep + 'folder')
+
+    def test_getFullPath13(self):
+        """Test for getting the absolute path of out files"""
+        fs = FileSystemModule(self.homeDir)
+        fullpath = fs.getFullPath('folder', self.homeDir + os.sep + 'file')
+        assert_equal(fullpath, self.homeDir + os.sep + 'file')
+
     def test_createDirInHomeDir(self, dirName="testDirectory"):
         """Test to create a directory in the default (home) directory"""
         fs = FileSystemModule(self.homeDir)

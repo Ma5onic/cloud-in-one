@@ -59,14 +59,14 @@ class FileSystemModule():
         self.logger.debug("GetFullPath Path = <" + str(path) + ">, Name = <" + str(name) + ">")
         if path is None:
             path = self.main_path
-        if name is not None:
-            path = path.rstrip("/").strip("\\")
-            name = name.strip("/").strip("\\")
+        elif not os.path.isabs(path):
+            path = os.path.join(self.main_path, path)
 
+        if name is not None:
             path = os.path.join(path, name)
 
         self.logger.debug("FullPath = <" + str(path) + ">")
-        return path
+        return os.path.abspath(path)
 
     def getHomeDir(self):
         return os.path.expanduser("~")
