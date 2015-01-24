@@ -36,11 +36,24 @@ class FileSystemModule():
         out.close()
         return fullpath
 
-    def removeRecursive(self, path):
+    def remove(self, path):
         fullpath = self.getFullPath(self.main_path, path)
-        self.logger.debug("Removing folder <" + fullpath + ">")
+        self.logger.debug("Removing file/folder <" + fullpath + ">")
+        if os.path.isdir(fullpath):
+            self.__removeRecursive(fullpath)
+        elif os.path.isfile(fullpath):
+            self.__removeFile(fullpath)
+        else:
+            self.logger.debug("Path <" + fullpath + "> doesn't exist. Not removing")
+
+    def __removeFile(self, path):
+        self.logger.debug("Removing file <" + path + ">")
+        os.remove(path)
+
+    def __removeRecursive(self, path):
+        self.logger.debug("Removing folder <" + path + ">")
         import shutil
-        shutil.rmtree(fullpath)
+        shutil.rmtree(path)
 
     def getFullPath(self, path=None, name=None):
         self.logger.debug("GetFullPath Path = <" + str(path) + ">, Name = <" + str(name) + ">")

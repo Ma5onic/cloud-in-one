@@ -72,16 +72,19 @@ class Manager():
                 #TODO: get all files & folders from account
                 #TODO: remove all files & folders from account
             for filePath, metadata in deltaDict['entries']:
-                if metadata["is_dir"]:
-                    self.fileSystemModule.createDirectory(metadata["path"])
-                    self.saveFile(account, metadata)
-                else:
-                    streamFile = account.getFile(metadata["path"])
-                    fullpath = self.fileSystemModule.createFile(metadata["path"], streamFile)
-                    streamFile.close()
-                    file_hash = self.md5sum(fullpath)
+                if metadata:  # create/edit path
+                    if metadata["is_dir"]:
+                        self.fileSystemModule.createDirectory(metadata["path"])
+                        self.saveFile(account, metadata)
+                    else:
+                        streamFile = account.getFile(metadata["path"])
+                        fullpath = (self.fileSystemModule.createFile(metadata["path"], streamFile))
+                        streamFile.close()
+                        file_hash = self.md5sum(fullpath)
 
-                    self.saveFile(account, metadata, file_hash)
+                        self.saveFile(account, metadata, file_hash)
+                else:  # delete path
+                    self.fileSystemModule.remove(filePath)
 
     def callDeltas(self):
         for cuenta in self.cuentas:

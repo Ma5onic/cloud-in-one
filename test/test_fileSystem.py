@@ -83,7 +83,7 @@ class TestFSModule(object):
         dirName = "toRemove"
         fs = FileSystemModule(self.homeDir)
         self.dirFullPath = fs.createDirectory(dirName)
-        fs.removeRecursive(dirName)
+        fs.remove(dirName)
         assert_false(os.path.exists(self.dirFullPath))
         self.dirFullPath = None
 
@@ -93,7 +93,7 @@ class TestFSModule(object):
         dirName = "toRemove/otherThings"
         fs = FileSystemModule(self.homeDir)
         self.dirFullPath = fs.createDirectory(dirName)
-        fs.removeRecursive("toRemove")
+        fs.remove("toRemove")
         assert_false(os.path.exists(self.dirFullPath))
         self.dirFullPath = None
 
@@ -120,3 +120,18 @@ class TestFSModule(object):
         assert_true(os.path.isdir(self.dirFullPath))
         assert_true(os.path.isfile(self.fileFullPath))
         stream.close()
+
+    def test_removeFile(self):
+        """Test to remove an existing file in
+        the default (home) directory"""
+        self.test_createFile()
+        fs = FileSystemModule(self.homeDir)
+        fs.remove(self.fileFullPath)
+        assert_false(os.path.isfile(self.fileFullPath))
+        self.fileFullPath = None
+
+    def test_removeNonExistingFile(self):
+        fs = FileSystemModule(self.homeDir)
+        fs.remove('nonExisting')
+        noExPath = fs.getFullPath('nonExisting')
+        assert_false(os.path.isfile(noExPath))
