@@ -2,7 +2,9 @@ from log import Logger
 import json
 import dropboxAccount
 import dataset
+import hashlib
 from fileSystemModule import FileSystemModule
+from functools import partial
 
 config_file = "config/config.json"
 
@@ -72,10 +74,14 @@ class Manager():
             for filePath, metadata in deltaDict['entries']:
                 if metadata["is_dir"]:
                     self.fileSystemModule.createDirectory(metadata["path"])
+                    self.saveFile(account, metadata)
                 else:
                     streamFile = account.getFile(metadata["path"])
-                    self.fileSystemModule.createFile(metadata["path"], streamFile)
+                    fullpath = self.fileSystemModule.createFile(metadata["path"], streamFile)
                     streamFile.close()
+                    file_hash = self.md5sum(fullpath)
+
+                    self.saveFile(account, metadata, file_hash)
 
     def callDeltas(self):
         for cuenta in self.cuentas:
@@ -105,6 +111,13 @@ class Manager():
 
     def connectDB(self, database):
         return dataset.connect('sqlite:///' + database)
+
+    def md5sum(self, filename):
+        with open(filename, mode='rb') as f:
+            d = hashlib.md5()
+            for buf in iter(partial(f.read, 128), b''):
+                d.update(buf)
+        return d.hexdigest()
 
 
 if __name__ == '__main__':
