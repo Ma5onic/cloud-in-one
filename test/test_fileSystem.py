@@ -117,7 +117,7 @@ class TestFSModule(object):
         fullpath = fs.getFullPath('folder', None)
         assert_equal(fullpath, self.homeDir + os.sep + 'folder')
 
-    def test_getFullPath13(self):
+    def test_getFullPath14(self):
         """Test for getting the absolute path of out files"""
         fs = FileSystemModule(self.homeDir)
         fullpath = fs.getFullPath('folder', self.homeDir + os.sep + 'file')
