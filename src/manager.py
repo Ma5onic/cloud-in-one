@@ -84,7 +84,7 @@ class Manager():
 
                         self.saveFile(account, metadata, file_hash)
                 else:  # delete path
-                    self.fileSystemModule.remove(filePath)
+                    self.remove(filePath, account)
 
     def callDeltas(self):
         for cuenta in self.cuentas:
@@ -107,6 +107,14 @@ class Manager():
     def deleteAccountDB(self, account):
         accounts_table = self.database['accounts']
         accounts_table.delete(accountType=account.getAccountType(), user=account.user)
+
+    def remove(self, path, account):
+        self.fileSystemModule.remove(path)
+        self.deleteFileDB(path, account)
+
+    def deleteFileDB(self, path, account):
+        files_table = self.database['files']
+        files_table.delete(accountType=account.getAccountType(), user=account.user,path=path)
 
     def saveFile(self, account, metadata, file_hash=None):
         files_table = self.database['files']
