@@ -77,7 +77,7 @@ class Manager():
                         self.fileSystemModule.createDirectory(metadata["path"])
                         self.saveFile(account, metadata)
                     else:
-                        streamFile = account.getFile(metadata["path"])
+                        streamFile = account.getFile(metadata["path"])  # Aquí tendré que encriptar el fichero...
                         fullpath = (self.fileSystemModule.createFile(metadata["path"], streamFile))
                         streamFile.close()
                         file_hash = self.md5sum(fullpath)
