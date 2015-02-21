@@ -123,6 +123,11 @@ class Manager():
     def connectDB(self, database):
         return dataset.connect('sqlite:///' + database)
 
+    def getFiles(self, account, user):
+        files_table = self.database['files']
+        files = files_table.find(accountType=account, user=user)
+        return files
+
     def md5sum(self, filename):
         with open(filename, mode='rb') as f:
             d = hashlib.md5()
