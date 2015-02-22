@@ -125,18 +125,27 @@ class TestFSModule(object):
 
     def test_getFullPath15(self):
         """Test for getting the absolute path of out files"""
+        from sys import platform as _platform
+        if _platform != "win32":
+            return
         fs = FileSystemModule(self.homeDir)
         fullpath = fs.getFullPath('folder', 'E:/file')
         assert_equal(fullpath, self.homeDir + os.sep + 'folder' + os.sep + 'file')
 
     def test_getFullPath16(self):
         """Test for getting the absolute path of out files"""
+        from sys import platform as _platform
+        if _platform != "win32":
+            return
         fs = FileSystemModule(self.homeDir)
         fullpath = fs.getFullPath('folder', 'E:\\file')
         assert_equal(fullpath, self.homeDir + os.sep + 'folder' + os.sep + 'file')
 
     def test_getFullPath17(self):
         """Test for getting the absolute path of out files"""
+        from sys import platform as _platform
+        if _platform != "win32":
+            return
         fs = FileSystemModule(self.homeDir)
         fullpath = fs.getFullPath('folder', 'C:/file')
         assert_equal(fullpath, self.homeDir + os.sep + 'folder' + os.sep + 'file')
