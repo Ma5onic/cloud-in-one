@@ -62,10 +62,21 @@ class FileSystemModule():
         elif not os.path.isabs(path):
             path = os.path.join(self.main_path, path)
 
+
+        finalpath = path
         if name is not None:
-            if name[0] == '/':
-                name = name[1:]
-            path = os.path.join(path, name)
+            name = os.path.normpath(name)
+            finalpath = os.path.join(path, name)
+            if os.path.isabs(finalpath):
+                commonpref = os.path.commonprefix([self.main_path, finalpath])
+                if self.main_path is not commonpref:
+                    if commonpref:
+                        finalpath = finalpath.split(commonpref, 1)[-1]
+
+                    else:
+                        finalpath = finalpath.split(os.sep, 1)[-1]
+                    finalpath = os.path.join(path, finalpath)
+            path = finalpath
 
         self.logger.debug("FullPath = <" + str(path) + ">")
         return os.path.abspath(path)
