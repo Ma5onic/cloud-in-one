@@ -62,7 +62,6 @@ class FileSystemModule():
         elif not os.path.isabs(path):
             path = os.path.join(self.main_path, path)
 
-
         finalpath = path
         if name is not None:
             name = os.path.normpath(name)
@@ -72,7 +71,6 @@ class FileSystemModule():
                 if self.main_path is not commonpref:
                     if commonpref:
                         finalpath = finalpath.split(commonpref, 1)[-1]
-
                     else:
                         finalpath = finalpath.split(os.sep, 1)[-1]
                     finalpath = os.path.join(path, finalpath)

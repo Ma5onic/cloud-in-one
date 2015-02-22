@@ -123,6 +123,24 @@ class TestFSModule(object):
         fullpath = fs.getFullPath('folder', self.homeDir + os.sep + 'file')
         assert_equal(fullpath, self.homeDir + os.sep + 'file')
 
+    def test_getFullPath15(self):
+        """Test for getting the absolute path of out files"""
+        fs = FileSystemModule(self.homeDir)
+        fullpath = fs.getFullPath('folder', 'E:/file')
+        assert_equal(fullpath, self.homeDir + os.sep + 'folder' + os.sep + 'file')
+
+    def test_getFullPath16(self):
+        """Test for getting the absolute path of out files"""
+        fs = FileSystemModule(self.homeDir)
+        fullpath = fs.getFullPath('folder', 'E:\\file')
+        assert_equal(fullpath, self.homeDir + os.sep + 'folder' + os.sep + 'file')
+
+    def test_getFullPath17(self):
+        """Test for getting the absolute path of out files"""
+        fs = FileSystemModule(self.homeDir)
+        fullpath = fs.getFullPath('folder', 'C:/file')
+        assert_equal(fullpath, self.homeDir + os.sep + 'folder' + os.sep + 'file')
+
     def test_createDirInHomeDir(self, dirName="testDirectory"):
         """Test to create a directory in the default (home) directory"""
         fs = FileSystemModule(self.homeDir)
