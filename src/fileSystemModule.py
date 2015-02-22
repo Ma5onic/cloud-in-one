@@ -63,6 +63,8 @@ class FileSystemModule():
             path = os.path.join(self.main_path, path)
 
         if name is not None:
+            if name[0] == '/':
+                name = name[1:]
             path = os.path.join(path, name)
 
         self.logger.debug("FullPath = <" + str(path) + ">")

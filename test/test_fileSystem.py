@@ -49,7 +49,7 @@ class TestFSModule(object):
         """Test for getting the absolute path of out files"""
         fs = FileSystemModule(self.homeDir)
         fullpath = fs.getFullPath(self.homeDir, '/file')
-        assert_equal(fullpath, os.path.abspath('/file'))
+        assert_equal(fullpath, self.homeDir + os.sep + 'file')
 
     def test_getFullPath3(self):
         """Test for getting the absolute path of out files"""
@@ -109,7 +109,7 @@ class TestFSModule(object):
         """Test for getting the absolute path of out files"""
         fs = FileSystemModule(self.homeDir)
         fullpath = fs.getFullPath(None, '/file')
-        assert_equal(fullpath, os.path.abspath('/file'))
+        assert_equal(fullpath, self.homeDir + os.sep + 'file')
 
     def test_getFullPath13(self):
         """Test for getting the absolute path of out files"""
