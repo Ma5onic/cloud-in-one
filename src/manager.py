@@ -68,9 +68,12 @@ class Manager():
             deltaDict = account.delta()
             self.logger.debug(deltaDict)
             if deltaDict['reset']:
-                pass
-                #TODO: get all files & folders from account
-                #TODO: remove all files & folders from account
+                self.logger.debug('Reset recieved. Resetting account <' + str(account) + '>')
+                path_list = [element['path'] for element in self.getFiles(account.getAccountType(), account.user)]
+                for path in path_list:
+                    self.logger.debug('removing <' + str(path) + '>')
+                    self.remove(path, account)
+
             for filePath, metadata in deltaDict['entries']:
                 if metadata:  # create/edit path
                     if metadata["is_dir"]:
@@ -113,10 +116,12 @@ class Manager():
         self.deleteFileDB(path, account)
 
     def deleteFileDB(self, path, account):
+        self.logger.debug('deleting file <' + path + '> from account <' + account.getAccountType() + ',' + account.user + '>')
         files_table = self.database['files']
         files_table.delete(accountType=account.getAccountType(), user=account.user,path=path)
 
     def saveFile(self, account, metadata, file_hash=None):
+        self.logger.debug('saving file <' + metadata['path'] + '> with hash <' + str(file_hash) + '> to account <' + account.getAccountType() + ',' + account.user + '>')
         files_table = self.database['files']
         files_table.upsert(dict(accountType=account.getAccountType(), user=account.user, path=metadata['path'], hash=file_hash), ['accountType', 'user', 'path'])
 
