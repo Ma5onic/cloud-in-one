@@ -81,3 +81,17 @@ class FileSystemModule():
 
     def getHomeDir(self):
         return os.path.expanduser("~")
+
+    def getFileList(self):
+        self.logger.info('getFileList')
+        fileList = []
+        for root, dirnames, filenames in os.walk(self.main_path):
+            for filename in filenames:
+                filePath = os.path.normpath(root + '/' + filename)
+                filePath = filePath.split(os.path.commonprefix([filePath, self.main_path]), 1)[-1]
+                if os.sep == '\\':
+                    filePath = filePath.replace('\\', '/')
+                self.logger.debug('listing file <' + filePath + '>')
+                fileList.append(filePath)
+
+        return fileList

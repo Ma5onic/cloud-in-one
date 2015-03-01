@@ -150,3 +150,7 @@ if __name__ == '__main__':
     if len(man.cuentas) > 1:
         for i in range(1, len(man.cuentas)):
             man.deleteAccount(man.cuentas[i])
+
+    list_files = man.fileSystemModule.getFileList()
+    for i in list_files:
+        print(i)
