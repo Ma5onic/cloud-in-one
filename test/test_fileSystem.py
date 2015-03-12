@@ -168,6 +168,7 @@ class TestFSModule(object):
     @raises(PermissionError)
     def test_createDirNotAllowed(self):
         """Test to create a directory in a disallowed path. Raises exception"""
+        #TODO: Hacer una carpeta que de verdad no esté permitida (C:\Windows puede tener permisos...)
         from sys import platform as _platform
         if _platform == "linux" or _platform == "linux2":
             path = "/root/"
