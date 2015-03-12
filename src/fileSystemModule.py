@@ -9,7 +9,8 @@ class FileSystemModule():
         self.logger = Logger(__name__)
         self.logger.info("Creating FileSystemModule")
 
-        self.main_path = os.path.normpath(path)
+        self.logger.debug("path = <" + path + ">")
+        self.main_path = os.path.normpath(os.path.expanduser(path))
         self.logger.debug("self.main_path = <" + self.main_path + ">")
 
         try:
