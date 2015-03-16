@@ -95,4 +95,5 @@ class FileSystemModule():
                 self.logger.debug('listing file <' + filePath + '>')
                 fileList.append(filePath)
 
+        self.logger.debug('fileList = <' + str(fileList) + '>')
         return fileList

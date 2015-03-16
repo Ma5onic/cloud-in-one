@@ -64,7 +64,14 @@ class Manager():
     def updateLocalSyncFolder(self, folder="/"):
         self.logger.info("Updating sync folder")
         self.logger.debug("Folder = <" + folder + ">")
+        # TODO: get the files changed and check for collisions!
+        self.findLocalChanges()
+        self.syncAccounts()
+
+    def syncAccounts(self):
+        self.logger.info('Syncing accounts')
         for account in self.cuentas:
+            self.logger.debug('Account <' + str(account) + '>')
             deltaDict = account.delta()
             self.logger.debug(deltaDict)
             if deltaDict['reset']:
@@ -75,11 +82,14 @@ class Manager():
                     self.remove(path, account)
 
             for filePath, metadata in deltaDict['entries']:
+                self.logger.debug('filePath <' + str(filePath) + '> metadata <' + str(metadata) + '>')
                 if metadata:  # create/edit path
                     if metadata["is_dir"]:
+                        self.logger.debug('is_dir = True')
                         self.fileSystemModule.createDirectory(metadata["path"])
                         self.saveFile(account, metadata)
                     else:
+                        self.logger.debug('is_dir = False')
                         streamFile = account.getFile(metadata["path"])  # Aquí tendré que encriptar el fichero...
                         fullpath = (self.fileSystemModule.createFile(metadata["path"], streamFile))
                         streamFile.close()
@@ -88,6 +98,12 @@ class Manager():
                         self.saveFile(account, metadata, file_hash)
                 else:  # delete path
                     self.remove(filePath, account)
+
+    def findLocalChanges(self):
+        self.logger.info('Getting Local differences')
+        import pdb; pdb.set_trace()  # breakpoint ed20eecf //
+        fileList = self.fileSystemModule.getFileList()
+        toCheck = self.getToCheckFiles(fileList)
 
     def callDeltas(self):
         for cuenta in self.cuentas:
@@ -132,6 +148,16 @@ class Manager():
         files_table = self.database['files']
         files = files_table.find(accountType=account, user=user)
         return files
+
+    def getToCheckFiles(self, file_list):
+        files_table = self.database['files']
+        iter_files = files_table.find(path=file_list)
+        toCheck = []
+        for i in iter_files:
+            toCheck.append(i['path'])
+
+        self.logger.debug('toCheck <' + str(toCheck) + '>')
+        return toCheck
 
     def md5sum(self, filename):
         with open(filename, mode='rb') as f:
