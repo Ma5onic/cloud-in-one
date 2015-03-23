@@ -116,7 +116,7 @@ class DropboxAccountStub(DropboxAccount):
 
     def delta(self, returnDict=dict()):
         returnDict["entries"] = []
-        returnDict["entries"].append(['test/muerte.txt', {'is_dir': False, 'path': 'test/muerte.txt'}])
+        returnDict["entries"].append(['/test/muerte.txt', {'is_dir': False, 'path': '/test/muerte.txt'}])
         returnDict["reset"] = False
         return returnDict
 

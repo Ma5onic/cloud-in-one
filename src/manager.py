@@ -104,6 +104,17 @@ class Manager():
         import pdb; pdb.set_trace()  # breakpoint ed20eecf //
         fileList = self.fileSystemModule.getFileList()
         toCheck = self.getToCheckFiles(fileList)
+        for i in toCheck:
+            md5 = self.md5sum(self.fileSystemModule.getFullPath(i))
+            if md5 != self.getMD5BD(i):
+                pass # Añadir a la lista de cambios. Guardar la versión local
+
+
+    def getMD5BD(self, filename):
+        files_table = self.database['files']
+        row = files_table.find(path=filename)
+        return row['hash']
+
 
     def callDeltas(self):
         for cuenta in self.cuentas:
@@ -173,9 +184,9 @@ if __name__ == '__main__':
         man.newAccount('dropbox_stub', 'user')
     man.cuentas[0].getUserInfo()
     man.updateLocalSyncFolder()
-    if len(man.cuentas) > 1:
-        for i in range(1, len(man.cuentas)):
-            man.deleteAccount(man.cuentas[i])
+    #if len(man.cuentas) > 1:
+        #for i in range(1, len(man.cuentas)):
+         #   man.deleteAccount(man.cuentas[i])
 
     list_files = man.fileSystemModule.getFileList()
     for i in list_files:
