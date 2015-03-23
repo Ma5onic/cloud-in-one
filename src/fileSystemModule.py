@@ -1,5 +1,7 @@
 import os.path
 import os
+import hashlib
+from functools import partial
 from log import Logger
 
 
@@ -97,3 +99,12 @@ class FileSystemModule():
 
         self.logger.debug('fileList = <' + str(fileList) + '>')
         return fileList
+
+    def md5sum(self, filename):
+        filename = self.getFullPath(self.main_path,filename)
+        with open(filename, mode='rb') as f:
+            d = hashlib.md5()
+            for buf in iter(partial(f.read, 128), b''):
+                d.update(buf)
+        return d.hexdigest()
+
