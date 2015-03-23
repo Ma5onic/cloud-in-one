@@ -63,7 +63,8 @@ class Manager():
         self.logger.info("Updating sync folder")
         self.logger.debug("Folder = <" + folder + ">")
         # TODO: get the files changed and check for collisions!
-        self.findLocalChanges()
+        localChanges = self.findLocalChanges()
+        # TODO: get remote changes to check collisions with the local!
         self.syncAccounts()
 
     def syncAccounts(self):
@@ -99,18 +100,30 @@ class Manager():
 
     def findLocalChanges(self):
         self.logger.info('Getting Local differences')
-        import pdb; pdb.set_trace()  # breakpoint ed20eecf //
         fileList = self.fileSystemModule.getFileList()
-        toCheck = self.getToCheckFiles(fileList)
+        toCheck =  []
+        for i in self.cuentas:
+            toCheck+= self.getFilesPaths(i.getAccountType(),i.user)
+        localChanges = []
         for i in toCheck:
-            md5 = self.md5sum(self.fileSystemModule.getFullPath(i))
-            if md5 != self.getMD5BD(i):
-                pass # Añadir a la lista de cambios. Guardar la versión local
+            try:
+                md5 = self.fileSystemModule.md5sum(i)
+                if md5 != self.getMD5BD(i):
+                    self.logger.debug('The file <' + i + '> has been MODIFIED')
+                    localChanges.append(dict(path=i,hash=md5))
+                else:
+                    self.logger.debug('The file <' + i + '> is the same. Doing nothing')
+            except FileNotFoundError:
+                self.logger.debug('The file <' + i + '> has been DELETED')
+                localChanges.append(dict(path=i,hash=None))
+
+
+        return localChanges
 
 
     def getMD5BD(self, filename):
         files_table = self.database['files']
-        row = files_table.find(path=filename)
+        row = files_table.find_one(path=filename)
         return row['hash']
 
 
@@ -152,6 +165,14 @@ class Manager():
 
     def connectDB(self, database):
         return dataset.connect('sqlite:///' + database)
+
+    def getFilesPaths(self, account, user):
+        files_table = self.database['files']
+        files = files_table.find(accountType=account, user=user)
+        filesPaths = []
+        for i in files:
+            filesPaths.append(i['path'])
+        return filesPaths
 
     def getFiles(self, account, user):
         files_table = self.database['files']
