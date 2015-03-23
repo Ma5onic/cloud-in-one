@@ -2,9 +2,7 @@ from log import Logger
 import json
 import dropboxAccount
 import dataset
-import hashlib
 from fileSystemModule import FileSystemModule
-from functools import partial
 
 config_file = "config/config.json"
 
@@ -93,7 +91,7 @@ class Manager():
                         streamFile = account.getFile(metadata["path"])  # Aquí tendré que encriptar el fichero...
                         fullpath = (self.fileSystemModule.createFile(metadata["path"], streamFile))
                         streamFile.close()
-                        file_hash = self.md5sum(fullpath)
+                        file_hash = self.fileSystemModule.md5sum(fullpath)
 
                         self.saveFile(account, metadata, file_hash)
                 else:  # delete path
@@ -169,13 +167,6 @@ class Manager():
 
         self.logger.debug('toCheck <' + str(toCheck) + '>')
         return toCheck
-
-    def md5sum(self, filename):
-        with open(filename, mode='rb') as f:
-            d = hashlib.md5()
-            for buf in iter(partial(f.read, 128), b''):
-                d.update(buf)
-        return d.hexdigest()
 
 
 if __name__ == '__main__':
