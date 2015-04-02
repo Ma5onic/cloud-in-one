@@ -106,18 +106,24 @@ class Manager():
             toCheck+= self.getFilesPaths(i.getAccountType(),i.user)
         localChanges = []
         for i in toCheck:
-            try:
+            if i in fileList:
                 md5 = self.fileSystemModule.md5sum(i)
                 if md5 != self.getMD5BD(i):
                     self.logger.debug('The file <' + i + '> has been MODIFIED')
                     localChanges.append(dict(path=i,hash=md5))
                 else:
                     self.logger.debug('The file <' + i + '> is the same. Doing nothing')
-            except FileNotFoundError:
+                fileList.remove(i)
+            else:
                 self.logger.debug('The file <' + i + '> has been DELETED')
                 localChanges.append(dict(path=i,hash=None))
 
+        for i in fileList:
+            self.logger.debug('The file <' + i + '> has been CREATED')
+            md5 = self.fileSystemModule.md5sum(i)
+            localChanges.append(dict(path=i,hash=md5))
 
+        self.logger.debug('localChanges = <' + str(localChanges) + '>')
         return localChanges
 
 
@@ -172,6 +178,7 @@ class Manager():
         filesPaths = []
         for i in files:
             filesPaths.append(i['path'])
+        self.logger.debug('filesPaths for account <' + account + ',' + user + '> = '+ str(filesPaths))
         return filesPaths
 
     def getFiles(self, account, user):
