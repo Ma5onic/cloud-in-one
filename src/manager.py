@@ -62,12 +62,12 @@ class Manager():
     def updateLocalSyncFolder(self, folder="/"):
         self.logger.info("Updating sync folder")
         self.logger.debug("Folder = <" + folder + ">")
-        # TODO: get the files changed and check for collisions!
         localChanges = self.findLocalChanges()
-        # TODO: get remote changes to check collisions with the local!
-        self.syncAccounts()
+        remoteChanges = self.findRemoteChanges()
+        # TODO: check collisions with the local!
+        self.syncAccounts(localChanges, remoteChanges)
 
-    def syncAccounts(self):
+    def syncAccounts(self, localChanges, remoteChanges):
         self.logger.info('Syncing accounts')
         for account in self.cuentas:
             self.logger.debug('Account <' + str(account) + '>')
@@ -97,6 +97,11 @@ class Manager():
                         self.saveFile(account, metadata, file_hash)
                 else:  # delete path
                     self.remove(filePath, account)
+
+    def findRemoteChanges(self):
+        self.logger.info('Getting Remote differences')
+        # TODO: get remote changes 
+        return []
 
     def findLocalChanges(self):
         self.logger.info('Getting Local differences')
