@@ -86,7 +86,7 @@ class Manager():
                     if metadata["is_dir"]:
                         self.logger.debug('is_dir = True')
                         self.fileSystemModule.createDirectory(metadata["path"])
-                        self.saveFile(account, metadata)
+                        self.saveFile(account, metadata['path'])
                     else:
                         self.logger.debug('is_dir = False')
                         streamFile = account.getFile(metadata["path"])  # Aquí tendré que encriptar el fichero...
@@ -94,7 +94,7 @@ class Manager():
                         streamFile.close()
                         file_hash = self.fileSystemModule.md5sum(fullpath)
 
-                        self.saveFile(account, metadata, file_hash)
+                        self.saveFile(account, metadata['path'], file_hash)
                 else:  # delete path
                     self.remove(filePath, account)
 
@@ -169,10 +169,10 @@ class Manager():
         files_table = self.database['files']
         files_table.delete(accountType=account.getAccountType(), user=account.user,path=path)
 
-    def saveFile(self, account, metadata, file_hash=None):
-        self.logger.debug('saving file <' + metadata['path'] + '> with hash <' + str(file_hash) + '> to account <' + account.getAccountType() + ',' + account.user + '>')
+    def saveFile(self, account, path, file_hash=None):
+        self.logger.debug('saving file <' + path + '> with hash <' + str(file_hash) + '> to account <' + account.getAccountType() + ',' + account.user + '>')
         files_table = self.database['files']
-        files_table.upsert(dict(accountType=account.getAccountType(), user=account.user, path=metadata['path'], hash=file_hash), ['accountType', 'user', 'path'])
+        files_table.upsert(dict(accountType=account.getAccountType(), user=account.user, path=path, hash=file_hash), ['accountType', 'user', 'path'])
 
     def connectDB(self, database):
         return dataset.connect('sqlite:///' + database)
