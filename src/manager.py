@@ -2,6 +2,7 @@ from log import Logger
 import json
 import dropboxAccount
 import dataset
+import datetime
 from fileSystemModule import FileSystemModule
 
 config_file = "config/config.json"
@@ -64,6 +65,7 @@ class Manager():
         self.logger.debug("Folder = <" + folder + ">")
         localChanges = self.findLocalChanges()
         remoteChanges = self.findRemoteChanges()
+        localChanges,remoteChanges = self.fixCollisions(localChanges,remoteChanges)
         self.applyLocalChanges(localChanges)
         # TODO: check collisions with the local!
         self.syncAccounts(localChanges, remoteChanges)
@@ -102,7 +104,49 @@ class Manager():
     def findRemoteChanges(self):
         self.logger.info('Getting Remote differences')
         # TODO: get remote changes 
-        return []
+        
+        return [{'path': '/test/muerte2.txt', 'hash': '6d9a0ae6be9debf5cfe7a62fafe8553'}]
+        # return [{'path': '/test/muerte2.txt', 'hash': None}]
+        #return []
+
+    def fixCollisions(self, localChanges, remoteChanges):
+        self.logger.info('fixCollisions')
+        self.logger.debug('localChanges <' + str(localChanges) + '>')
+        self.logger.debug('remoteChanges <' + str(remoteChanges) + '>')
+        
+        # list of removes to avoid modifying the list we are iterating
+        indexesToRemoveLocal = []
+
+        for i,local in enumerate(localChanges):
+            collided = next((item for item in remoteChanges if item['path'] == local['path']), None)
+            if collided:
+                self.logger.debug('Found collision! <' + local['path'] + '>')
+                if collided['hash']: # remote created/modified
+                    if local['hash']: # AND local created/modified!
+                        if local['hash'] == collided['hash']: # same change...
+                            self.logger.debug('Both modified in the same way. Keeping local changes')
+                            remoteChanges.remove(collided) # we delete it from one of the lists to avoid trying to delete it twice
+                        else:
+                            date = datetime.date.today()
+                            oldpath = local['path']
+                            newname = oldpath+'__CONFLICTED_COPY__'+date.isoformat()
+                            self.logger.debug('Both modified. New name = <' + newname + '>')
+                            localChanges[i]['path'] = newname
+                            localChanges[i]['oldpath'] = oldpath
+                    else: # local deletion, remote modification, we keep the remote changes.
+                        self.logger.debug('Deleted locally, keeping remote changes')
+                        indexesToRemoveLocal.append(i)
+                else: # in case of remote deletion, we keep the local changes
+                    self.logger.debug('Deleted remotely, keeping local changes')
+                    remoteChanges.remove(collided) # we delete it from one of the lists to avoid trying to delete it twice
+
+        for i in indexesToRemoveLocal:
+            del(localChanges[i])
+
+        self.logger.debug('localChanges <' + str(localChanges) + '>')
+        self.logger.debug('remoteChanges <' + str(remoteChanges) + '>')
+        return (localChanges, remoteChanges)
+        
 
     def findLocalChanges(self):
         self.logger.info('Getting Local differences')
@@ -135,12 +179,15 @@ class Manager():
     def applyLocalChanges(self, localChanges):
         self.logger.info("Applying local changes")
         # TODO: mark things to upload to remote
+        # TODO: it must create the file if it doesn't exist right now
         for element in localChanges:
             if element['hash']: # created or modified, upsert in the db, mark to upload...
                 for account in self.cuentas:
                     self.logger.debug("Trying to save file <" + element['path'] + "> in account <" + str(account) + ">")
                     if self.saveFile(account, element['path'], element['hash']):
                         self.logger.debug('Saved')
+                        if 'oldpath' in element:
+                            self.fileSystemModule.renameFile(element['oldpath'], element['path'])
                         break
             else: # deleted, remove from the db, remove from remote...
                 self.logger.debug("Deleting file <" + element['path'] + ">")
@@ -234,3 +281,8 @@ if __name__ == '__main__':
     list_files = man.fileSystemModule.getFileList()
     for i in list_files:
         print(i)
+
+    print('======')
+    for i in man.getFilesPaths(man.cuentas[0].getAccountType(),man.cuentas[0].user):
+        print(i)
+
