@@ -39,6 +39,14 @@ class FileSystemModule():
         out.close()
         return fullpath
 
+    def renameFile(self, oldpath, newpath):
+        self.logger.debug("Renaming file <" + oldpath + "> to <" + newpath + ">")
+        fullpath_old = self.getFullPath(self.main_path, oldpath)
+        fullpath_new = self.getFullPath(self.main_path, newpath)
+        os.rename(fullpath_old,fullpath_new)
+        return True
+
+
     def remove(self, path):
         fullpath = self.getFullPath(self.main_path, path)
         self.logger.debug("Removing file/folder <" + fullpath + ">")
