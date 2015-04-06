@@ -92,6 +92,9 @@ class DropboxAccount(account.Account):
     def getAccountType(self):
         return "dropbox"
 
+    def __repr__(self):
+        return self.getAccountType() + ' (' + self.user + ')'
+
 
 class DropboxAccountStub(DropboxAccount):
     """Stub for testing the DBAccount"""

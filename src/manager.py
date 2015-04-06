@@ -64,6 +64,7 @@ class Manager():
         self.logger.debug("Folder = <" + folder + ">")
         localChanges = self.findLocalChanges()
         remoteChanges = self.findRemoteChanges()
+        self.applyLocalChanges(localChanges)
         # TODO: check collisions with the local!
         self.syncAccounts(localChanges, remoteChanges)
 
@@ -131,6 +132,19 @@ class Manager():
         self.logger.debug('localChanges = <' + str(localChanges) + '>')
         return localChanges
 
+    def applyLocalChanges(self, localChanges):
+        self.logger.info("Applying local changes")
+        # TODO: mark things to upload to remote
+        for element in localChanges:
+            if element['hash']: # created or modified, upsert in the db, mark to upload...
+                for account in self.cuentas:
+                    self.logger.debug("Trying to save file <" + element['path'] + "> in account <" + str(account) + ">")
+                    if self.saveFile(account, element['path'], element['hash']):
+                        self.logger.debug('Saved')
+                        break
+            else: # deleted, remove from the db, remove from remote...
+                self.logger.debug("Deleting file <" + element['path'] + ">")
+                self.deleteFileDB(element['path'])
 
     def getMD5BD(self, filename):
         files_table = self.database['files']
@@ -164,15 +178,20 @@ class Manager():
         self.fileSystemModule.remove(path)
         self.deleteFileDB(path, account)
 
-    def deleteFileDB(self, path, account):
-        self.logger.debug('deleting file <' + path + '> from account <' + account.getAccountType() + ',' + account.user + '>')
+    # NOTE: is account needed here?
+    def deleteFileDB(self, path, account=None):
+        self.logger.debug('deleting file <' + path + '>')#' from account <' + account.getAccountType() + ',' + account.user + '>')
         files_table = self.database['files']
-        files_table.delete(accountType=account.getAccountType(), user=account.user,path=path)
+        files_table.delete(
+            # accountType=account.getAccountType(), user=account.user,
+            path=path)
 
     def saveFile(self, account, path, file_hash=None):
         self.logger.debug('saving file <' + path + '> with hash <' + str(file_hash) + '> to account <' + account.getAccountType() + ',' + account.user + '>')
         files_table = self.database['files']
         files_table.upsert(dict(accountType=account.getAccountType(), user=account.user, path=path, hash=file_hash), ['accountType', 'user', 'path'])
+        # TODO: check if can be inserted and this...
+        return True
 
     def connectDB(self, database):
         return dataset.connect('sqlite:///' + database)
