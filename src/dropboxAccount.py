@@ -101,9 +101,20 @@ class DropboxAccount(account.Account):
         
         stream = self.fileSystemModule.openFile(file_path)
         response = client.put_file(file_path, stream)
-        self.logger.debug("Response = <" + response + ">")
+        self.logger.debug("Response = <" + str(response) + ">")
         self.fileSystemModule.closeFile(file_path, stream)
         return True
+
+    def deleteFile(self, file_path):
+        client = self.__getDropboxClient()
+        self.logger.info("Calling deleteFile")
+        self.logger.debug("file_path = <" + file_path + ">")
+
+        response = client.file_delete(file_path)
+        return True
+
+    def fits(self, file_path):
+        return True # TODO: check if the file fits in the available space
 
 
     def __repr__(self):

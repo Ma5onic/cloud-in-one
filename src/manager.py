@@ -104,9 +104,9 @@ class Manager():
         self.logger.info('Getting Remote differences')
         # TODO: get remote changes 
         
-        return [{'path': '/test/muerte2.txt', 'hash': '6d9a0ae6be9debf5cfe7a62fafe8553'}]
+        # return [{'path': '/test/muerte2.txt', 'hash': '6d9a0ae6be9debf5cfe7a62fafe8553'}]
         # return [{'path': '/test/muerte2.txt', 'hash': None}]
-        #return []
+        return []
 
     def fixCollisions(self, localChanges, remoteChanges):
         self.logger.info('fixCollisions')
@@ -177,20 +177,27 @@ class Manager():
 
     def applyLocalChanges(self, localChanges):
         self.logger.info("Applying local changes")
-        # TODO: mark things to upload to remote
         # TODO: it must create the file if it doesn't exist right now
         for element in localChanges:
+            element['account'] = self.getAccountFromFile(element['path'])
             if element['hash']: # created or modified, upsert in the db, mark to upload...
-                for account in self.cuentas:
-                    self.logger.debug("Trying to save file <" + element['path'] + "> in account <" + str(account) + ">")
-                    if self.saveFile(account, element['path'], element['hash']):
-                        self.logger.debug('Saved')
-                        if 'oldpath' in element:
-                            self.fileSystemModule.renameFile(element['oldpath'], element['path'])
-                        break
+                if not element['account']: # if newly created
+                    for account in self.cuentas:
+                        self.logger.debug("Trying to save file <" + element['path'] + "> in account <" + str(account) + ">")
+                        if account.fits(element['path']):
+                            element['account'] = account
+                            break
+                self.saveFile(account, element['path'], element['hash'])
+                self.logger.debug('Saved')
+                if 'oldpath' in element:
+                    self.fileSystemModule.renameFile(element['oldpath'], element['path'])
+                            
+                element['account'].uploadFile(element['path'])
             else: # deleted, remove from the db, remove from remote...
                 self.logger.debug("Deleting file <" + element['path'] + ">")
                 self.deleteFileDB(element['path'])
+                if element['account']: # Else it didn't get uploaded, so we don't delete it
+                    element['account'].deleteFile(element['path'])
 
     def getMD5BD(self, filename):
         files_table = self.database['files']
@@ -211,6 +218,14 @@ class Manager():
                 cuentas_list.append(dropboxAccount.DropboxAccount(self.fileSystemModule, acc['user'], acc['token'], acc['userid']))
 
         return cuentas_list
+
+    def getAccountFromFile(self,path):
+        files_table = self.database['files']
+        row = files_table.find_one(path=path)
+        account = None
+        if row:
+            account = next((cuenta for cuenta in self.cuentas if cuenta.getAccountType() == row['accountType'] and cuenta.user == row['user']), None)
+        return account
 
     def saveAccount(self, account):
         accounts_table = self.database['accounts']
