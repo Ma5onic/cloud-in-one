@@ -102,6 +102,7 @@ class DropboxAccount(account.Account):
         stream = self.fileSystemModule.openFile(file_path)
         response = client.put_file(file_path, stream)
         self.logger.debug("Response = <" + response + ">")
+        self.fileSystemModule.closeFile(file_path, stream)
         return True
 
 
