@@ -94,6 +94,17 @@ class DropboxAccount(account.Account):
     def getAccountType(self):
         return "dropbox"
 
+    def uploadFile(self, file_path):
+        client = self.__getDropboxClient()
+        self.logger.info("Calling uploadFile")
+        self.logger.debug("file_path = <" + file_path + ">")
+        
+        stream = self.fileSystemModule.openFile(file_path)
+        response = client.put_file(file_path, stream)
+        self.logger.debug("Response = <" + response + ">")
+        return True
+
+
     def __repr__(self):
         return self.getAccountType() + ' (' + self.user + ')'
 

@@ -39,6 +39,18 @@ class FileSystemModule():
         out.close()
         return fullpath
 
+    def openFile(self, file_path):
+        self.logger.debug("Opening file <" + file_path + ">")
+        fullpath = self.getFullPath(self.main_path, file_path)
+        out = open(fullpath, 'rb')
+        self.logger.debug("Opened, REMEMBER TO CLOSE IT")
+        return out
+
+    def closeFile(self, file_path, file):
+        self.logger.debug("Closing file <" + file_path + ">")
+        file.close()
+        
+
     def renameFile(self, oldpath, newpath):
         self.logger.debug("Renaming file <" + oldpath + "> to <" + newpath + ">")
         fullpath_old = self.getFullPath(self.main_path, oldpath)
