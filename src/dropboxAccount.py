@@ -2,6 +2,7 @@ import account
 import dropbox
 import os
 from log import *
+from fileSystemModule import FileSystemModule
 
 app_key = os.getenv("APP_KEY")
 app_secret = os.getenv("APP_SECRET")
@@ -10,9 +11,10 @@ TOKEN_FILE = "config/dropbox_token.txt"
 
 class DropboxAccount(account.Account):
     """docstring for DropboxAccount"""
-    def __init__(self, user, access_token=None, user_id=None):
+    def __init__(self, fileSystemModule, user, access_token=None, user_id=None):
         self.logger = Logger(__name__)
         self.logger.info("Creating Dropbox Account")
+        self.fileSystemModule = fileSystemModule
         self.user = user
         self.access_token = access_token
         self.user_id = user_id
@@ -98,10 +100,11 @@ class DropboxAccount(account.Account):
 
 class DropboxAccountStub(DropboxAccount):
     """Stub for testing the DBAccount"""
-    def __init__(self, user):
+    def __init__(self, fileSystemModule, user):
         # super(DropboxAccountStub, self).__init__(user)
         self.logger = Logger(__name__)
         self.logger.info("Creating Dropbox Account")
+        self.fileSystemModule = fileSystemModule
         self.user = user
         self.access_token = None
         self.user_id = None

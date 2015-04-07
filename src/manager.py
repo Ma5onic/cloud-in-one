@@ -8,13 +8,6 @@ from fileSystemModule import FileSystemModule
 config_file = "config/config.json"
 
 
-def Create(type, user):
-    if type is "dropbox":
-        return dropboxAccount.DropboxAccount(user)
-    elif type is "dropbox_stub":
-        return dropboxAccount.DropboxAccountStub(user)
-
-
 class Manager():
     """Manager of the Cloud-In-One application.
     It is responsible for the control flow and coordination of components"""
@@ -33,19 +26,25 @@ class Manager():
 
         self.database = self.connectDB(self.config["database"])
 
-        self.cuentas = self.getAccounts()
-
         self.fileSystemModule = FileSystemModule(self.config["sync_folder_name"])
+
+        self.cuentas = self.getAccounts()
 
         #TODO: inicializar los módulos de seguridad y FS
         self.securityModule = None
+
+    def CreateAccount(self, type, user):
+        if type is "dropbox":
+            return dropboxAccount.DropboxAccount(self.fileSystemModule, user)
+        elif type is "dropbox_stub":
+            return dropboxAccount.DropboxAccountStub(self.fileSystemModule, user)
 
     def newAccount(self, type, user):
         self.logger.info("Adding new account")
         self.logger.debug("type = %s", type)
         self.logger.debug("user = %s", user)
 
-        newAcc = Create(type, user)
+        newAcc = self.CreateAccount(type, user)
         self.cuentas.append(newAcc)
         self.saveAccount(newAcc)
 
@@ -209,7 +208,7 @@ class Manager():
         cuentas_list = []
         for acc in accounts_data:
             if acc["accountType"] == 'dropbox':
-                cuentas_list.append(dropboxAccount.DropboxAccount(acc['user'], acc['token'], acc['userid']))
+                cuentas_list.append(dropboxAccount.DropboxAccount(self.fileSystemModule, acc['user'], acc['token'], acc['userid']))
 
         return cuentas_list
 
