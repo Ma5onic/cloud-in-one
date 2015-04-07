@@ -150,5 +150,7 @@ class DropboxAccountStub(DropboxAccount):
     def getAccountType(self):
         return "dropbox_stub"
 
-
+    def uploadFile(self, file_path):
+        # TODO: find out what to test here
+        return True
 
