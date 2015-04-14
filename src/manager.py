@@ -11,18 +11,23 @@ config_file = "config/config.json"
 class Manager():
     """Manager of the Cloud-In-One application.
     It is responsible for the control flow and coordination of components"""
-    def __init__(self, user, password):
+    def __init__(self, user, password, config=None):
         self.logger = Logger(__name__)
         self.logger.info("Creating Manager")
 
         self.user = user
         self.password = password
 
-        self.config = json.load(open(config_file))
+        if not config:
+            self.config = json.load(open(config_file))
+        else:
+            self.config = config
+
         self.logger.info("Loaded config file")
         self.logger.debug("===== Config contents: ======")
         self.logger.debug(self.config)
         self.logger.debug("===== END Config contents: ======")
+
 
         self.database = self.connectDB(self.config["database"])
 
@@ -33,7 +38,7 @@ class Manager():
         #TODO: inicializar los módulos de seguridad y FS
         self.securityModule = None
 
-    def CreateAccount(self, type, user):
+    def __CreateAccount__(self, type, user):
         if type is "dropbox":
             return dropboxAccount.DropboxAccount(self.fileSystemModule, user)
         elif type is "dropbox_stub":
@@ -44,7 +49,7 @@ class Manager():
         self.logger.debug("type = %s", type)
         self.logger.debug("user = %s", user)
 
-        newAcc = self.CreateAccount(type, user)
+        newAcc = self.__CreateAccount__(type, user)
         self.cuentas.append(newAcc)
         self.saveAccount(newAcc)
 
