@@ -62,51 +62,43 @@ class Manager():
     def updateLocalSyncFolder(self, folder="/"):
         self.logger.info("Updating sync folder")
         self.logger.debug("Folder = <" + folder + ">")
+
         localChanges = self.findLocalChanges()
         remoteChanges = self.findRemoteChanges()
+
         localChanges,remoteChanges = self.fixCollisions(localChanges,remoteChanges)
-        self.applyLocalChanges(localChanges)
-        # TODO: check collisions with the local!
+        
         self.syncAccounts(localChanges, remoteChanges)
 
     def syncAccounts(self, localChanges, remoteChanges):
-        self.logger.info('Syncing accounts')
+        self.applyLocalChanges(localChanges)
+        self.applyRemoteChanges(remoteChanges)
+
+    def findRemoteChanges(self):
+        self.logger.info('Getting Remote differences')
+        remoteChanges = []
         for account in self.cuentas:
             self.logger.debug('Account <' + str(account) + '>')
             deltaDict = account.delta()
             self.logger.debug(deltaDict)
             if deltaDict['reset']:
                 self.logger.debug('Reset recieved. Resetting account <' + str(account) + '>')
-                path_list = [element['path'] for element in self.getFiles(account.getAccountType(), account.user)]
-                for path in path_list:
-                    self.logger.debug('removing <' + str(path) + '>')
-                    self.remove(path, account)
+                remoteChanges += [{'path':element['path'],'hash':None, 'account':account} for element in self.getFiles(account.getAccountType(), account.user)]
 
             for filePath, metadata in deltaDict['entries']:
                 self.logger.debug('filePath <' + str(filePath) + '> metadata <' + str(metadata) + '>')
                 if metadata:  # create/edit path
                     if metadata["is_dir"]:
                         self.logger.debug('is_dir = True')
-                        self.fileSystemModule.createDirectory(metadata["path"])
-                        self.saveFile(account, metadata['path'])
                     else:
                         self.logger.debug('is_dir = False')
-                        streamFile = account.getFile(metadata["path"])  # Aquí tendré que encriptar el fichero...
-                        fullpath = (self.fileSystemModule.createFile(metadata["path"], streamFile))
-                        streamFile.close()
-                        file_hash = self.fileSystemModule.md5sum(fullpath)
+                        remoteChanges.append({'path':metadata['path'],'hash':'MISSING', 'account':account})
 
-                        self.saveFile(account, metadata['path'], file_hash)
                 else:  # delete path
-                    self.remove(filePath, account)
-
-    def findRemoteChanges(self):
-        self.logger.info('Getting Remote differences')
-        # TODO: get remote changes 
+                    remoteChanges.append({'path':filePath,'hash':None, 'account':account})
         
-        # return [{'path': '/test/muerte2.txt', 'hash': '6d9a0ae6be9debf5cfe7a62fafe8553'}]
-        # return [{'path': '/test/muerte2.txt', 'hash': None}]
-        return []
+        self.logger.debug(remoteChanges)
+        return remoteChanges
 
     def fixCollisions(self, localChanges, remoteChanges):
         self.logger.info('fixCollisions')
@@ -187,7 +179,7 @@ class Manager():
                         if account.fits(element['path']):
                             element['account'] = account
                             break
-                self.saveFile(account, element['path'], element['hash'])
+                self.saveFile(element['account'], element['path'], element['hash'])
                 self.logger.debug('Saved')
                 if 'oldpath' in element:
                     self.fileSystemModule.renameFile(element['oldpath'], element['path'])
@@ -198,6 +190,23 @@ class Manager():
                 self.deleteFileDB(element['path'])
                 if element['account']: # Else it didn't get uploaded, so we don't delete it
                     element['account'].deleteFile(element['path'])
+
+    def applyRemoteChanges(self, remoteChanges):
+        self.logger.info("Applying remote changes")
+        for element in remoteChanges:
+            if element['hash']: # created or modified, upsert in the db, mark to upload...
+                
+                streamFile = element['account'].getFile(element["path"])  # Aquí tendré que encriptar el fichero...
+                self.fileSystemModule.createFile(element["path"], streamFile)
+                streamFile.close()
+                file_hash = self.fileSystemModule.md5sum(element["path"])
+
+                self.saveFile(element['account'], element['path'], file_hash)
+                self.logger.debug('Saved')
+                            
+            else: # deleted, remove from the db, remove from remote...
+                self.logger.debug("Deleting file <" + element['path'] + ">")
+                self.remove(element['path'],element['account'])
 
     def getMD5BD(self, filename):
         files_table = self.database['files']
