@@ -143,6 +143,8 @@ class Manager():
         self.logger.info('Getting Local differences')
         fileList = self.fileSystemModule.getFileList()
         toCheck =  []
+
+        # TODO: This is totally useless, better to get all files with all info...
         for i in self.cuentas:
             toCheck+= self.getFilesPaths(i.getAccountType(),i.user)
         localChanges = []
@@ -213,11 +215,7 @@ class Manager():
         row = files_table.find_one(path=filename)
         return row['hash']
 
-
-    def callDeltas(self):
-        for cuenta in self.cuentas:
-            cuenta.delta()
-
+    # TODO: generalize
     def getAccounts(self):
         accounts_table = self.database['accounts']
         accounts_data = accounts_table.all()
@@ -279,16 +277,6 @@ class Manager():
         files_table = self.database['files']
         files = files_table.find(accountType=account, user=user)
         return files
-
-    def getToCheckFiles(self, file_list):
-        files_table = self.database['files']
-        iter_files = files_table.find(path=file_list)
-        toCheck = []
-        for i in iter_files:
-            toCheck.append(i['path'])
-
-        self.logger.debug('toCheck <' + str(toCheck) + '>')
-        return toCheck
 
 
 if __name__ == '__main__':
