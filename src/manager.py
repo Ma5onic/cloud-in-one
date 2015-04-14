@@ -61,6 +61,7 @@ class Manager():
         self.logger.debug("account = %s", account)
 
         self.deleteAccountDB(account)
+        self.cuentas.remove(account)
         #TODO: Do things to delete an account
         return True
 
