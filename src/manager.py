@@ -112,14 +112,16 @@ class Manager():
         indexesToRemove = []
 
         for i,change in enumerate(changeList):
-            if i in indexesToRemove:
-                self.logger.debug('Already going to remove it! <' + change['path'] + '>')
-                continue # continue o break??
             collided_tuple = next(((i,item) for i,item in enumerate(changeList) if item['path'] == change['path'] and item != change), None)
             if collided_tuple:
                 collided_i = collided_tuple[0]
                 collided = collided_tuple[1]
                 self.logger.debug('Found collision! <' + change['path'] + '>')
+
+                if i in indexesToRemove or collided_i in indexesToRemove:
+                    self.logger.debug('Already going to remove it! <' + change['path'] + '>')
+                    continue
+
                 if collided['hash']: # one created/modified
                     if change['hash']: # the other too!
                         if collided['hash'] == change['hash']: # same change...
@@ -139,8 +141,12 @@ class Manager():
                         self.logger.debug('Both deleted, keeping only one')
                         indexesToRemove.append(collided_i)
 
+        self.logger.debug('indexesToRemove <' + str(indexesToRemove) + '>')
+
         for i in indexesToRemove:
             del(changeList[i])
+
+        self.logger.debug('changeList <' + str(changeList) + '>')
 
         return changeList
 
