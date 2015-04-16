@@ -112,7 +112,7 @@ class Manager():
         indexesToRemove = []
 
         for i,change in enumerate(changeList):
-            collided_tuple = next(((i,item) for i,item in enumerate(changeList) if item['path'] == change['path'] and item != change), None)
+            collided_tuple = next(((j,item) for j,item in enumerate(changeList) if item['path'] == change['path'] and i != j), None)
             if collided_tuple:
                 collided_i = collided_tuple[0]
                 collided = collided_tuple[1]
@@ -129,7 +129,7 @@ class Manager():
                             indexesToRemove.append(collided_i)
                         else: # different change...
                             self.logger.error("Same file changed in two different ways in the same changeList.")
-                            raise
+                            raise StopIteration("Same file changed in two different ways in the same changeList." + str(change) + " vs " + str(collided))
                     else: # change is a deletion
                         self.logger.debug('Deleted and modified, keeping modification')
                         indexesToRemove.append(i)
