@@ -218,6 +218,31 @@ class TestManager(object):
         assert_equal(fixedLocalChanges, expected_fixedLocalChanges)
         assert_equal(fixedRemoteChanges, expected_fixedRemoteChanges)
 
+    def test_fixCollisions14(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        localChanges = [{'path': '/test/muerte.txt','hash':'MISSING','account':self.man.cuentas[0]},{'path': '/test/muerte.txt','hash':'MISSING','account':self.man.cuentas[0]}]
+        remoteChanges = []
+
+        fixedLocalChanges,fixedRemoteChanges = self.man.fixCollisions(localChanges,remoteChanges)
+        
+        expected_fixedLocalChanges = [{'path': '/test/muerte.txt','hash':'MISSING','account':self.man.cuentas[0]}]
+        expected_fixedRemoteChanges = []
+        assert_equal(fixedLocalChanges, expected_fixedLocalChanges)
+        assert_equal(fixedRemoteChanges, expected_fixedRemoteChanges)
+
+    @raises(StopIteration)
+    def test_fixCollisions15(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        localChanges = [{'path': '/test/muerte.txt','hash':'MISSING','account':self.man.cuentas[0]},{'path': '/test/muerte.txt','hash':'MISSING2','account':self.man.cuentas[0]}]
+        remoteChanges = []
+
+        fixedLocalChanges,fixedRemoteChanges = self.man.fixCollisions(localChanges,remoteChanges)
+        
+        expected_fixedLocalChanges = [{'path': '/test/muerte.txt','hash':'MISSING','account':self.man.cuentas[0]}]
+        expected_fixedRemoteChanges = []
+        assert_equal(fixedLocalChanges, expected_fixedLocalChanges)
+        assert_equal(fixedRemoteChanges, expected_fixedRemoteChanges)
+
     def test_findLocalChanges(self):
         pass
         
