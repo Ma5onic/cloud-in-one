@@ -5,6 +5,7 @@ from nose.tools import assert_raises
 from nose.tools import raises
 from nose.tools import assert_true
 from nose.tools import assert_false
+import datetime
 
 
 class TestManager(object):
@@ -54,6 +55,21 @@ class TestManager(object):
         expected_remoteChanges = [{'path': '/test/muerte.txt','hash':'MISSING','account':self.man.cuentas[0]}]
         assert_equal(remoteChanges, expected_remoteChanges)
 
+        
+    # TODO: think of better examples...
+    def test_fixCollisions(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        remoteChanges = [{'path': '/test/muerte.txt','hash':'MISSING','account':self.man.cuentas[0]}]
+        localChanges = [{'path': '/test/muerte.txt','hash':'MISSING2','account':self.man.cuentas[0]}]
+
+        fixedLocalChanges,fixedRemoteChanges = self.man.fixCollisions(localChanges,remoteChanges)
+
+        # TODO: DATE, oldpath...
+        date = datetime.date.today()
+        expected_fixedLocalChanges = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(),'hash':'MISSING2','account':self.man.cuentas[0],'oldpath':'/test/muerte.txt'}]
+        expected_fixedRemoteChanges = [{'path': '/test/muerte.txt','hash':'MISSING','account':self.man.cuentas[0]}]
+        assert_equal(fixedLocalChanges, expected_fixedLocalChanges)
+        assert_equal(fixedRemoteChanges, expected_fixedRemoteChanges)
         
     def test_findLocalChanges(self):
         pass
