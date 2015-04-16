@@ -106,11 +106,55 @@ class Manager():
         self.logger.debug(remoteChanges)
         return remoteChanges
 
+    def __fixAutoCollisions__(self, changeList):
+        self.logger.debug('changeList <' + str(changeList) + '>')
+
+        indexesToRemove = []
+
+        for i,change in enumerate(changeList):
+            if i in indexesToRemove:
+                self.logger.debug('Already going to remove it! <' + change['path'] + '>')
+                continue # continue o break??
+            collided_tuple = next(((i,item) for i,item in enumerate(changeList) if item['path'] == change['path'] and item != change), None)
+            if collided_tuple:
+                collided_i = collided_tuple[0]
+                collided = collided_tuple[1]
+                self.logger.debug('Found collision! <' + change['path'] + '>')
+                if collided['hash']: # one created/modified
+                    if change['hash']: # the other too!
+                        if collided['hash'] == change['hash']: # same change...
+                            self.logger.warn("Same change twice in the same changeList. There's a bug there...")
+                            indexesToRemove.append(collided_i)
+                        else: # different change...
+                            self.logger.error("Same file changed in two different ways in the same changeList.")
+                            raise
+                    else: # change is a deletion
+                        self.logger.debug('Deleted and modified, keeping modification')
+                        indexesToRemove.append(i)
+                else: # collided is a deletion
+                    if change['hash']: # the other is not
+                        self.logger.debug('Deleted and modified, keeping modification')
+                        indexesToRemove.append(collided_i)
+                    else:
+                        self.logger.debug('Both deleted, keeping only one')
+                        indexesToRemove.append(collided_i)
+
+        for i in indexesToRemove:
+            del(changeList[i])
+
+        return changeList
+
     def fixCollisions(self, localChanges, remoteChanges):
         self.logger.info('fixCollisions')
         self.logger.debug('localChanges <' + str(localChanges) + '>')
         self.logger.debug('remoteChanges <' + str(remoteChanges) + '>')
         
+        localChanges = self.__fixAutoCollisions__(localChanges)
+        remoteChanges = self.__fixAutoCollisions__(remoteChanges)
+
+        self.logger.debug('localChanges <' + str(localChanges) + '>')
+        self.logger.debug('remoteChanges <' + str(remoteChanges) + '>')
+
         # list of removes to avoid modifying the list we are iterating
         indexesToRemoveLocal = []
 
@@ -142,6 +186,13 @@ class Manager():
 
         self.logger.debug('localChanges <' + str(localChanges) + '>')
         self.logger.debug('remoteChanges <' + str(remoteChanges) + '>')
+
+        localChanges = self.__fixAutoCollisions__(localChanges)
+        remoteChanges = self.__fixAutoCollisions__(remoteChanges)
+
+        self.logger.debug('localChanges <' + str(localChanges) + '>')
+        self.logger.debug('remoteChanges <' + str(remoteChanges) + '>')
+
         return (localChanges, remoteChanges)
         
 
