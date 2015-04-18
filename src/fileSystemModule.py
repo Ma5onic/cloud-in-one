@@ -49,15 +49,13 @@ class FileSystemModule():
     def closeFile(self, file_path, file):
         self.logger.debug("Closing file <" + file_path + ">")
         file.close()
-        
 
     def renameFile(self, oldpath, newpath):
         self.logger.debug("Renaming file <" + oldpath + "> to <" + newpath + ">")
         fullpath_old = self.getFullPath(self.main_path, oldpath)
         fullpath_new = self.getFullPath(self.main_path, newpath)
-        os.rename(fullpath_old,fullpath_new)
+        os.rename(fullpath_old, fullpath_new)
         return True
-
 
     def remove(self, path):
         fullpath = self.getFullPath(self.main_path, path)
@@ -121,10 +119,9 @@ class FileSystemModule():
         return fileList
 
     def md5sum(self, filename):
-        filename = self.getFullPath(self.main_path,filename)
+        filename = self.getFullPath(self.main_path, filename)
         with open(filename, mode='rb') as f:
             d = hashlib.md5()
             for buf in iter(partial(f.read, 128), b''):
                 d.update(buf)
         return d.hexdigest()
-

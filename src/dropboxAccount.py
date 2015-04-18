@@ -98,7 +98,7 @@ class DropboxAccount(account.Account):
         client = self.__getDropboxClient()
         self.logger.info("Calling uploadFile")
         self.logger.debug("file_path = <" + file_path + ">")
-        
+
         stream = self.fileSystemModule.openFile(file_path)
         response = client.put_file(file_path, stream)
         self.logger.debug("Response = <" + str(response) + ">")
@@ -114,8 +114,7 @@ class DropboxAccount(account.Account):
         return True
 
     def fits(self, file_path):
-        return True # TODO: check if the file fits in the available space
-
+        return True  # TODO: check if the file fits in the available space
 
     def __repr__(self):
         return self.getAccountType() + ' (' + self.user + ')'
@@ -164,4 +163,3 @@ class DropboxAccountStub(DropboxAccount):
     def uploadFile(self, file_path):
         # TODO: find out what to test here
         return True
-
