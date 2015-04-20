@@ -8,6 +8,7 @@ from nose.tools import assert_false
 import datetime
 from util import *
 
+
 class TestManager(object):
     def __init__(self):
         self.config_default = {"sync_folder_name": "./test/sync_folder", "database": "db/tests.db"}
@@ -54,7 +55,7 @@ class TestManager(object):
     @Ignore
     def test_deleteAccountAndFiles(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile(self.man.cuentas[0],'testPath','hash')
+        self.man.saveFile(self.man.cuentas[0], 'testPath', 'hash')
         self.man.deleteAccount(self.man.cuentas[0])
         assert_false(self.man.cuentas)
 
@@ -72,7 +73,7 @@ class TestManager(object):
         self.man.cuentas[0].uploadFile('/test/muerte.txt')
         remoteChanges = self.man.findRemoteChanges()
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt','hash':'MISSING','account':self.man.cuentas[0]}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
         assert_equal(remoteChanges, expected_remoteChanges)
 
     def test_findRemoteChanges_2(self):
@@ -81,7 +82,7 @@ class TestManager(object):
         self.man.cuentas[0].deleteFile('/test/muerte.txt')
         remoteChanges = self.man.findRemoteChanges()
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt','hash':'MISSING','account':self.man.cuentas[0]},{'path': '/test/muerte.txt','hash':None,'account':self.man.cuentas[0]}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}]
         assert_equal(remoteChanges, expected_remoteChanges)
 
     def test_findRemoteChanges_3(self):
@@ -91,7 +92,7 @@ class TestManager(object):
         self.man.cuentas[0].deleteFile('/test/muerte.txt')
         remoteChanges = self.man.findRemoteChanges()
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt','hash':None,'account':self.man.cuentas[0]}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}]
         assert_equal(remoteChanges, expected_remoteChanges)
 
     def test_findRemoteChanges_4(self):
@@ -102,7 +103,7 @@ class TestManager(object):
         self.man.cuentas[0].uploadFile('/test/muerte.txt')
         remoteChanges = self.man.findRemoteChanges()
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt','hash':None,'account':self.man.cuentas[0]},{'path': '/test/muerte.txt','hash':'MISSING','account':self.man.cuentas[0]}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}, {'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
         assert_equal(remoteChanges, expected_remoteChanges)
 
     def test_findRemoteChanges_5(self):
@@ -112,7 +113,7 @@ class TestManager(object):
 
         remoteChanges = self.man.findRemoteChanges()
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt','hash':'MISSING','account':self.man.cuentas[0]},{'path': '/test/muerte2.txt','hash':'MISSING','account':self.man.cuentas[0]}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
         assert_equal(remoteChanges, expected_remoteChanges)
 
     def test_findRemoteChanges_6(self):
@@ -138,7 +139,7 @@ class TestManager(object):
 
         remoteChanges = self.man.findRemoteChanges()
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt','hash':None,'account':self.man.cuentas[0]},{'path': '/test/muerte2.txt','hash':None,'account':self.man.cuentas[0]}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': None, 'account': self.man.cuentas[0]}]
         assert_equal(remoteChanges, expected_remoteChanges)
 
     def test_findRemoteChanges_8(self):
@@ -150,25 +151,25 @@ class TestManager(object):
 
         remoteChanges = self.man.findRemoteChanges()
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt','hash':'MISSING','account':self.man.cuentas[0]},{'path': '/test/muerte2.txt','hash':'MISSING','account':self.man.cuentas[0]},{'path': '/test/muerte.txt','hash':None,'account':self.man.cuentas[0]},{'path': '/test/muerte2.txt','hash':None,'account':self.man.cuentas[0]}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': None, 'account': self.man.cuentas[0]}]
         assert_equal(remoteChanges, expected_remoteChanges)
 
     def test_findRemoteChanges_9(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile(self.man.cuentas[0],'/test/muerte.txt','MISSING') # we had a file
-        self.man.cuentas[0].uploadFile('/test/muerte.txt') # "external" upload
-        self.man.cuentas[0]._delta_reset_ = True # we receive a reset
+        self.man.saveFile(self.man.cuentas[0], '/test/muerte.txt', 'MISSING')  # we had a file
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')  # "external" upload
+        self.man.cuentas[0]._delta_reset_ = True  # we receive a reset
 
         remoteChanges = self.man.findRemoteChanges()
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt','hash':None,'account':self.man.cuentas[0]},{'path': '/test/muerte.txt','hash':'MISSING','account':self.man.cuentas[0]}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}, {'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
         assert_equal(remoteChanges, expected_remoteChanges)
 
     def test_findRemoteChanges_10(self):
         self.man.newAccount('dropbox_stub', 'user')
         # we didn't have the file
-        self.man.cuentas[0].uploadFile('/test/muerte.txt') # "external" upload
-        self.man.cuentas[0]._delta_reset_ = True #we receive a reset
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')  # "external" upload
+        self.man.cuentas[0]._delta_reset_ = True  # we receive a reset
 
         remoteChanges = self.man.findRemoteChanges()
 
