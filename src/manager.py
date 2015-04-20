@@ -76,8 +76,8 @@ class Manager():
         self.syncAccounts(localChanges, remoteChanges)
 
     def syncAccounts(self, localChanges, remoteChanges):
-        self.applyLocalChanges(localChanges)
         self.applyRemoteChanges(remoteChanges)
+        self.applyLocalChanges(localChanges)
 
     def findRemoteChanges(self):
         self.logger.info('Getting Remote differences')
