@@ -69,6 +69,107 @@ class TestManager(object):
     # TODO: several deltas...
     def test_findRemoteChanges(self):
         self.man.newAccount('dropbox_stub', 'user')
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')
+        remoteChanges = self.man.findRemoteChanges()
+
+        expected_remoteChanges = [{'path': '/test/muerte.txt','hash':'MISSING','account':self.man.cuentas[0]}]
+        assert_equal(remoteChanges, expected_remoteChanges)
+
+    def test_findRemoteChanges_2(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')
+        self.man.cuentas[0].deleteFile('/test/muerte.txt')
+        remoteChanges = self.man.findRemoteChanges()
+
+        expected_remoteChanges = [{'path': '/test/muerte.txt','hash':'MISSING','account':self.man.cuentas[0]},{'path': '/test/muerte.txt','hash':None,'account':self.man.cuentas[0]}]
+        assert_equal(remoteChanges, expected_remoteChanges)
+
+    def test_findRemoteChanges_3(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')
+        self.man.findRemoteChanges()
+        self.man.cuentas[0].deleteFile('/test/muerte.txt')
+        remoteChanges = self.man.findRemoteChanges()
+
+        expected_remoteChanges = [{'path': '/test/muerte.txt','hash':None,'account':self.man.cuentas[0]}]
+        assert_equal(remoteChanges, expected_remoteChanges)
+
+    def test_findRemoteChanges_4(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')
+        self.man.findRemoteChanges()
+        self.man.cuentas[0].deleteFile('/test/muerte.txt')
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')
+        remoteChanges = self.man.findRemoteChanges()
+
+        expected_remoteChanges = [{'path': '/test/muerte.txt','hash':None,'account':self.man.cuentas[0]},{'path': '/test/muerte.txt','hash':'MISSING','account':self.man.cuentas[0]}]
+        assert_equal(remoteChanges, expected_remoteChanges)
+
+    def test_findRemoteChanges_5(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')
+        self.man.cuentas[0].uploadFile('/test/muerte2.txt')
+        
+        remoteChanges = self.man.findRemoteChanges()
+
+        expected_remoteChanges = [{'path': '/test/muerte.txt','hash':'MISSING','account':self.man.cuentas[0]},{'path': '/test/muerte2.txt','hash':'MISSING','account':self.man.cuentas[0]}]
+        assert_equal(remoteChanges, expected_remoteChanges)
+
+    def test_findRemoteChanges_6(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')
+        self.man.cuentas[0].uploadFile('/test/muerte2.txt')
+        self.man.findRemoteChanges()
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')
+        self.man.cuentas[0].uploadFile('/test/muerte2.txt')
+        
+        remoteChanges = self.man.findRemoteChanges()
+
+        expected_remoteChanges = []
+        assert_equal(remoteChanges, expected_remoteChanges)
+
+    def test_findRemoteChanges_7(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')
+        self.man.cuentas[0].uploadFile('/test/muerte2.txt')
+        self.man.findRemoteChanges()
+        self.man.cuentas[0].deleteFile('/test/muerte.txt')
+        self.man.cuentas[0].deleteFile('/test/muerte2.txt')
+        
+        remoteChanges = self.man.findRemoteChanges()
+
+        expected_remoteChanges = [{'path': '/test/muerte.txt','hash':None,'account':self.man.cuentas[0]},{'path': '/test/muerte2.txt','hash':None,'account':self.man.cuentas[0]}]
+        assert_equal(remoteChanges, expected_remoteChanges)
+
+    def test_findRemoteChanges_8(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')
+        self.man.cuentas[0].uploadFile('/test/muerte2.txt')
+        self.man.cuentas[0].deleteFile('/test/muerte.txt')
+        self.man.cuentas[0].deleteFile('/test/muerte2.txt')
+        
+        remoteChanges = self.man.findRemoteChanges()
+
+        expected_remoteChanges = [{'path': '/test/muerte.txt','hash':'MISSING','account':self.man.cuentas[0]},{'path': '/test/muerte2.txt','hash':'MISSING','account':self.man.cuentas[0]},{'path': '/test/muerte.txt','hash':None,'account':self.man.cuentas[0]},{'path': '/test/muerte2.txt','hash':None,'account':self.man.cuentas[0]}]
+        assert_equal(remoteChanges, expected_remoteChanges)
+
+    def test_findRemoteChanges_9(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.saveFile(self.man.cuentas[0],'/test/muerte.txt','MISSING') # we had a file
+        self.man.cuentas[0].uploadFile('/test/muerte.txt') # "external" upload
+        self.man.cuentas[0]._delta_reset_ = True # we receive a reset
+        
+        remoteChanges = self.man.findRemoteChanges()
+
+        expected_remoteChanges = [{'path': '/test/muerte.txt','hash':None,'account':self.man.cuentas[0]},{'path': '/test/muerte.txt','hash':'MISSING','account':self.man.cuentas[0]}]
+        assert_equal(remoteChanges, expected_remoteChanges)
+
+    def test_findRemoteChanges_10(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        # we didn't have the file
+        self.man.cuentas[0].uploadFile('/test/muerte.txt') # "external" upload
+        self.man.cuentas[0]._delta_reset_ = True #we receive a reset
+        
         remoteChanges = self.man.findRemoteChanges()
 
         expected_remoteChanges = [{'path': '/test/muerte.txt','hash':'MISSING','account':self.man.cuentas[0]}]
