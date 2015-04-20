@@ -54,7 +54,6 @@ class TestManager(object):
         expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
         assert_equal(remoteChanges, expected_remoteChanges)
 
-    # TODO: think of better examples...
     def test_fixCollisions(self):
         self.man.newAccount('dropbox_stub', 'user')
         localChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
@@ -235,11 +234,6 @@ class TestManager(object):
         remoteChanges = []
 
         fixedLocalChanges, fixedRemoteChanges = self.man.fixCollisions(localChanges, remoteChanges)
-
-        expected_fixedLocalChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
-        expected_fixedRemoteChanges = []
-        assert_equal(fixedLocalChanges, expected_fixedLocalChanges)
-        assert_equal(fixedRemoteChanges, expected_fixedRemoteChanges)
 
     def test_findLocalChanges(self):
         pass
