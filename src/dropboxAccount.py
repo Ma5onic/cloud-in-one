@@ -134,6 +134,10 @@ class DropboxAccountStub(DropboxAccount):
         # You shouldn't use self.__client, call __getDropboxClient() to get it safely
         self.__client = None
 
+        self.__file_list__ = []
+        self.__delta_acum__ = []
+        self._delta_reset_ = False
+
     def __getDropboxClient(self):
         return None
 
@@ -146,9 +150,10 @@ class DropboxAccountStub(DropboxAccount):
         raise NotImplemented()
 
     def delta(self, returnDict=dict()):
-        returnDict["entries"] = []
-        returnDict["entries"].append(['/test/muerte.txt', {'is_dir': False, 'path': '/test/muerte.txt'}])
-        returnDict["reset"] = False
+        returnDict["entries"] = self.__delta_acum__
+        self.__delta_acum__ = []
+
+        returnDict["reset"] = self._delta_reset_
         return returnDict
 
     def deltaEmpty(self, returnDict=dict()):
@@ -157,12 +162,25 @@ class DropboxAccountStub(DropboxAccount):
         return returnDict
 
     def getFile(self, file_path):
-        f = open('test/muerte.txt', 'rb')
-        return f
+        for i in self.__file_list__:
+            if i == file_path:
+                f = open('test/muerte.txt', 'rb')
+                return f
+        return None
 
     def getAccountType(self):
         return "dropbox_stub"
 
     def uploadFile(self, file_path):
-        # TODO: find out what to test here
-        return True
+        if file_path not in self.__file_list__:
+            self.__file_list__.append(file_path)
+            self.__delta_acum__.append([file_path, {'is_dir': False, 'path': file_path}])
+            return True
+        return False
+
+    def deleteFile(self, file_path):
+        if file_path in self.__file_list__:
+            self.__file_list__.remove(file_path)
+            self.__delta_acum__.append([file_path, None])
+            return True
+        return False
