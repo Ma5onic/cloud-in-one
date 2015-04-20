@@ -134,6 +134,9 @@ class DropboxAccountStub(DropboxAccount):
         # You shouldn't use self.__client, call __getDropboxClient() to get it safely
         self.__client = None
 
+    def __getDropboxClient(self):
+        return None
+
     def getUserInfo(self):
         self.logger.info("Getting User Info")
         self.logger.info("INFO:")
