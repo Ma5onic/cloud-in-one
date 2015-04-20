@@ -6,12 +6,7 @@ from nose.tools import raises
 from nose.tools import assert_true
 from nose.tools import assert_false
 import datetime
-
-def Ignore(fn):
-    def ignoreTest(self):
-        pass
-    return ignoreTest
-
+from util import *
 
 class TestManager(object):
     def __init__(self):
@@ -59,7 +54,7 @@ class TestManager(object):
     @Ignore
     def test_deleteAccountAndFiles(self):
         self.man.newAccount('dropbox_stub', 'user')
-        # add files to the account
+        self.man.saveFile(self.man.cuentas[0],'testPath','hash')
         self.man.deleteAccount(self.man.cuentas[0])
         assert_false(self.man.cuentas)
 

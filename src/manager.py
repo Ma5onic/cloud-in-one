@@ -317,7 +317,7 @@ class Manager():
             # accountType=account.getAccountType(), user=account.user,
             path=path)
 
-    def saveFile(self, account, path, file_hash=None):
+    def saveFile(self, account, path, file_hash):
         self.logger.debug('saving file <' + path + '> with hash <' + str(file_hash) + '> to account <' + account.getAccountType() + ',' + account.user + '>')
         files_table = self.database['files']
         files_table.upsert(dict(accountType=account.getAccountType(), user=account.user, path=path, hash=file_hash), ['accountType', 'user', 'path'])
