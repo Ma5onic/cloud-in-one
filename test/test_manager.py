@@ -7,6 +7,7 @@ from nose.tools import assert_true
 from nose.tools import assert_false
 import datetime
 from util import *
+from fileSystemModule import FileSystemModuleStub
 
 
 class TestManager(object):
@@ -25,6 +26,7 @@ class TestManager(object):
     def setUp(self):
         """This method is run once before _each_ test method is executed"""
         self.man = manager.Manager('user', 'password', self.config_default)
+        self.man.fileSystemModule = FileSystemModuleStub()
 
     def teardown(self):
         """This method is run once after _each_ test method is executed"""
