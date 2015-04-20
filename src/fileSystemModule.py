@@ -125,3 +125,50 @@ class FileSystemModule():
             for buf in iter(partial(f.read, 128), b''):
                 d.update(buf)
         return d.hexdigest()
+
+
+class FileSystemModuleStub(FileSystemModule):
+    """stub for the filesystem module."""
+    def __init__(self):
+        self.main_path = './test'
+        self.__file_list__ = []
+
+    def createDirectory(self, dir_path):
+        return os.path.join(self.main_path, dir_path)
+
+    def createFile(self, file_path, stream):
+        self.__file_list__.append({'path': file_path, 'stream': stream})
+        return os.path.join(self.main_path, file_path)
+
+    def openFile(self, file_path):
+        for i in self.__file_list__:
+            if i['path'] == file_path:
+                return i['stream']
+        return None
+
+    def closeFile(self, file_path, file):
+        pass
+
+    def renameFile(self, oldpath, newpath):
+        for i in self.__file_list__:
+            if i['path'] == oldpath:
+                i['path'] = newpath
+                break
+        return True
+
+    def remove(self, path):
+        for i in self.__file_list__:
+            if i['path'] == path:
+                del(i)
+
+    def getFullPath(self, path=None, name=None):
+        return os.path.join(self.main_path, name)
+
+    def getHomeDir(self):
+        return self.main_path
+
+    def getFileList(self):
+        return [i['path'] for i in self.__file_list__]
+
+    def md5sum(self, filename):
+        return filename
