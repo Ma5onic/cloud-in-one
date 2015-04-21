@@ -61,7 +61,7 @@ class TestManager(object):
         self.man.deleteAccount(self.man.cuentas[0])
         assert_false(self.man.cuentas)
 
-        # should be deleted??
+        # TODO: should be deleted??
         files_table = self.man.database['files']
         assert_false(list(files_table.all()))
         accounts_table = self.man.database['accounts']
@@ -360,7 +360,14 @@ class TestManager(object):
         fixedLocalChanges, fixedRemoteChanges = self.man.fixCollisions(localChanges, remoteChanges)
 
     def test_findLocalChanges(self):
-        pass
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.fileSystemModule.createFile('test_file')
+
+        localChanges = self.man.findLocalChanges()
+
+        expected_localChanges = [{'path': 'test_file', 'hash': 'test_file'}]
+
+        assert_equal(localChanges, expected_localChanges)
 
     def test_applyLocalChanges(self):
         pass
