@@ -292,13 +292,13 @@ class TestManager(object):
         localChanges = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
         remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
 
-        fixedLocalChanges, fixedRemoteChanges = self.man.fixCollisions(localChanges, remoteChanges)
+        fixedChangesOnLocal, fixedChangesOnRemote = self.man.fixCollisions(localChanges, remoteChanges)
 
         date = datetime.date.today()
-        expected_fixedLocalChanges = [{'path': '/test/muerte2.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte2.txt'}]
-        expected_fixedRemoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
-        assert_equal(fixedLocalChanges, expected_fixedLocalChanges)
-        assert_equal(fixedRemoteChanges, expected_fixedRemoteChanges)
+        expected_fixedChangesOnLocal = [{'path': '/test/muerte2.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte2.txt'}, {'path': '/test/muerte2.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnRemote = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte2.txt'}]
+        assert_equal(fixedChangesOnLocal, expected_fixedChangesOnLocal)
+        assert_equal(fixedChangesOnRemote, expected_fixedChangesOnRemote)
 
     def test_fixCollisions11(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -402,8 +402,92 @@ class TestManager(object):
 
         assert_equal(localChanges, expected_localChanges)
 
+    def test_findLocalChanges_5(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.saveFile(self.man.cuentas[0], 'test_file', 'test_file')  # we had a file
+        self.man.fileSystemModule.createFile('test_file')  # we still have it (unmodified)
+        self.man.saveFile(self.man.cuentas[0], 'test_file2', 'test_file2')  # we had another file
+        # we don't have it anymore
+
+        localChanges = self.man.findLocalChanges()
+
+        expected_localChanges = [{'path': 'test_file2', 'hash': None, 'account': self.man.cuentas[0]}]
+
+        assert_equal(localChanges, expected_localChanges)
+
+    def test_findLocalChanges_6(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.saveFile(self.man.cuentas[0], 'test_file', 'oldhash')  # we had a file
+        self.man.fileSystemModule.createFile('test_file')  # we modify it 
+        self.man.saveFile(self.man.cuentas[0], 'test_file2', 'test_file2')  # we had another file
+        # we don't have it anymore
+
+        localChanges = self.man.findLocalChanges()
+
+        expected_localChanges = [{'path': 'test_file', 'hash': 'test_file', 'account': self.man.cuentas[0]}, {'path': 'test_file2', 'hash': None, 'account': self.man.cuentas[0]}]
+
+        assert_equal(localChanges, expected_localChanges)
+
+    def test_findLocalChanges_7(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.saveFile(self.man.cuentas[0], 'test_file', 'test_file')  # we had a file
+        self.man.fileSystemModule.createFile('test_file')
+        self.man.fileSystemModule.renameFile('test_file','renamed')  # we rename it
+
+
+        localChanges = self.man.findLocalChanges()
+
+        expected_localChanges = [{'path': 'test_file', 'hash': None, 'account': self.man.cuentas[0]}, {'path': 'renamed', 'hash': 'test_file'}]
+
+        assert_equal(localChanges, expected_localChanges)
+
     def test_applyLocalChanges(self):
-        pass
+        self.man.newAccount('dropbox_stub', 'user')
+        localChanges = []
+
+        self.man.applyLocalChanges(localChanges)
+
+        expected_fileList = []
+        expected_remoteChanges = []
+        fileList = self.man.fileSystemModule.getFileList()
+        remoteChanges = self.man.findRemoteChanges()
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(remoteChanges, expected_remoteChanges)
+
+    def test_applyLocalChanges_2(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        localChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING'}]
+
+        self.man.applyLocalChanges(localChanges)
+
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        remoteChanges = self.man.findRemoteChanges()
+
+        assert_equal(remoteChanges, expected_remoteChanges)
+
+    def test_applyLocalChanges_3(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        localChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
+
+        self.man.applyLocalChanges(localChanges)
+
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
+        remoteChanges = self.man.findRemoteChanges()
+
+        assert_equal(remoteChanges, expected_remoteChanges)
+
+    def test_applyLocalChanges_4(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        localChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
+
+    def test_applyLocalChanges_5(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        localChanges = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}]
+
+    def test_applyLocalChanges_6(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        localChanges = [{'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte.txt'}]
 
     def test_applyRemoteChanges(self):
         pass

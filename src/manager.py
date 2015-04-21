@@ -260,10 +260,15 @@ class Manager():
                 if element['account']:  # Else it didn't get uploaded, so we don't delete it
                     element['account'].deleteFile(element['path'])
 
-    def applyRemoteChanges(self, remoteChanges):
-        self.logger.info("Applying remote changes")
-        for element in remoteChanges:
-            if element['hash']:  # created or modified, upsert in the db, mark to upload...
+    def applyChangesOnRemote(self, changesOnRemote):
+        self.logger.info("Applying changes on remote")
+        for element in changesOnRemote:
+            pass
+
+    def applyChangesOnLocal(self, changesOnLocal):
+        self.logger.info("Applying changes on local")
+        for element in changesOnLocal:
+            if element['hash']:  # created or modified, upsert in the db
 
                 streamFile = element['account'].getFile(element["path"])  # Aquí tendré que encriptar el fichero...
                 self.fileSystemModule.createFile(element["path"], streamFile)
@@ -273,7 +278,7 @@ class Manager():
                 self.saveFile(element['account'], element['path'], file_hash)
                 self.logger.debug('Saved')
 
-            else:  # deleted, remove from the db, remove from remote...
+            else:  # deleted, remove from the db
                 self.logger.debug("Deleting file <" + element['path'] + ">")
                 self.remove(element['path'], element['account'])
 
