@@ -369,6 +369,17 @@ class TestManager(object):
 
         assert_equal(localChanges, expected_localChanges)
 
+    def test_findLocalChanges_2(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.saveFile(self.man.cuentas[0], 'test_file', 'oldhash')
+        self.man.fileSystemModule.createFile('test_file')
+
+        localChanges = self.man.findLocalChanges()
+
+        expected_localChanges = [{'path': 'test_file', 'hash': 'test_file', 'account': self.man.cuentas[0]}]
+
+        assert_equal(localChanges, expected_localChanges)
+
     def test_applyLocalChanges(self):
         pass
 
