@@ -361,7 +361,7 @@ class TestManager(object):
 
     def test_findLocalChanges(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.fileSystemModule.createFile('test_file')
+        self.man.fileSystemModule.createFile('test_file')  # create a file
 
         localChanges = self.man.findLocalChanges()
 
@@ -371,12 +371,34 @@ class TestManager(object):
 
     def test_findLocalChanges_2(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile(self.man.cuentas[0], 'test_file', 'oldhash')
-        self.man.fileSystemModule.createFile('test_file')
+        self.man.saveFile(self.man.cuentas[0], 'test_file', 'oldhash')  # we had a file (hash=oldhash)
+        self.man.fileSystemModule.createFile('test_file')  # we modify it
 
         localChanges = self.man.findLocalChanges()
 
         expected_localChanges = [{'path': 'test_file', 'hash': 'test_file', 'account': self.man.cuentas[0]}]
+
+        assert_equal(localChanges, expected_localChanges)
+
+    def test_findLocalChanges_3(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.saveFile(self.man.cuentas[0], 'test_file', 'test_file')  # we had a file
+        # we don't have it anymore
+
+        localChanges = self.man.findLocalChanges()
+
+        expected_localChanges = [{'path': 'test_file', 'hash': None, 'account': self.man.cuentas[0]}]
+
+        assert_equal(localChanges, expected_localChanges)
+
+    def test_findLocalChanges_4(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.saveFile(self.man.cuentas[0], 'test_file', 'test_file')  # we had a file
+        self.man.fileSystemModule.createFile('test_file')  # we still have it (unmodified)
+
+        localChanges = self.man.findLocalChanges()
+
+        expected_localChanges = []
 
         assert_equal(localChanges, expected_localChanges)
 
