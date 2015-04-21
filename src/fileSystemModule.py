@@ -137,7 +137,7 @@ class FileSystemModuleStub(FileSystemModule):
         return os.path.join(self.main_path, dir_path)
 
     def createFile(self, file_path, stream=None):
-        self.__file_list__.append({'path': file_path, 'stream': stream})
+        self.__file_list__.append({'path': file_path, 'stream': stream, 'hash': file_path})
         return os.path.join(self.main_path, file_path)
 
     def openFile(self, file_path):
@@ -171,4 +171,7 @@ class FileSystemModuleStub(FileSystemModule):
         return [i['path'] for i in self.__file_list__]
 
     def md5sum(self, filename):
-        return filename
+        for i in self.__file_list__:
+            if i['path'] == filename:
+                return i['hash']
+        return None
