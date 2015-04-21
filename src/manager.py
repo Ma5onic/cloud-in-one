@@ -206,29 +206,31 @@ class Manager():
     def findLocalChanges(self):
         self.logger.info('Getting Local differences')
         fileList = self.fileSystemModule.getFileList()
+
         toCheck = []
-
-        # TODO: This is totally useless, better to get all files with all info...
         for i in self.cuentas:
-            toCheck += self.getFilesPaths(i.getAccountType(), i.user)
-        localChanges = []
-        for i in toCheck:
-            if i in fileList:
-                md5 = self.fileSystemModule.md5sum(i)
-                if md5 != self.getMD5BD(i):
-                    self.logger.debug('The file <' + i + '> has been MODIFIED')
-                    localChanges.append(dict(path=i, hash=md5))
-                else:
-                    self.logger.debug('The file <' + i + '> is the same. Doing nothing')
-                fileList.remove(i)
-            else:
-                self.logger.debug('The file <' + i + '> has been DELETED')
-                localChanges.append(dict(path=i, hash=None))
+            toCheck += self.getFiles(i)
 
-        for i in fileList:
-            self.logger.debug('The file <' + i + '> has been CREATED')
-            md5 = self.fileSystemModule.md5sum(i)
-            localChanges.append(dict(path=i, hash=md5))
+        localChanges = []
+        for checking in toCheck:
+            if checking['path'] in fileList:
+                md5 = self.fileSystemModule.md5sum(checking['path'])
+                if md5 != checking['hash']:
+                    self.logger.debug('The file <' + checking['path'] + '> has been MODIFIED')
+                    localChanges.append(dict(path=checking['path'], hash=md5, account=checking['account']))
+
+                else:
+                    self.logger.debug('The file <' + checking['path'] + '> is the same. Doing nothing')
+                fileList.remove(checking['path'])
+                
+            else:
+                self.logger.debug('The file <' + checking['path'] + '> has been DELETED')
+                localChanges.append(dict(path=checking['path'], hash=None, account=checking['account']))
+
+        for element in fileList:
+            self.logger.debug('The file <' + element + '> has been CREATED')
+            md5 = self.fileSystemModule.md5sum(element)
+            localChanges.append(dict(path=element, hash=md5))
 
         self.logger.debug('localChanges = <' + str(localChanges) + '>')
         return localChanges
@@ -237,6 +239,7 @@ class Manager():
         self.logger.info("Applying local changes")
         # TODO: it must create the file if it doesn't exist right now
         for element in localChanges:
+            # TODO: remove this, it's already in all that isn't created...
             element['account'] = self.getAccountFromFile(element['path'])
             if element['hash']:  # created or modified, upsert in the db, mark to upload...
                 if not element['account']:  # if newly created
