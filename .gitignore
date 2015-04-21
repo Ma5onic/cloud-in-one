@@ -60,3 +60,4 @@ target/
 # Cloud-In-One
 dropbox_token.txt
 db/*
+log/*
