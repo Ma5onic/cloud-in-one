@@ -88,7 +88,10 @@ class Manager():
             self.logger.debug(deltaDict)
             if deltaDict['reset']:
                 self.logger.debug('Reset recieved. Resetting account <' + str(account) + '>')
-                remoteChanges += [{'path': element['path'], 'hash': None, 'account': account} for element in self.getFiles(account.getAccountType(), account.user)]
+                resetChanges = self.getFiles(account)
+                for i in resetChanges:
+                    i['hash'] = None
+                remoteChanges += resetChanges
 
             for filePath, metadata in deltaDict['entries']:
                 self.logger.debug('filePath <' + str(filePath) + '> metadata <' + str(metadata) + '>')
@@ -331,10 +334,10 @@ class Manager():
         self.logger.debug('filesPaths for account <' + account + ', ' + user + '> = ' + str(filesPaths))
         return filesPaths
 
-    def getFiles(self, account, user):
+    def getFiles(self, account):
         files_table = self.database['files']
-        files = files_table.find(accountType=account, user=user)
-        return files
+        files = files_table.find(accountType=account.getAccountType(), user=account.user)
+        return [{'path': element['path'], 'hash': element['hash'], 'account': account} for element in files]
 
 
 if __name__ == '__main__':
