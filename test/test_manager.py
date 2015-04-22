@@ -12,7 +12,7 @@ from fileSystemModule import FileSystemModuleStub
 
 class TestManager(object):
     def __init__(self):
-        self.config_default = {"sync_folder_name": "./test/sync_folder", "database": "db/tests.db"}
+        self.config_default = {"sync_folder_name": "./test/sync_folder", "database": ":memory:"}
         self.man = None
 
     @classmethod
