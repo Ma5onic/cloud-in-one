@@ -159,7 +159,7 @@ class FileSystemModuleStub(FileSystemModule):
     def remove(self, path):
         for i in self.__file_list__:
             if i['path'] == path:
-                del(i)
+                self.__file_list__.remove(i)
 
     def getFullPath(self, path=None, name=None):
         return os.path.join(self.main_path, name)
