@@ -163,8 +163,9 @@ class Manager():
         self.logger.debug('localChanges <' + str(localChanges) + '>')
         self.logger.debug('remoteChanges <' + str(remoteChanges) + '>')
 
-        # list of removes to avoid modifying the list we are iterating
-        indexesToRemoveLocal = []
+        changesOnLocal = []
+        changesOnDB = []
+        changesOnRemote = []
 
         for i, local in enumerate(localChanges):
             collided = next((item for item in remoteChanges if item['path'] == local['path']), None)
@@ -174,34 +175,57 @@ class Manager():
                     if local['hash']:  # AND local created/modified!
                         if local['hash'] == collided['hash']:  # same change...
                             self.logger.debug('Both modified in the same way. Keeping local changes')
-                            remoteChanges.remove(collided)  # we delete it from one of the lists to avoid trying to delete it twice
+                            changesOnDB.append(collided)
                         else:
                             date = datetime.date.today()
                             oldpath = local['path']
                             newname = oldpath+'__CONFLICTED_COPY__'+date.isoformat()
                             self.logger.debug('Both modified. New name = <' + newname + '>')
-                            localChanges[i]['path'] = newname
-                            localChanges[i]['oldpath'] = oldpath
+                            local['path'] = newname
+                            local['oldpath'] = oldpath
+
+                            changesOnLocal.append(local)
+                            changesOnLocal.append(collided)
+                            changesOnDB.append(local)
+                            changesOnDB.append(collided)
+                            changesOnRemote.append(local)
+
                     else:  # local deletion, remote modification, we keep the remote changes.
                         self.logger.debug('Deleted locally, keeping remote changes')
-                        indexesToRemoveLocal.append(i)
+                        changesOnLocal.append(collided)
+                        changesOnDB.append(collided)
                 else:  # in case of remote deletion, we keep the local changes
-                    self.logger.debug('Deleted remotely, keeping local changes')
-                    remoteChanges.remove(collided)  # we delete it from one of the lists to avoid trying to delete it twice
+                    if local['hash']:
+                        self.logger.debug('Deleted remotely, but modified locally, keeping local changes')
+                        changesOnRemote.append(local)
+                    changesOnDB.append(local)
 
-        for i in indexesToRemoveLocal:
-            del(localChanges[i])
+                remoteChanges.remove(collided)  # We remove it from the remoteChanges
 
-        self.logger.debug('localChanges <' + str(localChanges) + '>')
-        self.logger.debug('remoteChanges <' + str(remoteChanges) + '>')
+            else:
+                self.logger.debug("Didn't collide. Uploading <" + local['path'] + ">")
+                changesOnDB.append(local)
+                changesOnRemote.append(local)
 
-        localChanges = self.__fixAutoCollisions__(localChanges)
-        remoteChanges = self.__fixAutoCollisions__(remoteChanges)
+        # remoteChanges that weren't present in localChanges
+        changesOnLocal += remoteChanges
+        changesOnDB += remoteChanges
+        
 
-        self.logger.debug('localChanges <' + str(localChanges) + '>')
-        self.logger.debug('remoteChanges <' + str(remoteChanges) + '>')
 
-        return (localChanges, remoteChanges)
+        self.logger.debug('changesOnLocal <' + str(changesOnLocal) + '>')
+        self.logger.debug('changesOnDB <' + str(changesOnDB) + '>')
+        self.logger.debug('changesOnRemote <' + str(changesOnRemote) + '>')
+
+        changesOnLocal = self.__fixAutoCollisions__(changesOnLocal)
+        changesOnDB = self.__fixAutoCollisions__(changesOnDB)
+        changesOnRemote = self.__fixAutoCollisions__(changesOnRemote)
+
+        self.logger.debug('changesOnLocal <' + str(changesOnLocal) + '>')
+        self.logger.debug('changesOnDB <' + str(changesOnDB) + '>')
+        self.logger.debug('changesOnRemote <' + str(changesOnRemote) + '>')
+
+        return (changesOnLocal, changesOnDB, changesOnRemote)
 
     def findLocalChanges(self):
         self.logger.info('Getting Local differences')
@@ -222,7 +246,7 @@ class Manager():
                 else:
                     self.logger.debug('The file <' + checking['path'] + '> is the same. Doing nothing')
                 fileList.remove(checking['path'])
-                
+
             else:
                 self.logger.debug('The file <' + checking['path'] + '> has been DELETED')
                 localChanges.append(dict(path=checking['path'], hash=None, account=checking['account']))

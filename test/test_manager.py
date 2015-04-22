@@ -183,121 +183,151 @@ class TestManager(object):
         localChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
         remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
 
-        fixedLocalChanges, fixedRemoteChanges = self.man.fixCollisions(localChanges, remoteChanges)
+        fixedChangesOnLocal, fixedChangesOnDB, fixedChangesOnRemote = self.man.fixCollisions(localChanges, remoteChanges)
 
         date = datetime.date.today()
-        expected_fixedLocalChanges = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING2', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte.txt'}]
-        expected_fixedRemoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
-        assert_equal(fixedLocalChanges, expected_fixedLocalChanges)
-        assert_equal(fixedRemoteChanges, expected_fixedRemoteChanges)
+        expected_fixedChangesOnLocal = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING2', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte.txt'}, {'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnDB = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING2', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte.txt'}, {'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnRemote = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING2', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte.txt'}]
+        
+        assert_equal(fixedChangesOnLocal, expected_fixedChangesOnLocal)
+        assert_equal(fixedChangesOnDB, expected_fixedChangesOnDB)
+        assert_equal(fixedChangesOnRemote, expected_fixedChangesOnRemote)
 
     def test_fixCollisions2(self):
         self.man.newAccount('dropbox_stub', 'user')
         localChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
         remoteChanges = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}]
 
-        fixedLocalChanges, fixedRemoteChanges = self.man.fixCollisions(localChanges, remoteChanges)
+        fixedChangesOnLocal, fixedChangesOnDB, fixedChangesOnRemote = self.man.fixCollisions(localChanges, remoteChanges)
 
-        expected_fixedLocalChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
-        expected_fixedRemoteChanges = []
-        assert_equal(fixedLocalChanges, expected_fixedLocalChanges)
-        assert_equal(fixedRemoteChanges, expected_fixedRemoteChanges)
+        expected_fixedChangesOnLocal = []
+        expected_fixedChangesOnDB = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnRemote = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+
+        assert_equal(fixedChangesOnLocal, expected_fixedChangesOnLocal)
+        assert_equal(fixedChangesOnDB, expected_fixedChangesOnDB)
+        assert_equal(fixedChangesOnRemote, expected_fixedChangesOnRemote)
 
     def test_fixCollisions3(self):
         self.man.newAccount('dropbox_stub', 'user')
         localChanges = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}]
         remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
 
-        fixedLocalChanges, fixedRemoteChanges = self.man.fixCollisions(localChanges, remoteChanges)
+        fixedChangesOnLocal, fixedChangesOnDB, fixedChangesOnRemote = self.man.fixCollisions(localChanges, remoteChanges)
 
-        expected_fixedLocalChanges = []
-        expected_fixedRemoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
-        assert_equal(fixedLocalChanges, expected_fixedLocalChanges)
-        assert_equal(fixedRemoteChanges, expected_fixedRemoteChanges)
+        expected_fixedChangesOnLocal = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnDB = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnRemote = []
+
+        assert_equal(fixedChangesOnLocal, expected_fixedChangesOnLocal)
+        assert_equal(fixedChangesOnDB, expected_fixedChangesOnDB)
+        assert_equal(fixedChangesOnRemote, expected_fixedChangesOnRemote)
 
     def test_fixCollisions4(self):
         self.man.newAccount('dropbox_stub', 'user')
         localChanges = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}]
         remoteChanges = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}]
 
-        fixedLocalChanges, fixedRemoteChanges = self.man.fixCollisions(localChanges, remoteChanges)
+        fixedChangesOnLocal, fixedChangesOnDB, fixedChangesOnRemote = self.man.fixCollisions(localChanges, remoteChanges)
 
-        expected_fixedLocalChanges = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}]
-        expected_fixedRemoteChanges = []
-        assert_equal(fixedLocalChanges, expected_fixedLocalChanges)
-        assert_equal(fixedRemoteChanges, expected_fixedRemoteChanges)
+        expected_fixedChangesOnLocal = []
+        expected_fixedChangesOnDB = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnRemote = []
+
+        assert_equal(fixedChangesOnLocal, expected_fixedChangesOnLocal)
+        assert_equal(fixedChangesOnDB, expected_fixedChangesOnDB)
+        assert_equal(fixedChangesOnRemote, expected_fixedChangesOnRemote)
 
     def test_fixCollisions5(self):
         self.man.newAccount('dropbox_stub', 'user')
         localChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
         remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
 
-        fixedLocalChanges, fixedRemoteChanges = self.man.fixCollisions(localChanges, remoteChanges)
+        fixedChangesOnLocal, fixedChangesOnDB, fixedChangesOnRemote = self.man.fixCollisions(localChanges, remoteChanges)
 
-        expected_fixedLocalChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
-        expected_fixedRemoteChanges = []
-        assert_equal(fixedLocalChanges, expected_fixedLocalChanges)
-        assert_equal(fixedRemoteChanges, expected_fixedRemoteChanges)
+        expected_fixedChangesOnLocal = []
+        expected_fixedChangesOnDB = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnRemote = []
+
+        assert_equal(fixedChangesOnLocal, expected_fixedChangesOnLocal)
+        assert_equal(fixedChangesOnDB, expected_fixedChangesOnDB)
+        assert_equal(fixedChangesOnRemote, expected_fixedChangesOnRemote)
 
     def test_fixCollisions6(self):
         self.man.newAccount('dropbox_stub', 'user')
         localChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
         remoteChanges = []
 
-        fixedLocalChanges, fixedRemoteChanges = self.man.fixCollisions(localChanges, remoteChanges)
+        fixedChangesOnLocal, fixedChangesOnDB, fixedChangesOnRemote = self.man.fixCollisions(localChanges, remoteChanges)
 
-        expected_fixedLocalChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
-        expected_fixedRemoteChanges = []
-        assert_equal(fixedLocalChanges, expected_fixedLocalChanges)
-        assert_equal(fixedRemoteChanges, expected_fixedRemoteChanges)
+        expected_fixedChangesOnLocal = []
+        expected_fixedChangesOnDB = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnRemote = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+
+        assert_equal(fixedChangesOnLocal, expected_fixedChangesOnLocal)
+        assert_equal(fixedChangesOnDB, expected_fixedChangesOnDB)
+        assert_equal(fixedChangesOnRemote, expected_fixedChangesOnRemote)
 
     def test_fixCollisions7(self):
         self.man.newAccount('dropbox_stub', 'user')
         localChanges = []
         remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
 
-        fixedLocalChanges, fixedRemoteChanges = self.man.fixCollisions(localChanges, remoteChanges)
+        fixedChangesOnLocal, fixedChangesOnDB, fixedChangesOnRemote = self.man.fixCollisions(localChanges, remoteChanges)
 
-        expected_fixedLocalChanges = []
-        expected_fixedRemoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
-        assert_equal(fixedLocalChanges, expected_fixedLocalChanges)
-        assert_equal(fixedRemoteChanges, expected_fixedRemoteChanges)
+        expected_fixedChangesOnLocal = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnDB = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnRemote = []
+
+        assert_equal(fixedChangesOnLocal, expected_fixedChangesOnLocal)
+        assert_equal(fixedChangesOnDB, expected_fixedChangesOnDB)
+        assert_equal(fixedChangesOnRemote, expected_fixedChangesOnRemote)
 
     def test_fixCollisions8(self):
         self.man.newAccount('dropbox_stub', 'user')
         localChanges = [{'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
         remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
 
-        fixedLocalChanges, fixedRemoteChanges = self.man.fixCollisions(localChanges, remoteChanges)
+        fixedChangesOnLocal, fixedChangesOnDB, fixedChangesOnRemote = self.man.fixCollisions(localChanges, remoteChanges)
 
-        expected_fixedLocalChanges = [{'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
-        expected_fixedRemoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
-        assert_equal(fixedLocalChanges, expected_fixedLocalChanges)
-        assert_equal(fixedRemoteChanges, expected_fixedRemoteChanges)
+        expected_fixedChangesOnLocal = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnDB = [{'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnRemote = [{'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+
+        assert_equal(fixedChangesOnLocal, expected_fixedChangesOnLocal)
+        assert_equal(fixedChangesOnDB, expected_fixedChangesOnDB)
+        assert_equal(fixedChangesOnRemote, expected_fixedChangesOnRemote)
 
     def test_fixCollisions9(self):
         self.man.newAccount('dropbox_stub', 'user')
         localChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
         remoteChanges = []
 
-        fixedLocalChanges, fixedRemoteChanges = self.man.fixCollisions(localChanges, remoteChanges)
+        fixedChangesOnLocal, fixedChangesOnDB, fixedChangesOnRemote = self.man.fixCollisions(localChanges, remoteChanges)
 
-        expected_fixedLocalChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
-        expected_fixedRemoteChanges = []
-        assert_equal(fixedLocalChanges, expected_fixedLocalChanges)
-        assert_equal(fixedRemoteChanges, expected_fixedRemoteChanges)
+        expected_fixedChangesOnLocal = []
+        expected_fixedChangesOnDB = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnRemote = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
+
+        assert_equal(fixedChangesOnLocal, expected_fixedChangesOnLocal)
+        assert_equal(fixedChangesOnDB, expected_fixedChangesOnDB)
+        assert_equal(fixedChangesOnRemote, expected_fixedChangesOnRemote)
 
     def test_fixCollisions10(self):
         self.man.newAccount('dropbox_stub', 'user')
         localChanges = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
         remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
 
-        fixedChangesOnLocal, fixedChangesOnRemote = self.man.fixCollisions(localChanges, remoteChanges)
+        fixedChangesOnLocal, fixedChangesOnDB, fixedChangesOnRemote = self.man.fixCollisions(localChanges, remoteChanges)
 
         date = datetime.date.today()
-        expected_fixedChangesOnLocal = [{'path': '/test/muerte2.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte2.txt'}, {'path': '/test/muerte2.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
-        expected_fixedChangesOnRemote = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte2.txt'}]
+        expected_fixedChangesOnLocal = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte2.txt'}, {'path': '/test/muerte2.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnDB = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte2.txt'}, {'path': '/test/muerte2.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnRemote = [{'path': '/test/muerte2.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte2.txt'}]
+
         assert_equal(fixedChangesOnLocal, expected_fixedChangesOnLocal)
+        assert_equal(fixedChangesOnDB, expected_fixedChangesOnDB)
         assert_equal(fixedChangesOnRemote, expected_fixedChangesOnRemote)
 
     def test_fixCollisions11(self):
@@ -305,25 +335,31 @@ class TestManager(object):
         localChanges = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
         remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
 
-        fixedLocalChanges, fixedRemoteChanges = self.man.fixCollisions(localChanges, remoteChanges)
+        fixedChangesOnLocal, fixedChangesOnDB, fixedChangesOnRemote = self.man.fixCollisions(localChanges, remoteChanges)
 
-        expected_fixedLocalChanges = [{'path': '/test/muerte2.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
-        expected_fixedRemoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
-        assert_equal(fixedLocalChanges, expected_fixedLocalChanges)
-        assert_equal(fixedRemoteChanges, expected_fixedRemoteChanges)
+        expected_fixedChangesOnLocal = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnDB = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnRemote = []
+
+        assert_equal(fixedChangesOnLocal, expected_fixedChangesOnLocal)
+        assert_equal(fixedChangesOnDB, expected_fixedChangesOnDB)
+        assert_equal(fixedChangesOnRemote, expected_fixedChangesOnRemote)
 
     def test_fixCollisions12(self):
         self.man.newAccount('dropbox_stub', 'user')
         localChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
         remoteChanges = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}, {'path': '/test/muerte.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
 
-        fixedLocalChanges, fixedRemoteChanges = self.man.fixCollisions(localChanges, remoteChanges)
+        fixedChangesOnLocal, fixedChangesOnDB, fixedChangesOnRemote = self.man.fixCollisions(localChanges, remoteChanges)
 
         date = datetime.date.today()
-        expected_fixedLocalChanges = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte.txt'}]
-        expected_fixedRemoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
-        assert_equal(fixedLocalChanges, expected_fixedLocalChanges)
-        assert_equal(fixedRemoteChanges, expected_fixedRemoteChanges)
+        expected_fixedChangesOnLocal = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte.txt'}, {'path': '/test/muerte.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnDB = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte.txt'}, {'path': '/test/muerte.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnRemote = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte.txt'}]
+
+        assert_equal(fixedChangesOnLocal, expected_fixedChangesOnLocal)
+        assert_equal(fixedChangesOnDB, expected_fixedChangesOnDB)
+        assert_equal(fixedChangesOnRemote, expected_fixedChangesOnRemote)
 
     def test_fixCollisions13(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -331,25 +367,30 @@ class TestManager(object):
         localChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': None, 'account': self.man.cuentas[0]}]
         remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
 
-        fixedLocalChanges, fixedRemoteChanges = self.man.fixCollisions(localChanges, remoteChanges)
+        fixedChangesOnLocal, fixedChangesOnDB, fixedChangesOnRemote = self.man.fixCollisions(localChanges, remoteChanges)
 
-        date = datetime.date.today()
-        expected_fixedLocalChanges = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte.txt'}]
-        expected_fixedRemoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
-        assert_equal(fixedLocalChanges, expected_fixedLocalChanges)
-        assert_equal(fixedRemoteChanges, expected_fixedRemoteChanges)
+        expected_fixedChangesOnLocal = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte.txt'}, {'path': '/test/muerte.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnDB = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte.txt'}, {'path': '/test/muerte.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnRemote = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte.txt'}]
+
+        assert_equal(fixedChangesOnLocal, expected_fixedChangesOnLocal)
+        assert_equal(fixedChangesOnDB, expected_fixedChangesOnDB)
+        assert_equal(fixedChangesOnRemote, expected_fixedChangesOnRemote)
 
     def test_fixCollisions14(self):
         self.man.newAccount('dropbox_stub', 'user')
         localChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
         remoteChanges = []
 
-        fixedLocalChanges, fixedRemoteChanges = self.man.fixCollisions(localChanges, remoteChanges)
+        fixedChangesOnLocal, fixedChangesOnDB, fixedChangesOnRemote = self.man.fixCollisions(localChanges, remoteChanges)
 
-        expected_fixedLocalChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
-        expected_fixedRemoteChanges = []
-        assert_equal(fixedLocalChanges, expected_fixedLocalChanges)
-        assert_equal(fixedRemoteChanges, expected_fixedRemoteChanges)
+        expected_fixedChangesOnLocal = []
+        expected_fixedChangesOnDB = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnRemote = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        
+        assert_equal(fixedChangesOnLocal, expected_fixedChangesOnLocal)
+        assert_equal(fixedChangesOnDB, expected_fixedChangesOnDB)
+        assert_equal(fixedChangesOnRemote, expected_fixedChangesOnRemote)
 
     @raises(StopIteration)
     def test_fixCollisions15(self):
@@ -357,7 +398,7 @@ class TestManager(object):
         localChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
         remoteChanges = []
 
-        fixedLocalChanges, fixedRemoteChanges = self.man.fixCollisions(localChanges, remoteChanges)
+        fixedChangesOnLocal, fixedChangesOnDB, fixedChangesOnRemote = self.man.fixCollisions(localChanges, remoteChanges)
 
     def test_findLocalChanges(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -441,6 +482,7 @@ class TestManager(object):
 
         assert_equal(localChanges, expected_localChanges)
 
+    @Ignore
     def test_applyLocalChanges(self):
         self.man.newAccount('dropbox_stub', 'user')
         localChanges = []
@@ -455,6 +497,7 @@ class TestManager(object):
         assert_equal(fileList, expected_fileList)
         assert_equal(remoteChanges, expected_remoteChanges)
 
+    @Ignore
     def test_applyLocalChanges_2(self):
         self.man.newAccount('dropbox_stub', 'user')
         localChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING'}]
@@ -466,6 +509,7 @@ class TestManager(object):
 
         assert_equal(remoteChanges, expected_remoteChanges)
 
+    @Ignore
     def test_applyLocalChanges_3(self):
         self.man.newAccount('dropbox_stub', 'user')
         localChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
@@ -477,14 +521,17 @@ class TestManager(object):
 
         assert_equal(remoteChanges, expected_remoteChanges)
 
+    @Ignore
     def test_applyLocalChanges_4(self):
         self.man.newAccount('dropbox_stub', 'user')
         localChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
 
+    @Ignore
     def test_applyLocalChanges_5(self):
         self.man.newAccount('dropbox_stub', 'user')
         localChanges = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}]
 
+    @Ignore
     def test_applyLocalChanges_6(self):
         self.man.newAccount('dropbox_stub', 'user')
         localChanges = [{'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte.txt'}]
