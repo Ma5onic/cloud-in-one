@@ -71,13 +71,14 @@ class Manager():
         localChanges = self.findLocalChanges()
         remoteChanges = self.findRemoteChanges()
 
-        localChanges, remoteChanges = self.fixCollisions(localChanges, remoteChanges)
+        changesOnLocal, changesOnDB, changesOnRemote = self.fixCollisions(localChanges, remoteChanges)
 
-        self.syncAccounts(localChanges, remoteChanges)
+        self.syncAccounts(changesOnLocal, changesOnDB, changesOnRemote)
 
-    def syncAccounts(self, localChanges, remoteChanges):
-        self.applyRemoteChanges(remoteChanges)
-        self.applyLocalChanges(localChanges)
+    def syncAccounts(self, changesOnLocal, changesOnDB, changesOnRemote):
+        self.applyChangesOnLocal(changesOnLocal)
+        self.applyChangesOnDB(changesOnDB)
+        self.applyChangesOnRemote(changesOnRemote)
 
     def findRemoteChanges(self):
         self.logger.info('Getting Remote differences')
@@ -259,52 +260,45 @@ class Manager():
         self.logger.debug('localChanges = <' + str(localChanges) + '>')
         return localChanges
 
-    def applyLocalChanges(self, localChanges):
-        self.logger.info("Applying local changes")
-        # TODO: it must create the file if it doesn't exist right now
-        for element in localChanges:
-            # TODO: remove this, it's already in all that isn't created...
-            element['account'] = self.getAccountFromFile(element['path'])
-            if element['hash']:  # created or modified, upsert in the db, mark to upload...
+    def applyChangesOnRemote(self, changesOnRemote):
+        self.logger.info("Applying changes on remote")
+        for element in changesOnRemote:
+            if element['hash']:  # created or modified, upload to account
                 if not element['account']:  # if newly created
                     for account in self.cuentas:
                         self.logger.debug("Trying to save file <" + element['path'] + "> in account <" + str(account) + ">")
                         if account.fits(element['path']):
                             element['account'] = account
-                            break
-                self.saveFile(element['account'], element['path'], element['hash'])
-                self.logger.debug('Saved')
-                if 'oldpath' in element:
-                    self.fileSystemModule.renameFile(element['oldpath'], element['path'])
+                            # TODO: add account to file
 
-                element['account'].uploadFile(element['path'])
-            else:  # deleted, remove from the db, remove from remote...
+                self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account'] + ">"))
+                element['account'].uploadFile(element["path"])  # TODO: Aquí tendré que encriptar el fichero...
+
+            else:  # deleted, remove from the remote
                 self.logger.debug("Deleting file <" + element['path'] + ">")
-                self.deleteFileDB(element['path'])
-                if element['account']:  # Else it didn't get uploaded, so we don't delete it
-                    element['account'].deleteFile(element['path'])
+                element['account'].deleteFile(element['path'])
 
-    def applyChangesOnRemote(self, changesOnRemote):
-        self.logger.info("Applying changes on remote")
-        for element in changesOnRemote:
-            pass
+    def applyChangesOnDB(self, changesOnDB):
+        self.logger.info("Applying changes on database")
+        for element in changesOnDB:
+            if element['hash']:  # created or modified, upsert in the db
+                md5 = self.fileSystemModule.md5sum(element['path'])
+                self.saveFile(element['account'], element['path'], md5)
+
+            else:  # deleted, remove from the db
+                self.deleteFileDB(element['path'], element['account'])
 
     def applyChangesOnLocal(self, changesOnLocal):
         self.logger.info("Applying changes on local")
         for element in changesOnLocal:
-            if element['hash']:  # created or modified, upsert in the db
-
-                streamFile = element['account'].getFile(element["path"])  # Aquí tendré que encriptar el fichero...
+            if element['hash']:  # created or modified
+                streamFile = element['account'].getFile(element["path"])
                 self.fileSystemModule.createFile(element["path"], streamFile)
                 streamFile.close()
-                file_hash = self.fileSystemModule.md5sum(element["path"])
 
-                self.saveFile(element['account'], element['path'], file_hash)
-                self.logger.debug('Saved')
-
-            else:  # deleted, remove from the db
+            else:  # deleted
                 self.logger.debug("Deleting file <" + element['path'] + ">")
-                self.remove(element['path'], element['account'])
+                self.fileSystemModule.remove(element['path'])
 
     def getMD5BD(self, filename):
         files_table = self.database['files']
