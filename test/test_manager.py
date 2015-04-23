@@ -570,5 +570,16 @@ class TestManager(object):
 
         assert_equal(fileList, expected_fileList)
 
-    def test_applyRemoteChanges(self):
+    def test_applyChangesOnRemote(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        changesOnRemote = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+
+        self.man.applyChangesOnRemote(changesOnRemote)
+
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        remoteChanges = self.man.findRemoteChanges()
+
+        assert_equal(remoteChanges, expected_remoteChanges)
+        
+    def test_applyChangesOnDB(self):
         pass

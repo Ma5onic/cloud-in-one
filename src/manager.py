@@ -271,7 +271,7 @@ class Manager():
                             element['account'] = account
                             # TODO: add account to file
 
-                self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account'] + ">"))
+                self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
                 element['account'].uploadFile(element["path"])  # TODO: Aquí tendré que encriptar el fichero...
 
             else:  # deleted, remove from the remote
