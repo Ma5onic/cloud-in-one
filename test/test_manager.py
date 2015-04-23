@@ -619,5 +619,57 @@ class TestManager(object):
 
         assert_equal(remoteChanges, expected_remoteChanges)
 
+    def test_applyChangesOnRemote_5(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.newAccount('dropbox_stub', 'user2')
+
+        changesOnRemote = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[1]}]
+
+        self.man.applyChangesOnRemote(changesOnRemote)
+
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[1]}]
+        remoteChanges = self.man.findRemoteChanges()
+
+        assert_equal(remoteChanges, expected_remoteChanges)
+
     def test_applyChangesOnDB(self):
-        pass
+        self.man.newAccount('dropbox_stub', 'user')
+
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')  #we had a file uploaded
+        changesOnDB = [{'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0]}]
+
+        self.man.applyChangesOnLocal(changesOnDB)
+        self.man.applyChangesOnDB(changesOnDB)
+
+        DBFiles = [{'path': i['path'], 'hash': i['hash']} for i in self.man.database['files'].all()]
+
+        expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte.txt'}]
+
+        assert_equal(DBFiles, expected_DBFiles)
+
+    def test_applyChangesOnDB_2(self):
+        self.man.newAccount('dropbox_stub', 'user')
+
+        changesOnDB = []
+
+        self.man.applyChangesOnLocal(changesOnDB)
+        self.man.applyChangesOnDB(changesOnDB)
+
+        DBFiles = [{'path': i['path'], 'hash': i['hash']} for i in self.man.database['files'].all()]
+
+        expected_DBFiles = []
+
+        assert_equal(DBFiles, expected_DBFiles)
+
+    def test_applyChangesOnDB_3(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.saveFile(self.man.cuentas[0], '/test/muerte.txt', '/test/muerte.txt')
+        changesOnDB = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}]
+
+        self.man.applyChangesOnDB(changesOnDB)
+
+        DBFiles = [{'path': i['path'], 'hash': i['hash']} for i in self.man.database['files'].all()]
+
+        expected_DBFiles = []
+
+        assert_equal(DBFiles, expected_DBFiles)
