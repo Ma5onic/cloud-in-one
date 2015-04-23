@@ -673,3 +673,15 @@ class TestManager(object):
         expected_DBFiles = []
 
         assert_equal(DBFiles, expected_DBFiles)
+
+    def test_applyChangesOnDB_4(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        changesOnDB = [{'path': '/test/muerte.txt', 'hash': '/test/muerte.txt'}]
+
+        self.man.applyChangesOnDB(changesOnDB)
+
+        DBFiles = [{'path': i['path'], 'hash': i['hash']} for i in self.man.database['files'].all()]
+
+        expected_DBFiles = []
+
+        assert_equal(DBFiles, expected_DBFiles)
