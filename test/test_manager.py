@@ -6,7 +6,7 @@ from nose.tools import raises
 from nose.tools import assert_true
 from nose.tools import assert_false
 import datetime
-from util import *
+from util import Ignore
 from fileSystemModule import FileSystemModuleStub
 
 
@@ -580,6 +580,44 @@ class TestManager(object):
         remoteChanges = self.man.findRemoteChanges()
 
         assert_equal(remoteChanges, expected_remoteChanges)
-        
+
+    def test_applyChangesOnRemote_2(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        changesOnRemote = [{'path': '/test/muerte.txt', 'hash': 'MISSING'}]
+
+        self.man.applyChangesOnRemote(changesOnRemote)
+
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        remoteChanges = self.man.findRemoteChanges()
+
+        assert_equal(remoteChanges, expected_remoteChanges)
+
+    def test_applyChangesOnRemote_3(self):
+        self.man.newAccount('dropbox_stub', 'user')
+
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')  #we had a file uploaded
+        self.man.findRemoteChanges()  # no pending changes
+
+        changesOnRemote = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}]
+
+        self.man.applyChangesOnRemote(changesOnRemote)
+
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}]
+        remoteChanges = self.man.findRemoteChanges()
+
+        assert_equal(remoteChanges, expected_remoteChanges)
+
+    def test_applyChangesOnRemote_4(self):
+        self.man.newAccount('dropbox_stub', 'user')
+
+        changesOnRemote = []
+
+        self.man.applyChangesOnRemote(changesOnRemote)
+
+        expected_remoteChanges = []
+        remoteChanges = self.man.findRemoteChanges()
+
+        assert_equal(remoteChanges, expected_remoteChanges)
+
     def test_applyChangesOnDB(self):
         pass
