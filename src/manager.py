@@ -264,12 +264,12 @@ class Manager():
         self.logger.info("Applying changes on remote")
         for element in changesOnRemote:
             if element['hash']:  # created or modified, upload to account
-                if not element['account']:  # if newly created
+                if 'account' not in element or not element['account']:  # if newly created
                     for account in self.cuentas:
                         self.logger.debug("Trying to save file <" + element['path'] + "> in account <" + str(account) + ">")
                         if account.fits(element['path']):
                             element['account'] = account
-                            # TODO: add account to file
+                            # TODO: add account to file in the database...
 
                 self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
                 element['account'].uploadFile(element["path"])  # TODO: Aquí tendré que encriptar el fichero...
@@ -292,7 +292,7 @@ class Manager():
         self.logger.info("Applying changes on local")
         for element in changesOnLocal:
             if element['hash']:  # created or modified
-                streamFile = element['account'].getFile(element["path"])
+                streamFile = element['account'].getFile(element["path"])  # TODO: Aquí tendré que DESencriptar el fichero...
                 self.fileSystemModule.createFile(element["path"], streamFile)
                 streamFile.close()
 
