@@ -77,8 +77,8 @@ class Manager():
 
     def syncAccounts(self, changesOnLocal, changesOnDB, changesOnRemote):
         self.applyChangesOnLocal(changesOnLocal)
-        self.applyChangesOnDB(changesOnDB)
         self.applyChangesOnRemote(changesOnRemote)
+        self.applyChangesOnDB(changesOnDB)
 
     def findRemoteChanges(self):
         self.logger.info('Getting Remote differences')
@@ -269,7 +269,6 @@ class Manager():
                         self.logger.debug("Trying to save file <" + element['path'] + "> in account <" + str(account) + ">")
                         if account.fits(element['path']):
                             element['account'] = account
-                            # TODO: add account to file in the database...
 
                 self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
                 element['account'].uploadFile(element["path"])  # TODO: Aquí tendré que encriptar el fichero...
