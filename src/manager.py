@@ -290,7 +290,10 @@ class Manager():
     def applyChangesOnLocal(self, changesOnLocal):
         self.logger.info("Applying changes on local")
         for element in changesOnLocal:
-            if element['hash']:  # created or modified
+            if 'oldpath' in element:  # rename
+                self.fileSystemModule.renameFile(element["oldpath"], element["path"])
+
+            elif element['hash']:  # created or modified
                 streamFile = element['account'].getFile(element["path"])  # TODO: Aquí tendré que DESencriptar el fichero...
                 self.fileSystemModule.createFile(element["path"], streamFile)
                 streamFile.close()
