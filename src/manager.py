@@ -211,7 +211,7 @@ class Manager():
         # remoteChanges that weren't present in localChanges
         changesOnLocal += remoteChanges
         changesOnDB += remoteChanges
-        
+
 
 
         self.logger.debug('changesOnLocal <' + str(changesOnLocal) + '>')

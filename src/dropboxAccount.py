@@ -184,3 +184,6 @@ class DropboxAccountStub(DropboxAccount):
             self.__delta_acum__.append([file_path, None])
             return True
         return False
+
+    def getFileList(self):
+        return self.__file_list__

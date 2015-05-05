@@ -189,7 +189,7 @@ class TestManager(object):
         expected_fixedChangesOnLocal = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING2', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte.txt'}, {'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
         expected_fixedChangesOnDB = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING2', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte.txt'}, {'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
         expected_fixedChangesOnRemote = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'MISSING2', 'account': self.man.cuentas[0], 'oldpath': '/test/muerte.txt'}]
-        
+
         assert_equal(fixedChangesOnLocal, expected_fixedChangesOnLocal)
         assert_equal(fixedChangesOnDB, expected_fixedChangesOnDB)
         assert_equal(fixedChangesOnRemote, expected_fixedChangesOnRemote)
@@ -387,7 +387,7 @@ class TestManager(object):
         expected_fixedChangesOnLocal = []
         expected_fixedChangesOnDB = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
         expected_fixedChangesOnRemote = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
-        
+
         assert_equal(fixedChangesOnLocal, expected_fixedChangesOnLocal)
         assert_equal(fixedChangesOnDB, expected_fixedChangesOnDB)
         assert_equal(fixedChangesOnRemote, expected_fixedChangesOnRemote)
@@ -410,7 +410,7 @@ class TestManager(object):
         expected_fixedChangesOnLocal = []
         expected_fixedChangesOnDB = [{'path': '/test/muerte.txt', 'hash': 'MISSING'}]
         expected_fixedChangesOnRemote = [{'path': '/test/muerte.txt', 'hash': 'MISSING'}]
-        
+
         assert_equal(fixedChangesOnLocal, expected_fixedChangesOnLocal)
         assert_equal(fixedChangesOnDB, expected_fixedChangesOnDB)
         assert_equal(fixedChangesOnRemote, expected_fixedChangesOnRemote)
@@ -474,7 +474,7 @@ class TestManager(object):
     def test_findLocalChanges_6(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.saveFile(self.man.cuentas[0], 'test_file', 'oldhash')  # we had a file
-        self.man.fileSystemModule.createFile('test_file')  # we modify it 
+        self.man.fileSystemModule.createFile('test_file')  # we modify it
         self.man.saveFile(self.man.cuentas[0], 'test_file2', 'test_file2')  # we had another file
         # we don't have it anymore
 
@@ -674,6 +674,7 @@ class TestManager(object):
 
         assert_equal(DBFiles, expected_DBFiles)
 
+    @Ignore
     def test_applyChangesOnDB_4(self):
         self.man.newAccount('dropbox_stub', 'user')
         changesOnDB = [{'path': '/test/muerte.txt', 'hash': '/test/muerte.txt'}]
@@ -685,3 +686,76 @@ class TestManager(object):
         expected_DBFiles = []
 
         assert_equal(DBFiles, expected_DBFiles)
+
+    def test_integrationSync(self):
+        self.man.newAccount('dropbox_stub', 'user')
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList = self.man.cuentas[0].getFileList()
+
+        expected_fileList = []
+        expected_DBFiles = []
+        expected_remoteFileList = []
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(DBFiles, expected_DBFiles)
+        assert_equal(remoteFileList, expected_remoteFileList)
+
+    def test_integrationSync_2(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList = self.man.cuentas[0].getFileList()
+
+        expected_fileList = ['/test/muerte.txt']
+        expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
+        expected_remoteFileList = ['/test/muerte.txt']
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(DBFiles, expected_DBFiles)
+        assert_equal(remoteFileList, expected_remoteFileList)
+
+    def test_integrationSync_3(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList = self.man.cuentas[0].getFileList()
+
+        expected_fileList = ['/test/muerte.txt']
+        expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
+        expected_remoteFileList = ['/test/muerte.txt']
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(DBFiles, expected_DBFiles)
+        assert_equal(remoteFileList, expected_remoteFileList)
+
+    @Ignore
+    def test_integrationSync_4(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList = self.man.cuentas[0].getFileList()
+
+        expected_fileList = ['/test/muerte.txt']
+        expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
+        expected_remoteFileList = ['/test/muerte.txt']
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(DBFiles, expected_DBFiles)
+        assert_equal(remoteFileList, expected_remoteFileList)
