@@ -274,6 +274,11 @@ class Manager():
                         else:
                             self.logger.debug("Doesn't fit! <" + str(element['path']) + ">")
 
+                if 'account' not in element or not element['account']:  # doesn't fit! We log it and continue with the others.
+                    self.logger.error("The file <" + element['path'] + "> doesn't fit anywhere")
+                    element['account'] = None
+                    continue
+
                 self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
                 element['account'].uploadFile(element["path"])  # TODO: Aquí tendré que encriptar el fichero...
 
@@ -284,6 +289,10 @@ class Manager():
     def applyChangesOnDB(self, changesOnDB):
         self.logger.info("Applying changes on database")
         for element in changesOnDB:
+            if 'account' not in element or not element['account']:  # if it doesn't have account, ignore it
+                self.logger.warn("The file <" + element['path'] + "> doesn't have account")
+                continue
+
             if element['hash']:  # created or modified, upsert in the db
                 md5 = self.fileSystemModule.md5sum(element['path'])
                 self.saveFile(element['account'], element['path'], md5)
