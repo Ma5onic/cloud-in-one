@@ -137,7 +137,8 @@ class FileSystemModuleStub(FileSystemModule):
         return os.path.join(self.main_path, dir_path)
 
     def createFile(self, file_path, stream=None):
-        self.__file_list__.append({'path': file_path, 'stream': stream, 'hash': file_path})
+        if file_path not in self.getFileList():
+            self.__file_list__.append({'path': file_path, 'stream': stream, 'hash': file_path})
         return os.path.join(self.main_path, file_path)
 
     def openFile(self, file_path):
