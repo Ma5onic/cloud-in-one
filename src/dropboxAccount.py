@@ -151,7 +151,7 @@ class DropboxAccountStub(DropboxAccount):
 
     def delta(self, returnDict=dict()):
         returnDict["entries"] = self.__delta_acum__
-        self.__delta_acum__ = []
+        self.resetChanges()
 
         returnDict["reset"] = self._delta_reset_
         return returnDict
@@ -174,9 +174,12 @@ class DropboxAccountStub(DropboxAccount):
     def uploadFile(self, file_path):
         if file_path not in self.__file_list__:
             self.__file_list__.append(file_path)
-            self.__delta_acum__.append([file_path, {'is_dir': False, 'path': file_path}])
-            return True
-        return False
+
+        deltaItem = [file_path, {'is_dir': False, 'path': file_path}]
+        if deltaItem not in self.__delta_acum__:
+            self.__delta_acum__.append(deltaItem)
+
+        return True
 
     def deleteFile(self, file_path):
         if file_path in self.__file_list__:
@@ -187,3 +190,6 @@ class DropboxAccountStub(DropboxAccount):
 
     def getFileList(self):
         return self.__file_list__
+
+    def resetChanges(self):
+        self.__delta_acum__ = []

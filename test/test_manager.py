@@ -128,7 +128,7 @@ class TestManager(object):
 
         remoteChanges = self.man.findRemoteChanges()
 
-        expected_remoteChanges = []
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
         assert_equal(remoteChanges, expected_remoteChanges)
 
     def test_findRemoteChanges_7(self):
@@ -774,6 +774,140 @@ class TestManager(object):
         expected_fileList = ['/test/muerte.txt', '/test/muerte2.txt']
         expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}, {'path': '/test/muerte2.txt', 'hash': '/test/muerte2.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
         expected_remoteFileList = ['/test/muerte2.txt', '/test/muerte.txt']
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(DBFiles, expected_DBFiles)
+        assert_equal(remoteFileList, expected_remoteFileList)
+
+    def test_integrationSync_6(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
+        self.man.saveFile(self.man.cuentas[0], '/test/muerte.txt', '/test/muerte.txt')
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
+        self.man.cuentas[0].resetChanges()
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')  # "modify" it
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList = self.man.cuentas[0].getFileList()
+
+        expected_fileList = ['/test/muerte.txt']
+        expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
+        expected_remoteFileList = ['/test/muerte.txt']
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(DBFiles, expected_DBFiles)
+        assert_equal(remoteFileList, expected_remoteFileList)
+
+    def test_integrationSync_7(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
+        self.man.saveFile(self.man.cuentas[0], '/test/muerte.txt', '/test/muerte.txt')
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
+        self.man.cuentas[0].resetChanges()
+        self.man.cuentas[0].deleteFile('/test/muerte.txt')  # delete it
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList = self.man.cuentas[0].getFileList()
+
+        expected_fileList = []
+        expected_DBFiles = []
+        expected_remoteFileList = []
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(DBFiles, expected_DBFiles)
+        assert_equal(remoteFileList, expected_remoteFileList)
+
+    def test_integrationSync_8(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.fileSystemModule.createFile('/test/muerte2.txt')  # create a file
+        self.man.saveFile(self.man.cuentas[0], '/test/muerte.txt', '/test/muerte2.txt')
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
+        self.man.cuentas[0].resetChanges()
+        self.man.fileSystemModule.renameFile('/test/muerte2.txt', '/test/muerte.txt')  # we modify it locally
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList = self.man.cuentas[0].getFileList()
+
+        expected_fileList = ['/test/muerte.txt']
+        expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte2.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
+        expected_remoteFileList = ['/test/muerte.txt']
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(DBFiles, expected_DBFiles)
+        assert_equal(remoteFileList, expected_remoteFileList)
+
+    def test_integrationSync_9(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.fileSystemModule.createFile('/test/muerte2.txt')  # create a file
+        self.man.saveFile(self.man.cuentas[0], '/test/muerte.txt', '/test/muerte.txt')
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
+        self.man.cuentas[0].resetChanges()
+        self.man.fileSystemModule.renameFile('/test/muerte2.txt', '/test/muerte.txt')  # we modify it locally
+        self.man.cuentas[0].deleteFile('/test/muerte.txt')  # delete it
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList = self.man.cuentas[0].getFileList()
+
+        expected_fileList = ['/test/muerte.txt']
+        expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte2.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
+        expected_remoteFileList = ['/test/muerte.txt']
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(DBFiles, expected_DBFiles)
+        assert_equal(remoteFileList, expected_remoteFileList)
+
+    def test_integrationSync_10(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
+        self.man.saveFile(self.man.cuentas[0], '/test/muerte.txt', '/test/muerte.txt')
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
+        self.man.cuentas[0].resetChanges()
+        self.man.fileSystemModule.remove('/test/muerte.txt')  # delete it
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList = self.man.cuentas[0].getFileList()
+
+        expected_fileList = []
+        expected_DBFiles = []
+        expected_remoteFileList = []
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(DBFiles, expected_DBFiles)
+        assert_equal(remoteFileList, expected_remoteFileList)
+
+    def test_integrationSync_11(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
+        self.man.saveFile(self.man.cuentas[0], '/test/muerte.txt', '/test/muerte.txt')
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
+        self.man.cuentas[0].resetChanges()
+        self.man.fileSystemModule.remove('/test/muerte.txt')  # delete it
+        self.man.cuentas[0].deleteFile('/test/muerte.txt')  # delete it
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList = self.man.cuentas[0].getFileList()
+
+        expected_fileList = []
+        expected_DBFiles = []
+        expected_remoteFileList = []
 
         assert_equal(fileList, expected_fileList)
         assert_equal(DBFiles, expected_DBFiles)
