@@ -268,7 +268,11 @@ class Manager():
                     for account in self.cuentas:
                         self.logger.debug("Trying to save file <" + element['path'] + "> in account <" + str(account) + ">")
                         if account.fits(element['path']):
+                            self.logger.debug("Saved to account <" + str(account) + ">")
                             element['account'] = account
+                            break
+                        else:
+                            self.logger.debug("Doesn't fit! <" + str(element['path']) + ">")
 
                 self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
                 element['account'].uploadFile(element["path"])  # TODO: Aquí tendré que encriptar el fichero...
