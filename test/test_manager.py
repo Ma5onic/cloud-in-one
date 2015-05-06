@@ -7,6 +7,7 @@ from nose.tools import assert_true
 from nose.tools import assert_false
 import datetime
 from util import Ignore
+from util import returnFalse
 from fileSystemModule import FileSystemModuleStub
 
 
@@ -912,3 +913,48 @@ class TestManager(object):
         assert_equal(fileList, expected_fileList)
         assert_equal(DBFiles, expected_DBFiles)
         assert_equal(remoteFileList, expected_remoteFileList)
+
+    def test_twoAccounts_fits_first(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.newAccount('dropbox_stub', 'user2')
+        self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList1 = self.man.cuentas[0].getFileList()
+        remoteFileList2 = self.man.cuentas[1].getFileList()
+
+        expected_fileList = ['/test/muerte.txt']
+        expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
+        expected_remoteFileList1 = ['/test/muerte.txt']
+        expected_remoteFileList2 = []
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(DBFiles, expected_DBFiles)
+        assert_equal(remoteFileList1, expected_remoteFileList1)
+        assert_equal(remoteFileList2, expected_remoteFileList2)
+
+    def test_twoAccounts_fits_second(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.cuentas[0].fits = returnFalse
+        self.man.newAccount('dropbox_stub', 'user2')
+        self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList1 = self.man.cuentas[0].getFileList()
+        remoteFileList2 = self.man.cuentas[1].getFileList()
+
+        expected_fileList = ['/test/muerte.txt']
+        expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[1].getAccountType(), 'user': self.man.cuentas[1].user}]
+        expected_remoteFileList1 = []
+        expected_remoteFileList2 = ['/test/muerte.txt']
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(DBFiles, expected_DBFiles)
+        assert_equal(remoteFileList1, expected_remoteFileList1)
+        assert_equal(remoteFileList2, expected_remoteFileList2)
