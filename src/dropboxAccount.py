@@ -103,7 +103,7 @@ class DropboxAccount(account.Account):
         response = client.put_file(file_path, stream)
         self.logger.debug("Response = <" + str(response) + ">")
         self.fileSystemModule.closeFile(file_path, stream)
-        return True
+        return response['rev']  # Or something like that...
 
     def deleteFile(self, file_path):
         client = self.__getDropboxClient()
@@ -179,7 +179,7 @@ class DropboxAccountStub(DropboxAccount):
         if deltaItem not in self.__delta_acum__:
             self.__delta_acum__.append(deltaItem)
 
-        return True
+        return 'revision_number'
 
     def deleteFile(self, file_path):
         if file_path in self.__file_list__:
