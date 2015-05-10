@@ -58,7 +58,7 @@ class TestManager(object):
     @Ignore
     def test_deleteAccountAndFiles(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'testPath', 'hash': 'hash'})
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'testPath', 'hash': 'hash', 'revision': 'revision_number'})
         self.man.deleteAccount(self.man.cuentas[0])
         assert_false(self.man.cuentas)
 
@@ -76,7 +76,7 @@ class TestManager(object):
         self.man.cuentas[0].uploadFile('/test/muerte.txt')
         remoteChanges = self.man.findRemoteChanges()
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number'}]
         assert_equal(remoteChanges, expected_remoteChanges)
 
     def test_findRemoteChanges_2(self):
@@ -85,7 +85,7 @@ class TestManager(object):
         self.man.cuentas[0].deleteFile('/test/muerte.txt')
         remoteChanges = self.man.findRemoteChanges()
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number'}, {'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}]
         assert_equal(remoteChanges, expected_remoteChanges)
 
     def test_findRemoteChanges_3(self):
@@ -106,7 +106,7 @@ class TestManager(object):
         self.man.cuentas[0].uploadFile('/test/muerte.txt')
         remoteChanges = self.man.findRemoteChanges()
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}, {'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}, {'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number'}]
         assert_equal(remoteChanges, expected_remoteChanges)
 
     def test_findRemoteChanges_5(self):
@@ -116,7 +116,7 @@ class TestManager(object):
 
         remoteChanges = self.man.findRemoteChanges()
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number'}, {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number'}]
         assert_equal(remoteChanges, expected_remoteChanges)
 
     def test_findRemoteChanges_6(self):
@@ -129,7 +129,7 @@ class TestManager(object):
 
         remoteChanges = self.man.findRemoteChanges()
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number'}, {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number'}]
         assert_equal(remoteChanges, expected_remoteChanges)
 
     def test_findRemoteChanges_7(self):
@@ -154,18 +154,18 @@ class TestManager(object):
 
         remoteChanges = self.man.findRemoteChanges()
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': None, 'account': self.man.cuentas[0]}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number'}, {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number'}, {'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': None, 'account': self.man.cuentas[0]}]
         assert_equal(remoteChanges, expected_remoteChanges)
 
     def test_findRemoteChanges_9(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': 'MISSING'})  # we had a file
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': 'MISSING', 'revision': 'revision_number'})  # we had a file
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # "external" upload
         self.man.cuentas[0]._delta_reset_ = True  # we receive a reset
 
         remoteChanges = self.man.findRemoteChanges()
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}, {'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0], 'revision': 'revision_number'}, {'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number'}]
         assert_equal(remoteChanges, expected_remoteChanges)
 
     def test_findRemoteChanges_10(self):
@@ -176,7 +176,7 @@ class TestManager(object):
 
         remoteChanges = self.man.findRemoteChanges()
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number'}]
         assert_equal(remoteChanges, expected_remoteChanges)
 
     def test_fixCollisions(self):
@@ -428,18 +428,18 @@ class TestManager(object):
 
     def test_findLocalChanges_2(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file', 'hash': 'oldhash'})  # we had a file (hash=oldhash)
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file', 'hash': 'oldhash', 'revision': 'revision_number'})  # we had a file (hash=oldhash)
         self.man.fileSystemModule.createFile('test_file')  # we modify it
 
         localChanges = self.man.findLocalChanges()
 
-        expected_localChanges = [{'path': 'test_file', 'hash': 'test_file', 'account': self.man.cuentas[0]}]
+        expected_localChanges = [{'path': 'test_file', 'hash': 'test_file', 'account': self.man.cuentas[0], 'revision': 'revision_number'}]
 
         assert_equal(localChanges, expected_localChanges)
 
     def test_findLocalChanges_3(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file', 'hash': 'test_file'})  # we had a file
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file', 'hash': 'test_file', 'revision': 'revision_number'})  # we had a file
         # we don't have it anymore
 
         localChanges = self.man.findLocalChanges()
@@ -450,7 +450,7 @@ class TestManager(object):
 
     def test_findLocalChanges_4(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file', 'hash': 'test_file'})  # we had a file
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file', 'hash': 'test_file', 'revision': 'revision_number'})  # we had a file
         self.man.fileSystemModule.createFile('test_file')  # we still have it (unmodified)
 
         localChanges = self.man.findLocalChanges()
@@ -461,9 +461,9 @@ class TestManager(object):
 
     def test_findLocalChanges_5(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file', 'hash': 'test_file'})  # we had a file
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file', 'hash': 'test_file', 'revision': 'revision_number'})  # we had a file
         self.man.fileSystemModule.createFile('test_file')  # we still have it (unmodified)
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file2', 'hash': 'test_file2'})  # we had another file
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file2', 'hash': 'test_file2', 'revision': 'revision_number'})  # we had another file
         # we don't have it anymore
 
         localChanges = self.man.findLocalChanges()
@@ -474,23 +474,22 @@ class TestManager(object):
 
     def test_findLocalChanges_6(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file', 'hash': 'oldhash'})  # we had a file
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file', 'hash': 'oldhash', 'revision': 'revision_number'})  # we had a file
         self.man.fileSystemModule.createFile('test_file')  # we modify it
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file2', 'hash': 'test_file2'})  # we had another file
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file2', 'hash': 'test_file2', 'revision': 'revision_number'})  # we had another file
         # we don't have it anymore
 
         localChanges = self.man.findLocalChanges()
 
-        expected_localChanges = [{'path': 'test_file', 'hash': 'test_file', 'account': self.man.cuentas[0]}, {'path': 'test_file2', 'hash': None, 'account': self.man.cuentas[0]}]
+        expected_localChanges = [{'path': 'test_file', 'hash': 'test_file', 'account': self.man.cuentas[0], 'revision': 'revision_number'}, {'path': 'test_file2', 'hash': None, 'account': self.man.cuentas[0]}]
 
         assert_equal(localChanges, expected_localChanges)
 
     def test_findLocalChanges_7(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file', 'hash': 'test_file'})  # we had a file
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file', 'hash': 'test_file', 'revision': 'revision_number'})  # we had a file
         self.man.fileSystemModule.createFile('test_file')
-        self.man.fileSystemModule.renameFile('test_file','renamed')  # we rename it
-
+        self.man.fileSystemModule.renameFile('test_file', 'renamed')  # we rename it
 
         localChanges = self.man.findLocalChanges()
 
@@ -573,11 +572,11 @@ class TestManager(object):
 
     def test_applyChangesOnRemote(self):
         self.man.newAccount('dropbox_stub', 'user')
-        changesOnRemote = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        changesOnRemote = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number'}]
 
         self.man.applyChangesOnRemote(changesOnRemote)
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number'}]
         remoteChanges = self.man.findRemoteChanges()
 
         assert_equal(remoteChanges, expected_remoteChanges)
@@ -588,7 +587,7 @@ class TestManager(object):
 
         self.man.applyChangesOnRemote(changesOnRemote)
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number'}]
         remoteChanges = self.man.findRemoteChanges()
 
         assert_equal(remoteChanges, expected_remoteChanges)
@@ -596,7 +595,7 @@ class TestManager(object):
     def test_applyChangesOnRemote_3(self):
         self.man.newAccount('dropbox_stub', 'user')
 
-        self.man.cuentas[0].uploadFile('/test/muerte.txt')  #we had a file uploaded
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.findRemoteChanges()  # no pending changes
 
         changesOnRemote = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}]
@@ -624,11 +623,11 @@ class TestManager(object):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.newAccount('dropbox_stub', 'user2')
 
-        changesOnRemote = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[1]}]
+        changesOnRemote = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number'}, {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[1], 'revision': 'revision_number'}]
 
         self.man.applyChangesOnRemote(changesOnRemote)
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[1]}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number'}, {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[1], 'revision': 'revision_number'}]
         remoteChanges = self.man.findRemoteChanges()
 
         assert_equal(remoteChanges, expected_remoteChanges)
@@ -636,15 +635,15 @@ class TestManager(object):
     def test_applyChangesOnDB(self):
         self.man.newAccount('dropbox_stub', 'user')
 
-        self.man.cuentas[0].uploadFile('/test/muerte.txt')  #we had a file uploaded
-        changesOnDB = [{'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0]}]
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
+        changesOnDB = [{'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0], 'revision': 'revision_number'}]
 
         self.man.applyChangesOnLocal(changesOnDB)
         self.man.applyChangesOnDB(changesOnDB)
 
-        DBFiles = [{'path': i['path'], 'hash': i['hash']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'revision': i['revision']} for i in self.man.database['files'].all()]
 
-        expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte.txt'}]
+        expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number'}]
 
         assert_equal(DBFiles, expected_DBFiles)
 
@@ -664,7 +663,7 @@ class TestManager(object):
 
     def test_applyChangesOnDB_3(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt'})
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number'})
         changesOnDB = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}]
 
         self.man.applyChangesOnDB(changesOnDB)
@@ -783,7 +782,7 @@ class TestManager(object):
     def test_integrationSync_6(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt'})
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number'})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # "modify" it
@@ -791,11 +790,11 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'revision': i['revision']} for i in self.man.database['files'].all()]
         remoteFileList = self.man.cuentas[0].getFileList()
 
         expected_fileList = ['/test/muerte.txt']
-        expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
+        expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user, 'revision': 'revision_number'}]
         expected_remoteFileList = ['/test/muerte.txt']
 
         assert_equal(fileList, expected_fileList)
@@ -805,7 +804,7 @@ class TestManager(object):
     def test_integrationSync_7(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt'})
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number'})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.cuentas[0].deleteFile('/test/muerte.txt')  # delete it
@@ -827,7 +826,7 @@ class TestManager(object):
     def test_integrationSync_8(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte2.txt')  # create a file
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt'})
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number'})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.fileSystemModule.renameFile('/test/muerte2.txt', '/test/muerte.txt')  # we modify it locally
@@ -835,11 +834,11 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'revision': i['revision']} for i in self.man.database['files'].all()]
         remoteFileList = self.man.cuentas[0].getFileList()
 
         expected_fileList = ['/test/muerte.txt']
-        expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte2.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
+        expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte2.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user, 'revision': 'revision_number'}]
         expected_remoteFileList = ['/test/muerte.txt']
 
         assert_equal(fileList, expected_fileList)
@@ -849,7 +848,7 @@ class TestManager(object):
     def test_integrationSync_9(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte2.txt')  # create a file
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt'})
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number'})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.fileSystemModule.renameFile('/test/muerte2.txt', '/test/muerte.txt')  # we modify it locally
@@ -858,11 +857,11 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'revision': i['revision']} for i in self.man.database['files'].all()]
         remoteFileList = self.man.cuentas[0].getFileList()
 
         expected_fileList = ['/test/muerte.txt']
-        expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte2.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
+        expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte2.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user, 'revision': 'revision_number'}]
         expected_remoteFileList = ['/test/muerte.txt']
 
         assert_equal(fileList, expected_fileList)
@@ -872,7 +871,7 @@ class TestManager(object):
     def test_integrationSync_10(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt'})
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number'})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.fileSystemModule.remove('/test/muerte.txt')  # delete it
@@ -894,7 +893,7 @@ class TestManager(object):
     def test_integrationSync_11(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt'})
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number'})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.fileSystemModule.remove('/test/muerte.txt')  # delete it

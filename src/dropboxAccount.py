@@ -175,7 +175,7 @@ class DropboxAccountStub(DropboxAccount):
         if file_path not in self.__file_list__:
             self.__file_list__.append(file_path)
 
-        deltaItem = [file_path, {'is_dir': False, 'path': file_path}]
+        deltaItem = [file_path, {'is_dir': False, 'path': file_path, 'rev': 'revision_number'}]
         if deltaItem not in self.__delta_acum__:
             self.__delta_acum__.append(deltaItem)
 
