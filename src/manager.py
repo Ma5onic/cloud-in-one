@@ -281,7 +281,7 @@ class Manager():
                     continue
 
                 self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
-                revision = element['account'].uploadFile(element["path"])  # TODO: Aquí tendré que encriptar el fichero...
+                revision = element['account'].uploadFile(element["path"], element.get('revision'))  # TODO: Aquí tendré que encriptar el fichero...
                 element['revision'] = revision
 
             else:  # deleted, remove from the remote

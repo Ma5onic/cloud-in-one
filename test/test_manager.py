@@ -576,7 +576,7 @@ class TestManager(object):
 
         self.man.applyChangesOnRemote(changesOnRemote)
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number'}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number1'}]
         remoteChanges = self.man.findRemoteChanges()
 
         assert_equal(remoteChanges, expected_remoteChanges)
@@ -627,7 +627,7 @@ class TestManager(object):
 
         self.man.applyChangesOnRemote(changesOnRemote)
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number'}, {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[1], 'revision': 'revision_number'}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number1'}, {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[1], 'revision': 'revision_number1'}]
         remoteChanges = self.man.findRemoteChanges()
 
         assert_equal(remoteChanges, expected_remoteChanges)
@@ -838,7 +838,7 @@ class TestManager(object):
         remoteFileList = self.man.cuentas[0].getFileList()
 
         expected_fileList = ['/test/muerte.txt']
-        expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte2.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user, 'revision': 'revision_number'}]
+        expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte2.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user, 'revision': 'revision_number1'}]
         expected_remoteFileList = ['/test/muerte.txt']
 
         assert_equal(fileList, expected_fileList)
@@ -861,7 +861,7 @@ class TestManager(object):
         remoteFileList = self.man.cuentas[0].getFileList()
 
         expected_fileList = ['/test/muerte.txt']
-        expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte2.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user, 'revision': 'revision_number'}]
+        expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte2.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user, 'revision': 'revision_number1'}]
         expected_remoteFileList = ['/test/muerte.txt']
 
         assert_equal(fileList, expected_fileList)
