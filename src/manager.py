@@ -295,8 +295,9 @@ class Manager():
                 continue
 
             if element['hash']:  # created or modified, upsert in the db
-                md5 = self.fileSystemModule.md5sum(element['path'])
-                self.saveFile(element['account'], element['path'], md5)
+                if element['hash'] == 'MISSING':
+                    element['hash'] = self.fileSystemModule.md5sum(element['path'])
+                self.saveFile(element)
 
             else:  # deleted, remove from the db
                 self.deleteFileDB(element['path'], element['account'])
@@ -357,7 +358,10 @@ class Manager():
         files_table = self.database['files']
         files_table.delete(path=path)
 
-    def saveFile(self, account, path, file_hash=None):
+    def saveFile(self, element):
+        account = element['account']
+        path = element['path']
+        file_hash = element['hash']
         self.logger.debug('saving file <' + path + '> with hash <' + str(file_hash) + '> to account <' + account.getAccountType() + ', ' + account.user + '>')
         files_table = self.database['files']
         files_table.upsert(dict(accountType=account.getAccountType(), user=account.user, path=path, hash=file_hash), ['accountType', 'user', 'path'])
