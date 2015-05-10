@@ -58,7 +58,7 @@ class TestManager(object):
     @Ignore
     def test_deleteAccountAndFiles(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile(self.man.cuentas[0], 'testPath', 'hash')
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'testPath', 'hash': 'hash'})
         self.man.deleteAccount(self.man.cuentas[0])
         assert_false(self.man.cuentas)
 
@@ -159,7 +159,7 @@ class TestManager(object):
 
     def test_findRemoteChanges_9(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile(self.man.cuentas[0], '/test/muerte.txt', 'MISSING')  # we had a file
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': 'MISSING'})  # we had a file
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # "external" upload
         self.man.cuentas[0]._delta_reset_ = True  # we receive a reset
 
@@ -428,7 +428,7 @@ class TestManager(object):
 
     def test_findLocalChanges_2(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile(self.man.cuentas[0], 'test_file', 'oldhash')  # we had a file (hash=oldhash)
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file', 'hash': 'oldhash'})  # we had a file (hash=oldhash)
         self.man.fileSystemModule.createFile('test_file')  # we modify it
 
         localChanges = self.man.findLocalChanges()
@@ -439,7 +439,7 @@ class TestManager(object):
 
     def test_findLocalChanges_3(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile(self.man.cuentas[0], 'test_file', 'test_file')  # we had a file
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file', 'hash': 'test_file'})  # we had a file
         # we don't have it anymore
 
         localChanges = self.man.findLocalChanges()
@@ -450,7 +450,7 @@ class TestManager(object):
 
     def test_findLocalChanges_4(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile(self.man.cuentas[0], 'test_file', 'test_file')  # we had a file
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file', 'hash': 'test_file'})  # we had a file
         self.man.fileSystemModule.createFile('test_file')  # we still have it (unmodified)
 
         localChanges = self.man.findLocalChanges()
@@ -461,9 +461,9 @@ class TestManager(object):
 
     def test_findLocalChanges_5(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile(self.man.cuentas[0], 'test_file', 'test_file')  # we had a file
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file', 'hash': 'test_file'})  # we had a file
         self.man.fileSystemModule.createFile('test_file')  # we still have it (unmodified)
-        self.man.saveFile(self.man.cuentas[0], 'test_file2', 'test_file2')  # we had another file
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file2', 'hash': 'test_file2'})  # we had another file
         # we don't have it anymore
 
         localChanges = self.man.findLocalChanges()
@@ -474,9 +474,9 @@ class TestManager(object):
 
     def test_findLocalChanges_6(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile(self.man.cuentas[0], 'test_file', 'oldhash')  # we had a file
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file', 'hash': 'oldhash'})  # we had a file
         self.man.fileSystemModule.createFile('test_file')  # we modify it
-        self.man.saveFile(self.man.cuentas[0], 'test_file2', 'test_file2')  # we had another file
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file2', 'hash': 'test_file2'})  # we had another file
         # we don't have it anymore
 
         localChanges = self.man.findLocalChanges()
@@ -487,7 +487,7 @@ class TestManager(object):
 
     def test_findLocalChanges_7(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile(self.man.cuentas[0], 'test_file', 'test_file')  # we had a file
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'test_file', 'hash': 'test_file'})  # we had a file
         self.man.fileSystemModule.createFile('test_file')
         self.man.fileSystemModule.renameFile('test_file','renamed')  # we rename it
 
@@ -664,7 +664,7 @@ class TestManager(object):
 
     def test_applyChangesOnDB_3(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile(self.man.cuentas[0], '/test/muerte.txt', '/test/muerte.txt')
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt'})
         changesOnDB = [{'path': '/test/muerte.txt', 'hash': None, 'account': self.man.cuentas[0]}]
 
         self.man.applyChangesOnDB(changesOnDB)
@@ -783,7 +783,7 @@ class TestManager(object):
     def test_integrationSync_6(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
-        self.man.saveFile(self.man.cuentas[0], '/test/muerte.txt', '/test/muerte.txt')
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt'})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # "modify" it
@@ -805,7 +805,7 @@ class TestManager(object):
     def test_integrationSync_7(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
-        self.man.saveFile(self.man.cuentas[0], '/test/muerte.txt', '/test/muerte.txt')
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt'})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.cuentas[0].deleteFile('/test/muerte.txt')  # delete it
@@ -827,7 +827,7 @@ class TestManager(object):
     def test_integrationSync_8(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte2.txt')  # create a file
-        self.man.saveFile(self.man.cuentas[0], '/test/muerte.txt', '/test/muerte2.txt')
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt'})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.fileSystemModule.renameFile('/test/muerte2.txt', '/test/muerte.txt')  # we modify it locally
@@ -849,7 +849,7 @@ class TestManager(object):
     def test_integrationSync_9(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte2.txt')  # create a file
-        self.man.saveFile(self.man.cuentas[0], '/test/muerte.txt', '/test/muerte.txt')
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt'})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.fileSystemModule.renameFile('/test/muerte2.txt', '/test/muerte.txt')  # we modify it locally
@@ -872,7 +872,7 @@ class TestManager(object):
     def test_integrationSync_10(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
-        self.man.saveFile(self.man.cuentas[0], '/test/muerte.txt', '/test/muerte.txt')
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt'})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.fileSystemModule.remove('/test/muerte.txt')  # delete it
@@ -894,7 +894,7 @@ class TestManager(object):
     def test_integrationSync_11(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
-        self.man.saveFile(self.man.cuentas[0], '/test/muerte.txt', '/test/muerte.txt')
+        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt'})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.fileSystemModule.remove('/test/muerte.txt')  # delete it
