@@ -101,7 +101,7 @@ class Manager():
                         self.logger.debug('is_dir = True')
                     else:
                         self.logger.debug('is_dir = False')
-                        remoteChanges.append({'path': metadata['path'], 'hash': 'MISSING', 'account': account})
+                        remoteChanges.append({'path': metadata['path'], 'hash': 'MISSING', 'account': account, 'revision': metadata['rev']})
 
                 else:  # delete path
                     remoteChanges.append({'path': filePath, 'hash': None, 'account': account})
@@ -132,6 +132,7 @@ class Manager():
                             indexesToRemove.append(collided_i)
                         else:  # different change...
                             self.logger.error("Same file changed in two different ways in the same changeList.")
+                            # TODO: this will fail miserably if a same file is changed in two different accounts...
                             raise StopIteration("Same file changed in two different ways in the same changeList." + str(change) + " vs " + str(collided))
                     else:  # change is a deletion
                         self.logger.debug('Deleted and modified, keeping modification')
@@ -242,7 +243,7 @@ class Manager():
                 md5 = self.fileSystemModule.md5sum(checking['path'])
                 if md5 != checking['hash']:
                     self.logger.debug('The file <' + checking['path'] + '> has been MODIFIED')
-                    localChanges.append(dict(path=checking['path'], hash=md5, account=checking['account']))
+                    localChanges.append(dict(path=checking['path'], hash=md5, account=checking['account'], revision=checking['revision']))
 
                 else:
                     self.logger.debug('The file <' + checking['path'] + '> is the same. Doing nothing')
@@ -364,7 +365,7 @@ class Manager():
         file_hash = element['hash']
         self.logger.debug('saving file <' + path + '> with hash <' + str(file_hash) + '> to account <' + account.getAccountType() + ', ' + account.user + '>')
         files_table = self.database['files']
-        files_table.upsert(dict(accountType=account.getAccountType(), user=account.user, path=path, hash=file_hash), ['accountType', 'user', 'path'])
+        files_table.upsert(dict(accountType=account.getAccountType(), user=account.user, path=path, hash=file_hash, revision=element['revision']), ['accountType', 'user', 'path'])
         # TODO: check if can be inserted and this...
         return True
 
@@ -383,7 +384,7 @@ class Manager():
     def getFiles(self, account):
         files_table = self.database['files']
         files = files_table.find(accountType=account.getAccountType(), user=account.user)
-        return [{'path': element['path'], 'hash': element['hash'], 'account': account} for element in files]
+        return [{'path': element['path'], 'hash': element['hash'], 'account': account, 'revision': element['revision']} for element in files]
 
 
 if __name__ == '__main__':
