@@ -94,13 +94,13 @@ class DropboxAccount(account.Account):
     def getAccountType(self):
         return "dropbox"
 
-    def uploadFile(self, file_path):
+    def uploadFile(self, file_path, rev):
         client = self.__getDropboxClient()
         self.logger.info("Calling uploadFile")
         self.logger.debug("file_path = <" + file_path + ">")
 
         stream = self.fileSystemModule.openFile(file_path)
-        response = client.put_file(file_path, stream)
+        response = client.put_file(file_path, stream, parent_rev=rev)
         self.logger.debug("Response = <" + str(response) + ">")
         self.fileSystemModule.closeFile(file_path, stream)
         return response['rev']  # Or something like that...
@@ -171,15 +171,19 @@ class DropboxAccountStub(DropboxAccount):
     def getAccountType(self):
         return "dropbox_stub"
 
-    def uploadFile(self, file_path):
+    def uploadFile(self, file_path, rev=None):
         if file_path not in self.__file_list__:
             self.__file_list__.append(file_path)
 
-        deltaItem = [file_path, {'is_dir': False, 'path': file_path, 'rev': 'revision_number'}]
+        if not rev:
+            rev = 'revision_number'
+        else:
+            rev = rev + '1'
+        deltaItem = [file_path, {'is_dir': False, 'path': file_path, 'rev': rev}]
         if deltaItem not in self.__delta_acum__:
             self.__delta_acum__.append(deltaItem)
 
-        return 'revision_number'
+        return deltaItem[1]['rev']
 
     def deleteFile(self, file_path):
         if file_path in self.__file_list__:
