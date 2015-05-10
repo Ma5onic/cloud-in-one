@@ -159,7 +159,9 @@ class Manager():
         self.logger.debug('remoteChanges <' + str(remoteChanges) + '>')
 
         localChanges = self.__fixAutoCollisions__(localChanges)
+        localChanges = [item for item in localChanges if item['hash'] is None] + [item for item in localChanges if item['hash'] is not None]
         remoteChanges = self.__fixAutoCollisions__(remoteChanges)
+        remoteChanges = [item for item in remoteChanges if item['hash'] is None] + [item for item in remoteChanges if item['hash'] is not None]
 
         self.logger.debug('localChanges <' + str(localChanges) + '>')
         self.logger.debug('remoteChanges <' + str(remoteChanges) + '>')
@@ -211,8 +213,6 @@ class Manager():
         # remoteChanges that weren't present in localChanges
         changesOnLocal += remoteChanges
         changesOnDB += remoteChanges
-
-
 
         self.logger.debug('changesOnLocal <' + str(changesOnLocal) + '>')
         self.logger.debug('changesOnDB <' + str(changesOnDB) + '>')
@@ -392,9 +392,5 @@ if __name__ == '__main__':
          #   man.deleteAccount(man.cuentas[i])
 
     list_files = man.fileSystemModule.getFileList()
-    for i in list_files:
-        print(i)
-
-    print('======')
-    for i in man.getFilesPaths(man.cuentas[0].getAccountType(), man.cuentas[0].user):
-        print(i)
+    database_files = man.getFilesPaths(man.cuentas[0].getAccountType(), man.cuentas[0].user)
+    assert(list_files.sort() == database_files.sort())
