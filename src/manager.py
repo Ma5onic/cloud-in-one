@@ -134,8 +134,11 @@ class Manager():
                             indexesToRemove.append(collided_i)
                         else:  # different change...
                             self.logger.error("Same file changed in two different ways in the same changeList.")
-                            # TODO: this will fail miserably if a same file is changed in two different accounts...
-                            raise StopIteration("Same file changed in two different ways in the same changeList." + str(change) + " vs " + str(collided))
+                            if not('revision' in collided and 'revision' in change and collided['revision'] == change['revision']):
+                                pass
+                                # TODO: this will fail miserably if a same file is changed in two different accounts...
+                                # raise StopIteration("Same file changed in two different ways in the same changeList." + str(change) + " vs " + str(collided))
+                            indexesToRemove.append(collided_i)
                     else:  # change is a deletion
                         self.logger.debug('Deleted and modified, keeping modification')
                         indexesToRemove.append(i)
@@ -407,4 +410,4 @@ if __name__ == '__main__':
 
     list_files = man.fileSystemModule.getFileList()
     database_files = man.getFilesPaths(man.cuentas[0].getAccountType(), man.cuentas[0].user)
-    assert(list_files.sort() == database_files.sort())
+    assert(sorted(list_files) == sorted(database_files))
