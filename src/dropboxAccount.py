@@ -11,14 +11,14 @@ TOKEN_FILE = "config/dropbox_token.txt"
 
 class DropboxAccount(account.Account):
     """docstring for DropboxAccount"""
-    def __init__(self, fileSystemModule, user, access_token=None, user_id=None):
+    def __init__(self, fileSystemModule, user, cursor=None, access_token=None, user_id=None):
         self.logger = Logger(__name__)
         self.logger.info("Creating Dropbox Account")
         self.fileSystemModule = fileSystemModule
         self.user = user
         self.access_token = access_token
         self.user_id = user_id
-        self.last_cursor = None
+        self.last_cursor = cursor
         # You shouldn't use self.__client, call __getDropboxClient() to get it safely
         self.__client = None
         self.__client = self.__getDropboxClient()
@@ -63,12 +63,14 @@ class DropboxAccount(account.Account):
         # for now, it will return all what Dropbox sends, but as we move forward we will return a custom metadata dict
         return metadata
 
-    def delta(self, returnDict=dict()):
+    def delta(self, returnDict=None):
         client = self.__getDropboxClient()
         self.logger.info("Calling delta")
         self.logger.debug("Last cursor = <" + str(self.last_cursor) + ">")
-        returnDict["entries"] = []
-        returnDict["reset"] = False
+        if not returnDict:
+            returnDict = dict()
+            returnDict["entries"] = []
+            returnDict["reset"] = False
 
         deltaDict = client.delta(cursor=self.last_cursor)
         self.last_cursor = deltaDict["cursor"]

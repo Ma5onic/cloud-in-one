@@ -74,6 +74,8 @@ class Manager():
         changesOnLocal, changesOnDB, changesOnRemote = self.fixCollisions(localChanges, remoteChanges)
 
         self.syncAccounts(changesOnLocal, changesOnDB, changesOnRemote)
+        for i in self.cuentas:
+            self.saveAccount(i)
 
     def syncAccounts(self, changesOnLocal, changesOnDB, changesOnRemote):
         self.applyChangesOnLocal(changesOnLocal)
@@ -154,6 +156,20 @@ class Manager():
 
         return changeList
 
+    def __conflicted_copy__(self, local, collided, changesOnLocal, changesOnDB, changesOnRemote):
+        date = datetime.date.today()
+        oldpath = local['path']
+        newname = oldpath+'__CONFLICTED_COPY__'+date.isoformat()
+        self.logger.debug('Both modified. New name = <' + newname + '>')
+        local['path'] = newname
+        local['oldpath'] = oldpath
+
+        changesOnLocal.append(local)
+        changesOnLocal.append(collided)
+        changesOnDB.append(local)
+        changesOnDB.append(collided)
+        changesOnRemote.append(local)
+
     def fixCollisions(self, localChanges, remoteChanges):
         self.logger.info('fixCollisions')
         self.logger.debug('localChanges <' + str(localChanges) + '>')
@@ -177,22 +193,14 @@ class Manager():
                 self.logger.debug('Found collision! <' + local['path'] + '>')
                 if collided['hash']:  # remote created/modified
                     if local['hash']:  # AND local created/modified!
-                        if local['hash'] == collided['hash']:  # same change...
-                            self.logger.debug('Both modified in the same way. Keeping local changes')
-                            changesOnDB.append(collided)
-                        else:
-                            date = datetime.date.today()
-                            oldpath = local['path']
-                            newname = oldpath+'__CONFLICTED_COPY__'+date.isoformat()
-                            self.logger.debug('Both modified. New name = <' + newname + '>')
-                            local['path'] = newname
-                            local['oldpath'] = oldpath
-
-                            changesOnLocal.append(local)
-                            changesOnLocal.append(collided)
-                            changesOnDB.append(local)
-                            changesOnDB.append(collided)
-                            changesOnRemote.append(local)
+                        try:
+                            if local['revision'] == collided['revision']:  # same change...
+                                self.logger.debug('Both modified in the same way. Keeping local changes')
+                                changesOnDB.append(collided)
+                            else:
+                                self.__conflicted_copy__(local, collided, changesOnLocal, changesOnDB, changesOnRemote)
+                        except(KeyError):
+                            self.__conflicted_copy__(local, collided, changesOnLocal, changesOnDB, changesOnRemote)
 
                     else:  # local deletion, remote modification, we keep the remote changes.
                         self.logger.debug('Deleted locally, keeping remote changes')
@@ -330,7 +338,7 @@ class Manager():
         cuentas_list = []
         for acc in accounts_data:
             if acc["accountType"] == 'dropbox':
-                cuentas_list.append(dropboxAccount.DropboxAccount(self.fileSystemModule, acc['user'], acc['token'], acc['userid']))
+                cuentas_list.append(dropboxAccount.DropboxAccount(self.fileSystemModule, acc['user'], access_token=acc['token'], user_id=acc['userid'], cursor=acc['cursor']))
 
         return cuentas_list
 
@@ -344,7 +352,7 @@ class Manager():
 
     def saveAccount(self, account):
         accounts_table = self.database['accounts']
-        accounts_table.upsert(dict(accountType=account.getAccountType(), user=account.user, token=account.access_token, userid=account.user_id), ['accountType', 'user'])
+        accounts_table.upsert(dict(accountType=account.getAccountType(), user=account.user, token=account.access_token, userid=account.user_id, cursor=account.last_cursor), ['accountType', 'user'])
 
     def deleteAccountDB(self, account):
         accounts_table = self.database['accounts']
