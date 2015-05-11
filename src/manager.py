@@ -103,7 +103,7 @@ class Manager():
                         self.logger.debug('is_dir = True')
                     else:
                         self.logger.debug('is_dir = False')
-                        old_revision = self.getRevisionDB(filePath)
+                        old_revision = self.getRevisionDB(metadata['path'])
                         if old_revision != metadata['rev']:
                             remoteChanges.append({'path': metadata['path'], 'hash': 'MISSING', 'account': account, 'revision': metadata['rev']})
 
@@ -181,9 +181,7 @@ class Manager():
         self.logger.debug('remoteChanges <' + str(remoteChanges) + '>')
 
         localChanges = self.__fixAutoCollisions__(localChanges)
-        localChanges = [item for item in localChanges if item['hash'] is None] + [item for item in localChanges if item['hash'] is not None]
         remoteChanges = self.__fixAutoCollisions__(remoteChanges)
-        remoteChanges = [item for item in remoteChanges if item['hash'] is None] + [item for item in remoteChanges if item['hash'] is not None]
 
         self.logger.debug('localChanges <' + str(localChanges) + '>')
         self.logger.debug('remoteChanges <' + str(remoteChanges) + '>')
@@ -235,6 +233,9 @@ class Manager():
         changesOnLocal = self.__fixAutoCollisions__(changesOnLocal)
         changesOnDB = self.__fixAutoCollisions__(changesOnDB)
         changesOnRemote = self.__fixAutoCollisions__(changesOnRemote)
+        changesOnLocal = [item for item in changesOnLocal if item['hash'] is None] + [item for item in changesOnLocal if item['hash'] is not None]
+        changesOnDB = [item for item in changesOnDB if item['hash'] is None] + [item for item in changesOnDB if item['hash'] is not None]
+        changesOnRemote = [item for item in changesOnRemote if item['hash'] is None] + [item for item in changesOnRemote if item['hash'] is not None]
 
         self.logger.debug('changesOnLocal <' + str(changesOnLocal) + '>')
         self.logger.debug('changesOnDB <' + str(changesOnDB) + '>')
