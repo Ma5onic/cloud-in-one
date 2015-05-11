@@ -319,9 +319,15 @@ class Manager():
 
     def applyChangesOnLocal(self, changesOnLocal):
         self.logger.info("Applying changes on local")
-        for element in changesOnLocal:
+        for i, element in enumerate(changesOnLocal):
             if 'oldpath' in element:  # rename
-                self.fileSystemModule.renameFile(element["oldpath"], element["path"])
+                try:
+                    self.fileSystemModule.renameFile(element["oldpath"], element["path"])
+                except FileExistsError:
+                    self.logger.debug("<" + element["path"] + "> Already exists, trying with <" + element["path"] + "_2" + ">")
+                    element['path'] = element['path'] + '_2'
+                    changesOnLocal.insert(i+1, element)
+                    continue
 
             elif element['hash']:  # created or modified
                 streamFile = element['account'].getFile(element["path"])  # TODO: Aquí tendré que DESencriptar el fichero...
