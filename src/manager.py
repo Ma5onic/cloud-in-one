@@ -103,7 +103,9 @@ class Manager():
                         self.logger.debug('is_dir = True')
                     else:
                         self.logger.debug('is_dir = False')
-                        remoteChanges.append({'path': metadata['path'], 'hash': 'MISSING', 'account': account, 'revision': metadata['rev']})
+                        old_revision = self.getRevisionDB(filePath)
+                        if old_revision != metadata['rev']:
+                            remoteChanges.append({'path': metadata['path'], 'hash': 'MISSING', 'account': account, 'revision': metadata['rev']})
 
                 else:  # delete path
                     remoteChanges.append({'path': filePath, 'hash': None, 'account': account})
@@ -333,6 +335,11 @@ class Manager():
         files_table = self.database['files']
         row = files_table.find_one(path=filename)
         return row['hash']
+
+    def getRevisionDB(self, filename):
+        files_table = self.database['files']
+        row = files_table.find_one(path=filename)
+        return row['revision']
 
     # TODO: generalize
     def getAccounts(self):
