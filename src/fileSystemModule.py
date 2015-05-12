@@ -137,9 +137,13 @@ class FileSystemModuleStub(FileSystemModule):
         return os.path.join(self.main_path, dir_path)
 
     def createFile(self, file_path, stream=None):
-        if file_path not in self.getFileList():
+        try:
+            # If the file already existed
+            file_info = (next(item for item in self.__file_list__ if item['path'] == file_path))
+            file_info['stream'] = stream
+            file_info['hash'] = 'modified'
+        except StopIteration:
             self.__file_list__.append({'path': file_path, 'stream': stream, 'hash': file_path})
-        return os.path.join(self.main_path, file_path)
 
     def openFile(self, file_path):
         for i in self.__file_list__:
@@ -151,10 +155,12 @@ class FileSystemModuleStub(FileSystemModule):
         pass
 
     def renameFile(self, oldpath, newpath):
-        for i in self.__file_list__:
-            if i['path'] == oldpath:
-                i['path'] = newpath
-                break
+        try:
+            (next(i for i in self.__file_list__ if i['path'] == newpath))
+            raise FileExistsError
+        except StopIteration:
+            item = (next(i for i in self.__file_list__ if i['path'] == oldpath))
+            item['path'] = newpath
         return True
 
     def remove(self, path):

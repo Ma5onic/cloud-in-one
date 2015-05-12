@@ -916,6 +916,31 @@ class TestManager(object):
         assert_equal(DBFiles, expected_DBFiles)
         assert_equal(remoteFileList, expected_remoteFileList)
 
+    def test_integrationSync_12(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
+        self.man.cuentas[0].uploadFile('/test/muerte.txt', '1')  # we had a file uploaded
+
+        self.man.updateLocalSyncFolder()  # this conflicts
+
+        self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
+        self.man.cuentas[0].uploadFile('/test/muerte.txt', '2')  # we had a file uploaded
+
+        self.man.updateLocalSyncFolder()  # this conflicts again, and the name is already taken
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList = self.man.cuentas[0].getFileList()
+
+        date = datetime.date.today()
+        expected_fileList = ['/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat() + '_2', '/test/muerte.txt']
+        expected_DBFiles = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}, {'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}, {'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat() + '_2', 'hash': 'modified', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
+        expected_remoteFileList = ['/test/muerte.txt', '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat() + '_2']
+
+        assert_equal(sorted(fileList), sorted(expected_fileList))
+        assert_equal(DBFiles, expected_DBFiles)
+        assert_equal(sorted(remoteFileList), sorted(expected_remoteFileList))
+
     def test_twoAccounts_fits_first(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.newAccount('dropbox_stub', 'user2')
