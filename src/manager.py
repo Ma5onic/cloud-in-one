@@ -104,7 +104,7 @@ class Manager():
                     else:
                         self.logger.debug('is_dir = False')
                         old_revision = self.getRevisionDB(metadata['path'])
-                        if old_revision != metadata['rev']:
+                        if old_revision != metadata['rev'] or deltaDict['reset']:
                             remoteChanges.append({'path': metadata['path'], 'hash': 'MISSING', 'account': account, 'revision': metadata['rev']})
 
                 else:  # delete path
@@ -346,7 +346,10 @@ class Manager():
     def getRevisionDB(self, filename):
         files_table = self.database['files']
         row = files_table.find_one(path=filename)
-        return row['revision']
+        if row:
+            return row['revision']
+        else:
+            return None
 
     # TODO: generalize
     def getAccounts(self):
