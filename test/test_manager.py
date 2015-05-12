@@ -339,9 +339,10 @@ class TestManager(object):
 
         fixedChangesOnLocal, fixedChangesOnDB, fixedChangesOnRemote = self.man.fixCollisions(localChanges, remoteChanges)
 
-        expected_fixedChangesOnLocal = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'account': self.man.cuentas[0], 'hash': 'MISSING2', 'oldpath': '/test/muerte2.txt', 'path': '/test/muerte2.txt__CONFLICTED_COPY__2015-05-11'}, {'path': '/test/muerte2.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
-        expected_fixedChangesOnDB = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'account': self.man.cuentas[0], 'hash': 'MISSING2', 'oldpath': '/test/muerte2.txt', 'path': '/test/muerte2.txt__CONFLICTED_COPY__2015-05-11'}, {'path': '/test/muerte2.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
-        expected_fixedChangesOnRemote = [{'account': self.man.cuentas[0], 'hash': 'MISSING2', 'oldpath': '/test/muerte2.txt', 'path': '/test/muerte2.txt__CONFLICTED_COPY__2015-05-11'}]
+        date = datetime.date.today()
+        expected_fixedChangesOnLocal = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'account': self.man.cuentas[0], 'hash': 'MISSING2', 'oldpath': '/test/muerte2.txt', 'path': '/test/muerte2.txt__CONFLICTED_COPY__' + date.isoformat()}, {'path': '/test/muerte2.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnDB = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0]}, {'account': self.man.cuentas[0], 'hash': 'MISSING2', 'oldpath': '/test/muerte2.txt', 'path': '/test/muerte2.txt__CONFLICTED_COPY__' + date.isoformat()}, {'path': '/test/muerte2.txt', 'hash': 'MISSING2', 'account': self.man.cuentas[0]}]
+        expected_fixedChangesOnRemote = [{'account': self.man.cuentas[0], 'hash': 'MISSING2', 'oldpath': '/test/muerte2.txt', 'path': '/test/muerte2.txt__CONFLICTED_COPY__' + date.isoformat()}]
 
         assert_equal(fixedChangesOnLocal, expected_fixedChangesOnLocal)
         assert_equal(fixedChangesOnDB, expected_fixedChangesOnDB)
