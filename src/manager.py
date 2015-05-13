@@ -78,8 +78,8 @@ class Manager():
             self.saveAccount(i)
 
     def syncAccounts(self, changesOnLocal, changesOnDB, changesOnRemote):
-        self.applyChangesOnLocal(changesOnLocal)
         self.applyChangesOnRemote(changesOnRemote)
+        self.applyChangesOnLocal(changesOnLocal)
         self.applyChangesOnDB(changesOnDB)
 
     def findRemoteChanges(self):
@@ -131,16 +131,25 @@ class Manager():
 
                 if collided['hash']:  # one created/modified
                     if change['hash']:  # the other too!
-                        if collided['hash'] == change['hash']:  # same change...
-                            self.logger.warn("Same change twice in the same changeList. There's a bug there...")
-                            elementsToDel.append(collided)
-                        else:  # different change...
-                            self.logger.error("Same file changed in two different ways in the same changeList.")
-                            if not('revision' in collided and 'revision' in change and collided['revision'] == change['revision']):
-                                pass
-                                # TODO: this will fail miserably if a same file is changed in two different accounts...
-                                # raise StopIteration("Same file changed in two different ways in the same changeList." + str(change) + " vs " + str(collided))
-                            elementsToDel.append(collided)
+                        try:
+                            if change['account'] != collided['account']:  # they come from different places
+                                self.logger.debug("CONFLICTED COPY")
+
+                                date = datetime.date.today()
+                                oldpath = change['path']
+                                newname = oldpath+'__CONFLICTED_COPY__FROM_' + str(change['account']) + '_' + date.isoformat()
+                                self.logger.debug('Both modified. New name = <' + newname + '>')
+                                change['path'] = newname
+                                change['oldpath'] = oldpath
+                                change['remote_move'] = True
+                                self.logger.debug(change)
+                            else:  # they come from the same place
+                                self.logger.warn("Same file changed twice in the same changelist. That's a bug")
+                                elementsToDel.append(collided)
+                        except KeyError:  # That should be a bug...
+                            self.logger.error("Same file changed twice in a bad way. That's a bug")
+                            raise StopIteration('Same file changed twice in a bad way')
+
                     else:  # change is a deletion
                         self.logger.debug('Deleted and modified, keeping modification')
                         elementsToDel.append(change)
@@ -161,19 +170,17 @@ class Manager():
 
         return changeList
 
-    def __conflicted_copy__(self, local, collided, changesOnLocal, changesOnDB, changesOnRemote):
+    def __conflicted_copy__(self, change_info):
         date = datetime.date.today()
-        oldpath = local['path']
+        oldpath = change_info['path']
         newname = oldpath+'__CONFLICTED_COPY__'+date.isoformat()
+        i = 1
+        while self.existsPathDB(newname):
+            newname += '_' + str(i)
+            i += 1
         self.logger.debug('Both modified. New name = <' + newname + '>')
-        local['path'] = newname
-        local['oldpath'] = oldpath
-
-        changesOnLocal.append(local)
-        changesOnLocal.append(collided)
-        changesOnDB.append(local)
-        changesOnDB.append(collided)
-        changesOnRemote.append(local)
+        change_info['path'] = newname
+        change_info['oldpath'] = oldpath
 
     def fixCollisions(self, localChanges, remoteChanges):
         self.logger.info('fixCollisions')
@@ -199,11 +206,17 @@ class Manager():
                         try:
                             if local['revision'] == collided['revision']:  # same change...
                                 self.logger.debug('Both modified in the same way. Keeping local changes')
-                                changesOnDB.append(collided)
+                                changesOnDB.append(collided)  # TODO: WTF!?
                             else:
-                                self.__conflicted_copy__(local, collided, changesOnLocal, changesOnDB, changesOnRemote)
+                                raise KeyError
                         except(KeyError):
-                            self.__conflicted_copy__(local, collided, changesOnLocal, changesOnDB, changesOnRemote)
+                            self.__conflicted_copy__(local)
+                            # localChanges.append(local)
+                            changesOnLocal.append(local)
+                            changesOnLocal.append(collided)
+                            changesOnDB.append(local)
+                            changesOnDB.append(collided)
+                            changesOnRemote.append(local)
 
                     else:  # local deletion, remote modification, we keep the remote changes.
                         self.logger.debug('Deleted locally, keeping remote changes')
@@ -225,6 +238,7 @@ class Manager():
         # remoteChanges that weren't present in localChanges
         changesOnLocal += remoteChanges
         changesOnDB += remoteChanges
+        changesOnRemote += [change for change in remoteChanges if 'remote_move' in change]
 
         self.logger.debug('changesOnLocal <' + str(changesOnLocal) + '>')
         self.logger.debug('changesOnDB <' + str(changesOnDB) + '>')
@@ -294,8 +308,12 @@ class Manager():
                     element['account'] = None
                     continue
 
-                self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
-                revision = element['account'].uploadFile(element["path"], element.get('revision'))  # TODO: Aquí tendré que encriptar el fichero...
+                if 'remote_move' in element:  # rename
+                    self.logger.debug("Renaming file <" + element['oldpath'] + "> to <" + element['path'] + "> in account <" + str(element['account']) + ">")
+                    revision = element['account'].renameFile(element['oldpath'], element["path"])  # TODO: Aquí tendré que encriptar el fichero...
+                else:  # normal upload
+                    self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
+                    revision = element['account'].uploadFile(element["path"], element.get('revision'))  # TODO: Aquí tendré que encriptar el fichero...
                 element['revision'] = revision
 
             else:  # deleted, remove from the remote
@@ -320,7 +338,7 @@ class Manager():
     def applyChangesOnLocal(self, changesOnLocal):
         self.logger.info("Applying changes on local")
         for i, element in enumerate(changesOnLocal):
-            if 'oldpath' in element:  # rename
+            if 'oldpath' in element and not 'remote_move' in element:  # rename
                 try:
                     self.fileSystemModule.renameFile(element["oldpath"], element["path"])
                 except FileExistsError:
@@ -330,6 +348,7 @@ class Manager():
                     continue
 
             elif element['hash']:  # created or modified
+                self.logger.debug("Downloading file <" + element['path'] + ">")
                 streamFile = element['account'].getFile(element["path"])  # TODO: Aquí tendré que DESencriptar el fichero...
                 self.fileSystemModule.createFile(element["path"], streamFile)
                 streamFile.close()
@@ -396,6 +415,14 @@ class Manager():
         files_table.upsert(dict(accountType=account.getAccountType(), user=account.user, path=path, hash=file_hash, revision=element['revision']), ['accountType', 'user', 'path'])
         # TODO: check if can be inserted and this...
         return True
+
+    def existsPathDB(self, newname):
+        files_table = self.database['files']
+        files = files_table.find(path=newname)
+        if list(files):
+            return True
+        else:
+            return False
 
     def connectDB(self, database):
         return dataset.connect('sqlite:///' + database)
