@@ -116,7 +116,7 @@ class Manager():
     def __fixAutoCollisions__(self, changeList):
         self.logger.debug('changeList <' + str(changeList) + '>')
 
-        indexesToRemove = []
+        elementsToDel = []
 
         for i, change in enumerate(changeList):
             collided_tuple = next(((j, item) for j, item in enumerate(changeList) if item['path'] == change['path'] and i != j), None)
@@ -125,7 +125,7 @@ class Manager():
                 collided = collided_tuple[1]
                 self.logger.debug('Found collision! <' + change['path'] + '>')
 
-                if i in indexesToRemove or collided_i in indexesToRemove:
+                if change in elementsToDel or collided in elementsToDel:
                     self.logger.debug('Already going to remove it! <' + change['path'] + '>')
                     continue
 
@@ -133,29 +133,29 @@ class Manager():
                     if change['hash']:  # the other too!
                         if collided['hash'] == change['hash']:  # same change...
                             self.logger.warn("Same change twice in the same changeList. There's a bug there...")
-                            indexesToRemove.append(collided_i)
+                            elementsToDel.append(collided)
                         else:  # different change...
                             self.logger.error("Same file changed in two different ways in the same changeList.")
                             if not('revision' in collided and 'revision' in change and collided['revision'] == change['revision']):
                                 pass
                                 # TODO: this will fail miserably if a same file is changed in two different accounts...
                                 # raise StopIteration("Same file changed in two different ways in the same changeList." + str(change) + " vs " + str(collided))
-                            indexesToRemove.append(collided_i)
+                            elementsToDel.append(collided)
                     else:  # change is a deletion
                         self.logger.debug('Deleted and modified, keeping modification')
-                        indexesToRemove.append(i)
+                        elementsToDel.append(change)
                 else:  # collided is a deletion
                     if change['hash']:  # the other is not
                         self.logger.debug('Deleted and modified, keeping modification')
-                        indexesToRemove.append(collided_i)
+                        elementsToDel.append(collided)
                     else:
                         self.logger.debug('Both deleted, keeping only one')
-                        indexesToRemove.append(collided_i)
+                        elementsToDel.append(collided)
 
-        self.logger.debug('indexesToRemove <' + str(indexesToRemove) + '>')
+        self.logger.debug('elementsToDel <' + str(elementsToDel) + '>')
 
-        for i in indexesToRemove:
-            del(changeList[i])
+        for i in elementsToDel:
+            changeList.remove(i)
 
         self.logger.debug('changeList <' + str(changeList) + '>')
 
