@@ -105,7 +105,16 @@ class DropboxAccount(account.Account):
         response = client.put_file(file_path, stream, parent_rev=rev)
         self.logger.debug("Response = <" + str(response) + ">")
         self.fileSystemModule.closeFile(file_path, stream)
-        return response['rev']  # Or something like that...
+        return response['rev']
+
+    def renameFile(self, oldpath, newpath):
+        client = self.__getDropboxClient()
+        self.logger.info("Calling renameFile")
+        self.logger.debug("renaming <" + oldpath + "> to <" + newpath + ">")
+
+        response = client.file_move(oldpath, newpath)
+        self.logger.debug("Response = <" + str(response) + ">")
+        return response['rev']
 
     def deleteFile(self, file_path):
         client = self.__getDropboxClient()
@@ -119,7 +128,7 @@ class DropboxAccount(account.Account):
         return True  # TODO: check if the file fits in the available space
 
     def __repr__(self):
-        return self.getAccountType() + ' (' + self.user + ')'
+        return self.getAccountType() + '-' + self.user + ''
 
 
 class DropboxAccountStub(DropboxAccount):
@@ -185,6 +194,15 @@ class DropboxAccountStub(DropboxAccount):
         if deltaItem not in self.__delta_acum__:
             self.__delta_acum__.append(deltaItem)
 
+        return deltaItem[1]['rev']
+
+    def renameFile(self, oldpath, newpath):
+        index = self.__file_list__.index(oldpath)
+        self.__file_list__[index] = newpath
+        deltaItem = [oldpath.lower(), None]
+        self.__delta_acum__.append(deltaItem)
+        deltaItem = [newpath.lower(), {'is_dir': False, 'path': newpath, 'rev': 'renamed'}]
+        self.__delta_acum__.append(deltaItem)
         return deltaItem[1]['rev']
 
     def deleteFile(self, file_path):

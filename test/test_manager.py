@@ -933,13 +933,68 @@ class TestManager(object):
         remoteFileList = self.man.cuentas[0].getFileList()
 
         date = datetime.date.today()
-        expected_fileList = ['/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat() + '_2', '/test/muerte.txt']
-        expected_DBFiles = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}, {'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}, {'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat() + '_2', 'hash': 'modified', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
-        expected_remoteFileList = ['/test/muerte.txt', '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat() + '_2']
+        expected_fileList = ['/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat() + '_1', '/test/muerte.txt']
+        expected_DBFiles = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}, {'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}, {'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat() + '_1', 'hash': 'modified', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
+        expected_remoteFileList = ['/test/muerte.txt', '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat() + '_1']
 
         assert_equal(sorted(fileList), sorted(expected_fileList))
         assert_equal(DBFiles, expected_DBFiles)
         assert_equal(sorted(remoteFileList), sorted(expected_remoteFileList))
+
+    def test_integrationSync_two_accounts(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.newAccount('dropbox_stub', 'user2')
+        self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')  # file uploaded
+        self.man.cuentas[1].uploadFile('/test/muerte.txt')  # file uploaded in both accounts
+
+        self.man.updateLocalSyncFolder()  # this conflicts
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList_0 = self.man.cuentas[0].getFileList()
+        remoteFileList_1 = self.man.cuentas[1].getFileList()
+
+        date = datetime.date.today()
+        expected_fileList = ['/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), '/test/muerte.txt', '/test/muerte.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[0]) + '_' + date.isoformat()]
+        expected_DBFiles = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}, {'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[1].getAccountType(), 'user': self.man.cuentas[1].user}, {'path': '/test/muerte.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[0]) + '_' + date.isoformat(), 'hash': '/test/muerte.txt__CONFLICTED_COPY__FROM_dropbox_stub-user_2015-05-13', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
+        expected_remoteFileList_0 = ['/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), '/test/muerte.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[0]) + '_' + date.isoformat()]
+        expected_remoteFileList_1 = ['/test/muerte.txt']
+
+        assert_equal(sorted(fileList), sorted(expected_fileList))
+        assert_equal(DBFiles, expected_DBFiles)
+        assert_equal(sorted(remoteFileList_0), sorted(expected_remoteFileList_0))
+        assert_equal(sorted(remoteFileList_1), sorted(expected_remoteFileList_1))
+
+    def test_integrationSync_three_accounts(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.newAccount('dropbox_stub', 'user2')
+        self.man.newAccount('dropbox_stub', 'user3')
+        self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
+        self.man.cuentas[0].uploadFile('/test/muerte.txt')  # file uploaded in all accounts
+        self.man.cuentas[1].uploadFile('/test/muerte.txt')  # file uploaded in all accounts
+        self.man.cuentas[2].uploadFile('/test/muerte.txt')  # file uploaded in all accounts
+
+        self.man.updateLocalSyncFolder()  # this conflicts
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList_0 = self.man.cuentas[0].getFileList()
+        remoteFileList_1 = self.man.cuentas[1].getFileList()
+        remoteFileList_2 = self.man.cuentas[2].getFileList()
+
+        date = datetime.date.today()
+        expected_fileList = ['/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), '/test/muerte.txt', '/test/muerte.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[1]) + '_' + date.isoformat(), '/test/muerte.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[0]) + '_' + date.isoformat()]
+        expected_DBFiles = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}, {'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[2].getAccountType(), 'user': self.man.cuentas[2].user}, {'path': '/test/muerte.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[0]) + '_' + date.isoformat(), 'hash': '/test/muerte.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[0]) + '_' + date.isoformat(), 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}, {'path': '/test/muerte.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[1]) + '_' + date.isoformat(), 'hash': '/test/muerte.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[1]) + '_' + date.isoformat(), 'account': self.man.cuentas[1].getAccountType(), 'user': self.man.cuentas[1].user}]
+        expected_remoteFileList_0 = ['/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), '/test/muerte.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[0]) + '_' + date.isoformat()]
+        expected_remoteFileList_1 = ['/test/muerte.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[1]) + '_' + date.isoformat()]
+        expected_remoteFileList_2 = ['/test/muerte.txt']
+
+        assert_equal(sorted(fileList), sorted(expected_fileList))
+        assert_equal(DBFiles, expected_DBFiles)
+        assert_equal(sorted(remoteFileList_0), sorted(expected_remoteFileList_0))
+        assert_equal(sorted(remoteFileList_1), sorted(expected_remoteFileList_1))
+        assert_equal(sorted(remoteFileList_2), sorted(expected_remoteFileList_2))
 
     def test_twoAccounts_fits_first(self):
         self.man.newAccount('dropbox_stub', 'user')
