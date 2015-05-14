@@ -28,7 +28,13 @@ class Manager():
         self.logger.debug(self.config)
         self.logger.debug("===== END Config contents: ======")
 
-        self.database = self.connectDB(self.config["database"])
+        database_file = self.config["database"]
+        from os import makedirs
+        import os.path
+        database_dir = os.path.dirname(database_file)
+        if not os.path.isdir(database_dir):
+            makedirs(database_dir)
+        self.database = self.connectDB(database_file)
 
         self.fileSystemModule = FileSystemModule(self.config["sync_folder_name"])
 
