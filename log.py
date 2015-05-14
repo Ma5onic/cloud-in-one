@@ -12,8 +12,8 @@ class Logger(object):
         if os.path.exists(default_config_file):
             with open(default_config_file, 'rt') as f:
                 config = json.load(f)
-            logging.config.dictConfig(config)
             os.makedirs(config['folder'], exist_ok=True)
+            logging.config.dictConfig(config)
 
         else:
             logging.basicConfig(level=logging.DEBUG)
