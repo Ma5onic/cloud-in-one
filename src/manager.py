@@ -354,19 +354,30 @@ class Manager():
                 streamFile.close()
 
             else:  # deleted
-                self.logger.debug("Deleting file <" + element['path'] + ">")
-                self.fileSystemModule.remove(element['path'])
+                cased_path = self.getCasedPath(element['path'])
+                if not cased_path:
+                    cased_path = element['path']
+                self.logger.debug("Deleting file <" + cased_path + ">")
+                self.fileSystemModule.remove(cased_path)
 
     def getMD5BD(self, filename):
         files_table = self.database['files']
-        row = files_table.find_one(path=filename)
+        row = files_table.find_one(internal_path=filename.lower())
         return row['hash']
 
     def getRevisionDB(self, filename):
         files_table = self.database['files']
-        row = files_table.find_one(path=filename)
+        row = files_table.find_one(internal_path=filename.lower())
         if row:
             return row['revision']
+        else:
+            return None
+
+    def getCasedPath(self, path):
+        files_table = self.database['files']
+        row = files_table.find_one(internal_path=path.lower())
+        if row:
+            return row['path']
         else:
             return None
 
@@ -383,7 +394,7 @@ class Manager():
 
     def getAccountFromFile(self, path):
         files_table = self.database['files']
-        row = files_table.find_one(path=path)
+        row = files_table.find_one(internal_path=path.lower())
         account = None
         if row:
             account = next((cuenta for cuenta in self.cuentas if cuenta.getAccountType() == row['accountType'] and cuenta.user == row['user']), None)
@@ -404,7 +415,7 @@ class Manager():
     def deleteFileDB(self, path, account=None):
         self.logger.debug('deleting file <' + path + '>')
         files_table = self.database['files']
-        files_table.delete(path=path)
+        files_table.delete(internal_path=path.lower())
 
     def saveFile(self, element):
         account = element['account']
@@ -412,13 +423,13 @@ class Manager():
         file_hash = element['hash']
         self.logger.debug('saving file <' + path + '> with hash <' + str(file_hash) + '> to account <' + account.getAccountType() + ', ' + account.user + '>')
         files_table = self.database['files']
-        files_table.upsert(dict(accountType=account.getAccountType(), user=account.user, path=path, hash=file_hash, revision=element['revision']), ['accountType', 'user', 'path'])
+        files_table.upsert(dict(accountType=account.getAccountType(), user=account.user, path=path, internal_path=path.lower(), hash=file_hash, revision=element['revision']), ['accountType', 'user', 'path'])
         # TODO: check if can be inserted and this...
         return True
 
     def existsPathDB(self, newname):
         files_table = self.database['files']
-        files = files_table.find(path=newname)
+        files = files_table.find(internal_path=newname.lower())
         if list(files):
             return True
         else:
