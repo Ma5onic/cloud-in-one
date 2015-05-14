@@ -190,7 +190,7 @@ class DropboxAccountStub(DropboxAccount):
             rev = 'revision_number'
         else:
             rev = rev + '1'
-        deltaItem = [file_path, {'is_dir': False, 'path': file_path, 'rev': rev}]
+        deltaItem = [file_path.lower(), {'is_dir': False, 'path': file_path, 'rev': rev}]
         if deltaItem not in self.__delta_acum__:
             self.__delta_acum__.append(deltaItem)
 
@@ -208,7 +208,7 @@ class DropboxAccountStub(DropboxAccount):
     def deleteFile(self, file_path):
         if file_path in self.__file_list__:
             self.__file_list__.remove(file_path)
-            self.__delta_acum__.append([file_path, None])
+            self.__delta_acum__.append([file_path.lower(), None])
             return True
         return False
 
