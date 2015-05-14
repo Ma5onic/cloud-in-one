@@ -651,3 +651,61 @@ class TestManager(object):
         assert_equal(sorted(fileList), sorted(expected_fileList))
         assert_equal(sorted(remoteFileList_0), sorted(expected_remoteFileList_0))
         compareChangeLists(DBFiles, expected_DBFiles)
+
+    def test_remote_collision_two_accounts(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.newAccount('dropbox_stub', 'user2')
+        self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
+        self.man.updateLocalSyncFolder()
+        # We have the file in the first account, fully synchronized
+
+        self.man.cuentas[1].uploadFile('/test/muerte.txt')  # we upload it to the second one
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList_0 = self.man.cuentas[0].getFileList()
+        remoteFileList_1 = self.man.cuentas[1].getFileList()
+
+        date = datetime.date.today()
+        expected_fileList = ['/test/muerte.txt', '/test/muerte.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[1]) + '_' + date.isoformat()]
+        expected_DBFiles = [
+            {'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user},
+            {'path': '/test/muerte.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[1]) + '_' + date.isoformat(), 'hash': '/test/muerte.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[1]) + '_' + date.isoformat(), 'account': self.man.cuentas[1].getAccountType(), 'user': self.man.cuentas[1].user}]
+        expected_remoteFileList_0 = ['/test/muerte.txt']
+        expected_remoteFileList_1 = ['/test/muerte.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[1]) + '_' + date.isoformat()]
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(DBFiles, expected_DBFiles)
+        assert_equal(remoteFileList_0, expected_remoteFileList_0)
+        assert_equal(remoteFileList_1, expected_remoteFileList_1)
+
+    def test_remote_collision_two_accounts_case(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.newAccount('dropbox_stub', 'user2')
+        self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
+        self.man.updateLocalSyncFolder()
+        # We have the file in the first account, fully synchronized
+
+        self.man.cuentas[1].uploadFile('/test/MuErTe.txt')  # we upload it to the second one
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList_0 = self.man.cuentas[0].getFileList()
+        remoteFileList_1 = self.man.cuentas[1].getFileList()
+
+        date = datetime.date.today()
+        expected_fileList = ['/test/muerte.txt', '/test/MuErTe.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[1]) + '_' + date.isoformat()]
+        expected_DBFiles = [
+            {'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user},
+            {'path': '/test/MuErTe.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[1]) + '_' + date.isoformat(), 'hash': '/test/MuErTe.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[1]) + '_' + date.isoformat(), 'account': self.man.cuentas[1].getAccountType(), 'user': self.man.cuentas[1].user}]
+        expected_remoteFileList_0 = ['/test/muerte.txt']
+        expected_remoteFileList_1 = ['/test/MuErTe.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[1]) + '_' + date.isoformat()]
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(DBFiles, expected_DBFiles)
+        assert_equal(remoteFileList_0, expected_remoteFileList_0)
+        assert_equal(remoteFileList_1, expected_remoteFileList_1)
