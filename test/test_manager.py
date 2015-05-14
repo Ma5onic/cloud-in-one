@@ -1064,3 +1064,23 @@ class TestManager(object):
         assert_equal(DBFiles, expected_DBFiles)
         assert_equal(remoteFileList1, expected_remoteFileList1)
         assert_equal(remoteFileList2, expected_remoteFileList2)
+
+    def test_caseName(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.fileSystemModule.createFile('/ThisHasUpperCase.txt')  # create a file with uppercases
+        self.man.updateLocalSyncFolder()
+
+        self.man.cuentas[0].deleteFile('/ThisHasUpperCase.txt')
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList = self.man.cuentas[0].getFileList()
+
+        expected_fileList = []
+        expected_DBFiles = []
+        expected_remoteFileList = []
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(DBFiles, expected_DBFiles)
+        assert_equal(remoteFileList, expected_remoteFileList)
