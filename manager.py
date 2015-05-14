@@ -32,7 +32,7 @@ class Manager():
         from os import makedirs
         import os.path
         database_dir = os.path.dirname(database_file)
-        if not os.path.isdir(database_dir):
+        if database_dir and not os.path.isdir(database_dir):
             makedirs(database_dir)
         self.database = self.connectDB(database_file)
 
