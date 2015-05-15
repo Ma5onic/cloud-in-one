@@ -8,5 +8,5 @@ setup(
     #windows = [{'script': "hello.py"}],
     console = ["manager.py"],
     zipfile = None,
-    data_files = [('config', ['config/config.json', 'config/log.json'])]
+    data_files = [('config', ['config/config.json', 'config/log.json']), ('', ['trusted-certs.crt'])]
 )
