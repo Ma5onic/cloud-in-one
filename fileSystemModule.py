@@ -126,6 +126,13 @@ class FileSystemModule():
                 d.update(buf)
         return d.hexdigest()
 
+    def getFileSize(self, filename):
+        self.logger.info('getFileSize')
+        filename = self.getFullPath(self.main_path, filename)
+        size = os.path.getsize(filename)
+        self.logger.debug('file size = <' + str(size) + '>')
+        return size
+
 
 class FileSystemModuleStub(FileSystemModule):
     """stub for the filesystem module."""

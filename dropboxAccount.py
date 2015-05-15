@@ -19,9 +19,11 @@ class DropboxAccount(account.Account):
         self.access_token = access_token
         self.user_id = user_id
         self.last_cursor = cursor
+        self.free_quota = 0
         # You shouldn't use self.__client, call __getDropboxClient() to get it safely
         self.__client = None
         self.__client = self.__getDropboxClient()
+        self.getFreeSpace()
 
     def __startOAuthFlow(self):
         self.logger.info("starting OAuth Flow")
@@ -55,6 +57,17 @@ class DropboxAccount(account.Account):
         self.logger.info("INFO:")
         user_info = client.account_info()
         self.logger.info(user_info)
+
+    def getFreeSpace(self):
+        client = self.__getDropboxClient()
+        self.logger.info("Getting remaining space")
+        quota_info = client.account_info()['quota_info']
+        quota = quota_info['quota']
+        normal_used = quota_info['normal']
+        shared_used = quota_info['shared']
+
+        self.free_quota = quota - normal_used - shared_used
+        self.logger.debug("Remaining space = <" + str(self.free_quota) + "> bytes")
 
     def getMetadata(self, folder):
         client = self.__getDropboxClient()
