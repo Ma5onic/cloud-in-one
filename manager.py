@@ -111,7 +111,7 @@ class Manager():
                         self.logger.debug('is_dir = False')
                         old_revision = self.getRevisionDB(metadata['path'])
                         if old_revision != metadata['rev'] or deltaDict['reset']:
-                            remoteChanges.append({'path': metadata['path'], 'hash': 'MISSING', 'account': account, 'revision': metadata['rev']})
+                            remoteChanges.append({'path': metadata['path'], 'hash': 'MISSING', 'account': account, 'revision': metadata['rev'], 'size': metadata['bytes']})
 
                 else:  # delete path
                     remoteChanges.append({'path': filePath, 'hash': None, 'account': account})
@@ -277,7 +277,8 @@ class Manager():
                 md5 = self.fileSystemModule.md5sum(checking['path'])
                 if md5 != checking['hash']:
                     self.logger.debug('The file <' + checking['path'] + '> has been MODIFIED')
-                    localChanges.append(dict(path=checking['path'], hash=md5, account=checking['account'], revision=checking['revision']))
+                    size = self.fileSystemModule.getFileSize(checking['path'])
+                    localChanges.append(dict(path=checking['path'], hash=md5, account=checking['account'], revision=checking['revision'], size=size))
 
                 else:
                     self.logger.debug('The file <' + checking['path'] + '> is the same. Doing nothing')
@@ -290,7 +291,8 @@ class Manager():
         for element in fileList:
             self.logger.debug('The file <' + element + '> has been CREATED')
             md5 = self.fileSystemModule.md5sum(element)
-            localChanges.append(dict(path=element, hash=md5))
+            size = self.fileSystemModule.getFileSize(element)
+            localChanges.append(dict(path=element, hash=md5, size=size))
 
         self.logger.debug('localChanges = <' + str(localChanges) + '>')
         return localChanges
@@ -302,7 +304,7 @@ class Manager():
                 if 'account' not in element or not element['account']:  # if newly created
                     for account in self.cuentas:
                         self.logger.debug("Trying to save file <" + element['path'] + "> in account <" + str(account) + ">")
-                        if account.fits(element['path']):
+                        if account.fits(element['size']):
                             self.logger.debug("Saved to account <" + str(account) + ">")
                             element['account'] = account
                             break
@@ -424,12 +426,13 @@ class Manager():
         files_table.delete(internal_path=path.lower())
 
     def saveFile(self, element):
+        size = element['size']
         account = element['account']
         path = element['path']
         file_hash = element['hash']
         self.logger.debug('saving file <' + path + '> with hash <' + str(file_hash) + '> to account <' + account.getAccountType() + ', ' + account.user + '>')
         files_table = self.database['files']
-        files_table.upsert(dict(accountType=account.getAccountType(), user=account.user, path=path, internal_path=path.lower(), hash=file_hash, revision=element['revision']), ['accountType', 'user', 'path'])
+        files_table.upsert(dict(accountType=account.getAccountType(), user=account.user, path=path, internal_path=path.lower(), hash=file_hash, revision=element['revision'], size=size), ['accountType', 'user', 'internal_path'])
         # TODO: check if can be inserted and this...
         return True
 

@@ -189,3 +189,9 @@ class FileSystemModuleStub(FileSystemModule):
             if i['path'] == filename:
                 return i['hash']
         return None
+
+    def getFileSize(self, filename):
+        try:
+            return next((len(i['path']) for i in self.__file_list__ if i['path'] == filename))
+        except StopIteration:
+            raise FileNotFoundError(filename)
