@@ -215,7 +215,7 @@ class DropboxAccountStub(DropboxAccount):
         self.__file_list__[index] = newpath
         deltaItem = [oldpath.lower(), None]
         self.__delta_acum__.append(deltaItem)
-        deltaItem = [newpath.lower(), {'is_dir': False, 'path': newpath, 'rev': 'renamed', 'bytes': len(file_path)}]
+        deltaItem = [newpath.lower(), {'is_dir': False, 'path': newpath, 'rev': 'renamed', 'bytes': len(newpath)}]
         self.__delta_acum__.append(deltaItem)
         return deltaItem[1]['rev']
 

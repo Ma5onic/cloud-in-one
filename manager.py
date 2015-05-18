@@ -302,19 +302,17 @@ class Manager():
         for element in changesOnRemote:
             if element['hash']:  # created or modified, upload to account
                 if 'account' not in element or not element['account']:  # if newly created
-                    for account in self.cuentas:
-                        self.logger.debug("Trying to save file <" + element['path'] + "> in account <" + str(account) + ">")
-                        if account.fits(element['size']):
-                            self.logger.debug("Saved to account <" + str(account) + ">")
-                            element['account'] = account
-                            break
-                        else:
-                            self.logger.debug("Doesn't fit! <" + str(element['path']) + ">")
-
-                if 'account' not in element or not element['account']:  # doesn't fit! We log it and continue with the others.
-                    self.logger.error("The file <" + element['path'] + "> doesn't fit anywhere")
-                    element['account'] = None
-                    continue
+                    fits_account = self.fitToAccount(element)
+                    if not fits_account:  # doesn't fit! We log it and continue with the others.
+                        self.logger.error("The file <" + element['path'] + "> doesn't fit anywhere")
+                        element['account'] = None
+                        continue
+                else:  # modification
+                    old_size = self.getFileSizeDB(element['path']) or 0
+                    new_size = element['size']
+                    diff_size = new_size - old_size
+                    if not element['account'].fits(diff_size):
+                        self.fitToAccount(element)
 
                 if 'remote_move' in element:  # rename
                     self.logger.debug("Renaming file <" + element['oldpath'] + "> to <" + element['path'] + "> in account <" + str(element['account']) + ">")
@@ -327,6 +325,18 @@ class Manager():
             else:  # deleted, remove from the remote
                 self.logger.debug("Deleting file <" + element['path'] + ">")
                 element['account'].deleteFile(element['path'])
+
+    def fitToAccount(self, element):
+        for account in self.cuentas:
+            self.logger.debug("Trying to save file <" + element['path'] + "> in account <" + str(account) + ">")
+            if account.fits(element['size']):
+                self.logger.debug("Saved to account <" + str(account) + ">")
+                element['account'] = account
+                return True
+            else:
+                self.logger.debug("Doesn't fit! <" + str(element['path']) + ">")
+
+        return False
 
     def applyChangesOnDB(self, changesOnDB):
         self.logger.info("Applying changes on database")
@@ -386,6 +396,14 @@ class Manager():
         row = files_table.find_one(internal_path=path.lower())
         if row:
             return row['path']
+        else:
+            return None
+
+    def getFileSizeDB(self, path):
+        files_table = self.database['files']
+        row = files_table.find_one(internal_path=path.lower())
+        if row:
+            return row['size']
         else:
             return None
 
