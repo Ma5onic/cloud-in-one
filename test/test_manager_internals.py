@@ -539,7 +539,7 @@ class TestInternals(object):
 
     def test_applyChangesOnRemote(self):
         self.man.newAccount('dropbox_stub', 'user')
-        changesOnRemote = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number'}]
+        changesOnRemote = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number', 'size': len('/test/muerte.txt')}]
 
         self.man.applyChangesOnRemote(changesOnRemote)
 
@@ -590,11 +590,13 @@ class TestInternals(object):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.newAccount('dropbox_stub', 'user2')
 
-        changesOnRemote = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number'}, {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[1], 'revision': 'revision_number'}]
+        changesOnRemote = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number', 'size': len('/test/muerte.txt')},
+                           {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[1], 'revision': 'revision_number', 'size': len('/test/muerte2.txt')}]
 
         self.man.applyChangesOnRemote(changesOnRemote)
 
-        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number1'}, {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[1], 'revision': 'revision_number1'}]
+        expected_remoteChanges = [{'path': '/test/muerte.txt', 'hash': 'MISSING', 'account': self.man.cuentas[0], 'revision': 'revision_number1'},
+                                  {'path': '/test/muerte2.txt', 'hash': 'MISSING', 'account': self.man.cuentas[1], 'revision': 'revision_number1'}]
         remoteChanges = self.man.findRemoteChanges()
 
         compareChangeLists(remoteChanges, expected_remoteChanges)
