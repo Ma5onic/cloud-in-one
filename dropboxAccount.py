@@ -137,8 +137,8 @@ class DropboxAccount(account.Account):
         response = client.file_delete(file_path)
         return True
 
-    def fits(self, file_path):
-        return True  # TODO: check if the file fits in the available space
+    def fits(self, file_size):
+        return file_size <= self.free_quota
 
     def __repr__(self):
         return self.getAccountType() + '-' + self.user + ''
@@ -158,6 +158,7 @@ class DropboxAccountStub(DropboxAccount):
         # You shouldn't use self.__client, call __getDropboxClient() to get it safely
         self.__client = None
 
+        self.free_quota = 100
         self.__file_list__ = []
         self.__delta_acum__ = []
         self._delta_reset_ = False
@@ -203,7 +204,7 @@ class DropboxAccountStub(DropboxAccount):
             rev = 'revision_number'
         else:
             rev = rev + '1'
-        deltaItem = [file_path.lower(), {'is_dir': False, 'path': file_path, 'rev': rev}]
+        deltaItem = [file_path.lower(), {'is_dir': False, 'path': file_path, 'rev': rev, 'bytes': len(file_path)}]
         if deltaItem not in self.__delta_acum__:
             self.__delta_acum__.append(deltaItem)
 
@@ -214,7 +215,7 @@ class DropboxAccountStub(DropboxAccount):
         self.__file_list__[index] = newpath
         deltaItem = [oldpath.lower(), None]
         self.__delta_acum__.append(deltaItem)
-        deltaItem = [newpath.lower(), {'is_dir': False, 'path': newpath, 'rev': 'renamed'}]
+        deltaItem = [newpath.lower(), {'is_dir': False, 'path': newpath, 'rev': 'renamed', 'bytes': len(file_path)}]
         self.__delta_acum__.append(deltaItem)
         return deltaItem[1]['rev']
 
