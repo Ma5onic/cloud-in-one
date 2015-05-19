@@ -579,3 +579,75 @@ class TestManager(object):
         assert_equal(fileList, expected_fileList)
         assert_equal(remoteFileList_0, expected_remoteFileList_0)
         compareChangeLists(DBFiles, expected_DBFiles)
+
+    def test_integrationSync_14(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        filename = 'test_file.txt'
+        self.man.fileSystemModule.createFile(filename)  # create a file with size len(filename)
+        self.man.updateLocalSyncFolder()  # upload it...
+        self.man.cuentas[0].resetChanges()
+        self.man.cuentas[0].uploadFile(filename, 'revision_number')
+        self.man.fileSystemModule.remove(filename)
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'size': i['size']} for i in self.man.database['files'].all()]
+        remoteFileList_0 = self.man.cuentas[0].getFileList()
+
+        expected_fileList = [filename]
+        expected_DBFiles = [{'path': filename, 'hash': filename, 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
+        expected_remoteFileList_0 = [filename]
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(remoteFileList_0, expected_remoteFileList_0)
+        compareChangeLists(DBFiles, expected_DBFiles)
+
+    def test_integrationSync_15(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        filename = 'test_file.txt'
+        self.man.fileSystemModule.createFile(filename)  # create a file with size len(filename)
+        self.man.updateLocalSyncFolder()  # upload it...
+        self.man.cuentas[0].resetChanges()
+        self.man.cuentas[0].deleteFile(filename)
+        self.man.fileSystemModule.remove(filename)
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'size': i['size']} for i in self.man.database['files'].all()]
+        remoteFileList_0 = self.man.cuentas[0].getFileList()
+
+        expected_fileList = []
+        expected_DBFiles = []
+        expected_remoteFileList_0 = []
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(remoteFileList_0, expected_remoteFileList_0)
+        compareChangeLists(DBFiles, expected_DBFiles)
+
+    def test_integrationSync_16(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        filename = 'test_file.txt'
+        self.man.fileSystemModule.createFile(filename)  # create a file with size len(filename)
+        self.man.updateLocalSyncFolder()  # upload it...
+        self.man.cuentas[0].resetChanges()
+        self.man.cuentas[0]._delta_reset_ = True
+        self.man.cuentas[0].uploadFile(filename, 'revision_number')
+        self.man.fileSystemModule.createFile(filename)  # create a file with size len(filename)
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'size': i['size']} for i in self.man.database['files'].all()]
+        remoteFileList_0 = self.man.cuentas[0].getFileList()
+
+        date = datetime.date.today()
+        expected_fileList = [filename + '__CONFLICTED_COPY__' + date.isoformat(), filename]
+        expected_DBFiles = [{'path': filename, 'hash': filename, 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user},
+                            {'path': filename + '__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'modified', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
+        expected_remoteFileList_0 = [filename + '__CONFLICTED_COPY__' + date.isoformat(), filename]
+
+        assert_equal(sorted(fileList), sorted(expected_fileList))
+        assert_equal(sorted(remoteFileList_0), sorted(expected_remoteFileList_0))
+        compareChangeLists(DBFiles, expected_DBFiles)
