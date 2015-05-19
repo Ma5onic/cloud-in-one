@@ -324,7 +324,7 @@ class Manager():
                             revision = element['account'].uploadFile(element["path"], element.get('revision'))  # TODO: Aquí tendré que encriptar el fichero...
                             old_account.deleteFile(element['path'])
                         else:
-                            element = None
+                            element['account'] = None
                 element['revision'] = revision
 
             else:  # deleted, remove from the remote
