@@ -557,3 +557,25 @@ class TestManager(object):
         assert_equal(remoteFileList_0, expected_remoteFileList_0)
         assert_equal(remoteFileList_1, expected_remoteFileList_1)
         compareChangeLists(DBFiles, expected_DBFiles)
+
+    def test_integrationSync_13(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        filename = 'test_file.txt'
+        self.man.fileSystemModule.createFile(filename)  # create a file with size len(filename)
+        self.man.updateLocalSyncFolder()  # upload it...
+        self.man.fileSystemModule.createFile(filename)  # modify the file (len + 1)
+        self.man.cuentas[0].deleteFile(filename)
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'size': i['size']} for i in self.man.database['files'].all()]
+        remoteFileList_0 = self.man.cuentas[0].getFileList()
+
+        expected_fileList = [filename]
+        expected_DBFiles = [{'path': filename, 'hash': 'modified', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user, 'size': len(filename) + 1}]
+        expected_remoteFileList_0 = [filename]
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(remoteFileList_0, expected_remoteFileList_0)
+        compareChangeLists(DBFiles, expected_DBFiles)
