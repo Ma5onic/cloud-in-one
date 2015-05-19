@@ -197,6 +197,9 @@ class DropboxAccountStub(DropboxAccount):
         return "dropbox_stub"
 
     def uploadFile(self, file_path, rev=None):
+        size = self.fileSystemModule.getFileSize(file_path)
+        if not self.fits(size):
+            raise RuntimeError()
         if file_path not in self.__file_list__:
             self.__file_list__.append(file_path)
 

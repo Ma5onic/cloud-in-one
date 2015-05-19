@@ -506,3 +506,54 @@ class TestManager(object):
         compareChangeLists(DBFiles, expected_DBFiles)
         assert_equal(remoteFileList_0, expected_remoteFileList_0)
         assert_equal(remoteFileList_1, expected_remoteFileList_1)
+
+    def test_fileSize_3(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.newAccount('dropbox_stub', 'user2')
+        filename = 'test_file.txt'
+        self.man.cuentas[0].free_quota = len(filename)
+        self.man.fileSystemModule.createFile(filename)  # create a file with size len(filename)
+        self.man.updateLocalSyncFolder()  # upload it...
+        self.man.fileSystemModule.createFile(filename)  # modify the file (len + 1)
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'size': i['size']} for i in self.man.database['files'].all()]
+        remoteFileList_0 = self.man.cuentas[0].getFileList()
+        remoteFileList_1 = self.man.cuentas[1].getFileList()
+
+        expected_fileList = [filename]
+        expected_DBFiles = [{'path': filename, 'hash': 'modified', 'account': self.man.cuentas[1].getAccountType(), 'user': self.man.cuentas[1].user, 'size': len(filename) + 1}]
+        expected_remoteFileList_0 = []
+        expected_remoteFileList_1 = [filename]
+
+        assert_equal(fileList, expected_fileList)
+        compareChangeLists(DBFiles, expected_DBFiles)
+        assert_equal(remoteFileList_0, expected_remoteFileList_0)
+        assert_equal(remoteFileList_1, expected_remoteFileList_1)
+
+    def test_fileSize_doesnt_fit(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.newAccount('dropbox_stub', 'user2')
+        filename = 'test_file.txt'
+        self.man.cuentas[0].free_quota = len(filename)
+        self.man.cuentas[1].free_quota = len(filename)
+        self.man.fileSystemModule.createFile(filename)  # create a file with size len(filename)
+        self.man.updateLocalSyncFolder()  # upload it...
+        self.man.fileSystemModule.createFile(filename)  # modify the file (len + 1)
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'size': i['size']} for i in self.man.database['files'].all()]
+        remoteFileList_0 = self.man.cuentas[0].getFileList()
+        remoteFileList_1 = self.man.cuentas[1].getFileList()
+
+        expected_fileList = [filename]
+        expected_DBFiles = [{'path': filename, 'hash': 'modified', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user, 'size': len(filename)}]
+        expected_remoteFileList_0 = [filename]
+        expected_remoteFileList_1 = []
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(remoteFileList_0, expected_remoteFileList_0)
+        assert_equal(remoteFileList_1, expected_remoteFileList_1)
+        compareChangeLists(DBFiles, expected_DBFiles)

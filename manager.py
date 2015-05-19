@@ -307,13 +307,8 @@ class Manager():
                         self.logger.error("The file <" + element['path'] + "> doesn't fit anywhere")
                         element['account'] = None
                         continue
-                else:  # modification
-                    old_size = self.getFileSizeDB(element['path']) or 0
-                    new_size = element['size']
-                    diff_size = new_size - old_size
-                    if not element['account'].fits(diff_size):
-                        self.fitToAccount(element)
 
+                revision = None
                 if 'remote_move' in element:  # rename
                     self.logger.debug("Renaming file <" + element['oldpath'] + "> to <" + element['path'] + "> in account <" + str(element['account']) + ">")
                     revision = element['account'].renameFile(element['oldpath'], element["path"])  # TODO: Aquí tendré que encriptar el fichero...
