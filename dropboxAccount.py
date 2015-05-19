@@ -3,6 +3,7 @@ import dropbox
 import os
 from log import *
 from fileSystemModule import FileSystemModule
+from dropbox.rest import ErrorResponse
 
 app_key = os.getenv("APP_KEY")
 app_secret = os.getenv("APP_SECRET")
@@ -55,26 +56,35 @@ class DropboxAccount(account.Account):
         client = self.__getDropboxClient()
         self.logger.info("Getting User Info")
         self.logger.info("INFO:")
-        user_info = client.account_info()
-        self.logger.info(user_info)
+        try:
+            user_info = client.account_info()
+            self.logger.info(user_info)
+        except ErrorResponse:
+            raise RuntimeError()
 
     def getFreeSpace(self):
         client = self.__getDropboxClient()
         self.logger.info("Getting remaining space")
-        quota_info = client.account_info()['quota_info']
-        quota = quota_info['quota']
-        normal_used = quota_info['normal']
-        shared_used = quota_info['shared']
+        try:
+            quota_info = client.account_info()['quota_info']
+            quota = quota_info['quota']
+            normal_used = quota_info['normal']
+            shared_used = quota_info['shared']
 
-        self.free_quota = quota - normal_used - shared_used
-        self.logger.debug("Remaining space = <" + str(self.free_quota) + "> bytes")
+            self.free_quota = quota - normal_used - shared_used
+            self.logger.debug("Remaining space = <" + str(self.free_quota) + "> bytes")
+        except ErrorResponse:
+            raise RuntimeError()
 
     def getMetadata(self, folder):
         client = self.__getDropboxClient()
         self.logger.info("Getting metadata from <" + folder + ">")
-        metadata = client.metadata(folder)
-        # for now, it will return all what Dropbox sends, but as we move forward we will return a custom metadata dict
-        return metadata
+        try:
+            metadata = client.metadata(folder)
+            # for now, it will return all what Dropbox sends, but as we move forward we will return a custom metadata dict
+            return metadata
+        except ErrorResponse:
+            raise RuntimeError()
 
     def delta(self, returnDict=None):
         client = self.__getDropboxClient()
@@ -85,26 +95,32 @@ class DropboxAccount(account.Account):
             returnDict["entries"] = []
             returnDict["reset"] = False
 
-        deltaDict = client.delta(cursor=self.last_cursor)
-        self.last_cursor = deltaDict["cursor"]
-        self.logger.debug(deltaDict)
+        try:
+            deltaDict = client.delta(cursor=self.last_cursor)
+            self.last_cursor = deltaDict["cursor"]
+            self.logger.debug(deltaDict)
 
-        returnDict["entries"] += deltaDict["entries"]
-        returnDict["reset"] = deltaDict["reset"]
+            returnDict["entries"] += deltaDict["entries"]
+            returnDict["reset"] = deltaDict["reset"]
 
-        if deltaDict["has_more"]:
-            delta(returnDict)
+            if deltaDict["has_more"]:
+                delta(returnDict)
 
-        self.logger.debug("returnDict = <" + str(returnDict) + ">")
-        return returnDict
+            self.logger.debug("returnDict = <" + str(returnDict) + ">")
+            return returnDict
+        except ErrorResponse:
+            raise RuntimeError()
 
     def getFile(self, file_path):
         client = self.__getDropboxClient()
         self.logger.info("Calling getFile")
         self.logger.debug("file_path = <" + file_path + ">")
-        outputFile = client.get_file(file_path)
-        self.logger.debug("outputFile = <" + str(outputFile) + ">")
-        return outputFile
+        try:
+            outputFile = client.get_file(file_path)
+            self.logger.debug("outputFile = <" + str(outputFile) + ">")
+            return outputFile
+        except ErrorResponse:
+            raise RuntimeError()
 
     def getAccountType(self):
         return "dropbox"
@@ -115,27 +131,36 @@ class DropboxAccount(account.Account):
         self.logger.debug("file_path = <" + file_path + ">")
 
         stream = self.fileSystemModule.openFile(file_path)
-        response = client.put_file(file_path, stream, parent_rev=rev)
-        self.logger.debug("Response = <" + str(response) + ">")
-        self.fileSystemModule.closeFile(file_path, stream)
-        return response['rev']
+        try:
+            response = client.put_file(file_path, stream, parent_rev=rev)
+            self.logger.debug("Response = <" + str(response) + ">")
+            self.fileSystemModule.closeFile(file_path, stream)
+            return response['rev']
+        except ErrorResponse:
+            raise RuntimeError()
 
     def renameFile(self, oldpath, newpath):
         client = self.__getDropboxClient()
         self.logger.info("Calling renameFile")
         self.logger.debug("renaming <" + oldpath + "> to <" + newpath + ">")
 
-        response = client.file_move(oldpath, newpath)
-        self.logger.debug("Response = <" + str(response) + ">")
-        return response['rev']
+        try:
+            response = client.file_move(oldpath, newpath)
+            self.logger.debug("Response = <" + str(response) + ">")
+            return response['rev']
+        except ErrorResponse:
+            raise RuntimeError()
 
     def deleteFile(self, file_path):
         client = self.__getDropboxClient()
         self.logger.info("Calling deleteFile")
         self.logger.debug("file_path = <" + file_path + ">")
 
-        response = client.file_delete(file_path)
-        return True
+        try:
+            response = client.file_delete(file_path)
+            return True
+        except ErrorResponse:
+            raise RuntimeError()
 
     def fits(self, file_size):
         return file_size <= self.free_quota
