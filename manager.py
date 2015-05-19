@@ -187,6 +187,7 @@ class Manager():
         self.logger.debug('Both modified. New name = <' + newname + '>')
         change_info['path'] = newname
         change_info['oldpath'] = oldpath
+        self.applyChangesOnLocal([change_info])
 
     def fixCollisions(self, localChanges, remoteChanges):
         self.logger.info('fixCollisions')
@@ -218,7 +219,6 @@ class Manager():
                         except(KeyError):
                             self.__conflicted_copy__(local)
                             # localChanges.append(local)
-                            changesOnLocal.append(local)
                             changesOnLocal.append(collided)
                             changesOnDB.append(local)
                             changesOnDB.append(collided)
@@ -302,7 +302,7 @@ class Manager():
         for element in changesOnRemote:
             if element['hash']:  # created or modified, upload to account
                 if 'account' not in element or not element['account']:  # if newly created
-                    fits_account = self.fitToAccount(element)
+                    fits_account = self.fitToNewAccount(element)
                     if not fits_account:  # doesn't fit! We log it and continue with the others.
                         self.logger.error("The file <" + element['path'] + "> doesn't fit anywhere")
                         element['account'] = None
@@ -313,16 +313,30 @@ class Manager():
                     self.logger.debug("Renaming file <" + element['oldpath'] + "> to <" + element['path'] + "> in account <" + str(element['account']) + ">")
                     revision = element['account'].renameFile(element['oldpath'], element["path"])  # TODO: Aquí tendré que encriptar el fichero...
                 else:  # normal upload
-                    self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
-                    revision = element['account'].uploadFile(element["path"], element.get('revision'))  # TODO: Aquí tendré que encriptar el fichero...
+                    try:
+                        self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
+                        revision = element['account'].uploadFile(element["path"], element.get('revision'))  # TODO: Aquí tendré que encriptar el fichero...
+                    except RuntimeError:  # si no cabe en la cuenta... # TODO: ver qué excepción concreta es...
+                        old_account = element['account']
+                        fits_account = self.fitToNewAccount(element)
+                        if fits_account:
+                            self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
+                            revision = element['account'].uploadFile(element["path"], element.get('revision'))  # TODO: Aquí tendré que encriptar el fichero...
+                            old_account.deleteFile(element['path'])
+                        else:
+                            element = None
                 element['revision'] = revision
 
             else:  # deleted, remove from the remote
                 self.logger.debug("Deleting file <" + element['path'] + ">")
                 element['account'].deleteFile(element['path'])
 
-    def fitToAccount(self, element):
+    def fitToNewAccount(self, element):
+        current_account = element.get('account', None)
         for account in self.cuentas:
+            if account is current_account:
+                continue
+
             self.logger.debug("Trying to save file <" + element['path'] + "> in account <" + str(account) + ">")
             if account.fits(element['size']):
                 self.logger.debug("Saved to account <" + str(account) + ">")
@@ -367,9 +381,9 @@ class Manager():
                 streamFile.close()
 
             else:  # deleted
-                cased_path = self.getCasedPath(element['path'])
+                cased_path = self.getCasedPath(element['path'], element['account'])
                 if not cased_path:
-                    cased_path = element['path']
+                    continue
                 self.logger.debug("Deleting file <" + cased_path + ">")
                 self.fileSystemModule.remove(cased_path)
 
@@ -386,9 +400,13 @@ class Manager():
         else:
             return None
 
-    def getCasedPath(self, path):
+    def getCasedPath(self, path, account=None):
         files_table = self.database['files']
-        row = files_table.find_one(internal_path=path.lower())
+        row = None
+        if account:
+            row = files_table.find_one(internal_path=path.lower(), accountType=account.getAccountType(), user=account.user)
+        else:
+            row = files_table.find_one(internal_path=path.lower())
         if row:
             return row['path']
         else:
@@ -436,7 +454,11 @@ class Manager():
     def deleteFileDB(self, path, account=None):
         self.logger.debug('deleting file <' + path + '>')
         files_table = self.database['files']
-        files_table.delete(internal_path=path.lower())
+        if account:
+            files_table.delete(internal_path=path.lower(), accountType=account.getAccountType(), user=account.user)
+        else:
+            files_table.delete(internal_path=path.lower())
+
 
     def saveFile(self, element):
         size = element['size']
@@ -445,7 +467,7 @@ class Manager():
         file_hash = element['hash']
         self.logger.debug('saving file <' + path + '> with hash <' + str(file_hash) + '> to account <' + account.getAccountType() + ', ' + account.user + '>')
         files_table = self.database['files']
-        files_table.upsert(dict(accountType=account.getAccountType(), user=account.user, path=path, internal_path=path.lower(), hash=file_hash, revision=element['revision'], size=size), ['accountType', 'user', 'internal_path'])
+        files_table.upsert(dict(accountType=account.getAccountType(), user=account.user, path=path, internal_path=path.lower(), hash=file_hash, revision=element['revision'], size=size), ['internal_path'])
         # TODO: check if can be inserted and this...
         return True
 
