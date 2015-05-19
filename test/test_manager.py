@@ -549,7 +549,7 @@ class TestManager(object):
         remoteFileList_1 = self.man.cuentas[1].getFileList()
 
         expected_fileList = [filename]
-        expected_DBFiles = [{'path': filename, 'hash': 'modified', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user, 'size': len(filename)}]
+        expected_DBFiles = [{'path': filename, 'hash': filename, 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user, 'size': len(filename)}]
         expected_remoteFileList_0 = [filename]
         expected_remoteFileList_1 = []
 
