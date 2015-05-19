@@ -17,5 +17,6 @@ def compareChangeLists(changeList, expected_changeList):
     changeList = sorted(set(i.items()) for i in changeList)
     expected_changeList = sorted(set(i.items()) for i in expected_changeList)
 
+    # assert_equal(expected_changeList, changeList)
     assert_equal(len(changeList), len(expected_changeList))
     assert_true(expected_changeList <= changeList)
