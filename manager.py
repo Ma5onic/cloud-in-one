@@ -111,7 +111,13 @@ class Manager():
                         self.logger.debug('is_dir = False')
                         old_revision = self.getRevisionDB(metadata['path'])
                         if old_revision != metadata['rev'] or deltaDict['reset']:
-                            remoteChanges.append({'path': metadata['path'], 'hash': 'MISSING', 'account': account, 'revision': metadata['rev'], 'size': metadata['bytes']})
+                            newChange = {'path': metadata['path'], 'hash': 'MISSING', 'account': account, 'revision': metadata['rev'], 'size': metadata['bytes']}
+
+                            old_account = self.getAccountFromFile(metadata['path'])
+                            if old_account and old_account != account:
+                                self.__remote_conflicted_copy__(newChange)
+
+                            remoteChanges.append(newChange)
 
                 else:  # delete path
                     remoteChanges.append({'path': filePath, 'hash': None, 'account': account})
@@ -139,16 +145,7 @@ class Manager():
                     if change['hash']:  # the other too!
                         try:
                             if change['account'] != collided['account']:  # they come from different places
-                                self.logger.debug("CONFLICTED COPY")
-
-                                date = datetime.date.today()
-                                oldpath = change['path']
-                                newname = oldpath+'__CONFLICTED_COPY__FROM_' + str(change['account']) + '_' + date.isoformat()
-                                self.logger.debug('Both modified. New name = <' + newname + '>')
-                                change['path'] = newname
-                                change['oldpath'] = oldpath
-                                change['remote_move'] = True
-                                self.logger.debug(change)
+                                self.__remote_conflicted_copy__(change)
                             else:  # they come from the same place
                                 self.logger.warn("Same file changed twice in the same changelist. That's a bug")
                                 elementsToDel.append(collided)
@@ -175,6 +172,17 @@ class Manager():
         self.logger.debug('changeList <' + str(changeList) + '>')
 
         return changeList
+
+    def __remote_conflicted_copy__(self, change):
+        self.logger.debug("CONFLICTED COPY")
+        date = datetime.date.today()
+        oldpath = change['path']
+        newname = oldpath+'__CONFLICTED_COPY__FROM_' + str(change['account']) + '_' + date.isoformat()
+        self.logger.debug('Both modified. New name = <' + newname + '>')
+        change['path'] = newname
+        change['oldpath'] = oldpath
+        change['remote_move'] = True
+        self.logger.debug(change)
 
     def __conflicted_copy__(self, change_info):
         date = datetime.date.today()
