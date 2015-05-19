@@ -149,8 +149,9 @@ class FileSystemModuleStub(FileSystemModule):
             file_info = (next(item for item in self.__file_list__ if item['path'] == file_path))
             file_info['stream'] = stream
             file_info['hash'] = 'modified'
+            file_info['size'] = len(file_path) + 1
         except StopIteration:
-            self.__file_list__.append({'path': file_path, 'stream': stream, 'hash': file_path})
+            self.__file_list__.append({'path': file_path, 'stream': stream, 'hash': file_path, 'size': len(file_path)})
 
     def openFile(self, file_path):
         for i in self.__file_list__:
@@ -192,6 +193,6 @@ class FileSystemModuleStub(FileSystemModule):
 
     def getFileSize(self, filename):
         try:
-            return next((len(i['path']) for i in self.__file_list__ if i['path'] == filename))
+            return next((i['size'] for i in self.__file_list__ if i['path'] == filename))
         except StopIteration:
             raise FileNotFoundError(filename)
