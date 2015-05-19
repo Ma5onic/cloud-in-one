@@ -657,6 +657,7 @@ class TestManager(object):
         self.man.newAccount('dropbox_stub', 'user2')
         self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
         self.man.updateLocalSyncFolder()
+        self.man.cuentas[0].resetChanges()
         self.man.cuentas[1].resetChanges()
         # We have the file in the first account, fully synchronized
 
@@ -687,9 +688,11 @@ class TestManager(object):
         self.man.newAccount('dropbox_stub', 'user2')
         self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
         self.man.updateLocalSyncFolder()
+        self.man.cuentas[0].resetChanges()
+        self.man.cuentas[1].resetChanges()
         # We have the file in the first account, fully synchronized
 
-        self.man.cuentas[1].uploadFile('/test/MuErTe.txt')  # we upload it to the second one
+        self.man.cuentas[1].uploadFile('/test/MuErTe.txt', 'different_revision')  # we upload it to the second one
 
         self.man.updateLocalSyncFolder()
 
