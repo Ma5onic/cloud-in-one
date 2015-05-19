@@ -692,7 +692,10 @@ class TestManager(object):
         self.man.cuentas[1].resetChanges()
         # We have the file in the first account, fully synchronized
 
-        self.man.cuentas[1].uploadFile('/test/MuErTe.txt', 'different_revision')  # we upload it to the second one
+        filename_cases = '/test/MuErTe.txt'
+        self.man.fileSystemModule.createFile(filename_cases)  # temporally create a file
+        self.man.cuentas[1].uploadFile(filename_cases, 'different_revision')  # we upload it to the second account
+        self.man.fileSystemModule.remove(filename_cases)  # we have the file only in the remote
 
         self.man.updateLocalSyncFolder()
 
