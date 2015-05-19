@@ -307,7 +307,7 @@ class Manager():
 
     def applyChangesOnRemote(self, changesOnRemote):
         self.logger.info("Applying changes on remote")
-        for element in changesOnRemote:
+        for i, element in enumerate(changesOnRemote):
             if element['hash']:  # created or modified, upload to account
                 if 'account' not in element or not element['account']:  # if newly created
                     fits_account = self.fitToNewAccount(element)
@@ -318,8 +318,13 @@ class Manager():
 
                 revision = None
                 if 'remote_move' in element:  # rename
-                    self.logger.debug("Renaming file <" + element['oldpath'] + "> to <" + element['path'] + "> in account <" + str(element['account']) + ">")
-                    revision = element['account'].renameFile(element['oldpath'], element["path"])  # TODO: Aquí tendré que encriptar el fichero...
+                    try:
+                        self.logger.debug("Renaming file <" + element['oldpath'] + "> to <" + element['path'] + "> in account <" + str(element['account']) + ">")
+                        revision = element['account'].renameFile(element['oldpath'], element["path"])  # TODO: Aquí tendré que encriptar el fichero...
+                    except:  # TODO: except solo en el caso de "ya existe"
+                        element['path'] += '_2'
+                        changesOnRemote.insert(i+1, element)
+                        continue
                 else:  # normal upload
                     try:
                         self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
