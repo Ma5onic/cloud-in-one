@@ -81,6 +81,7 @@ class Manager():
 
         self.syncAccounts(changesOnLocal, changesOnDB, changesOnRemote)
         for i in self.cuentas:
+            i.updateAccountInfo()
             self.saveAccount(i)
 
     def syncAccounts(self, changesOnLocal, changesOnDB, changesOnRemote):
@@ -454,7 +455,7 @@ class Manager():
 
     def saveAccount(self, account):
         accounts_table = self.database['accounts']
-        accounts_table.upsert(dict(accountType=account.getAccountType(), user=account.user, token=account.access_token, userid=account.user_id, cursor=account.last_cursor), ['accountType', 'user'])
+        accounts_table.upsert(dict(accountType=account.getAccountType(), user=account.user, token=account.access_token, userid=account.user_id, cursor=account.last_cursor, email=account.email), ['accountType', 'user'])
 
     def deleteAccountDB(self, account):
         accounts_table = self.database['accounts']

@@ -20,6 +20,7 @@ class DropboxAccount(account.Account):
         self.access_token = access_token
         self.user_id = user_id
         self.last_cursor = cursor
+        self.email = ''
         self.free_quota = 0
         # You shouldn't use self.__client, call __getDropboxClient() to get it safely
         self.__client = None
@@ -29,7 +30,6 @@ class DropboxAccount(account.Account):
     def __startOAuthFlow(self):
         self.logger.info("starting OAuth Flow")
         self.logger.debug("Token not found, asking for one")
-        token_file = open(TOKEN_FILE, "w")
         flow = dropbox.client.DropboxOAuth2FlowNoRedirect(app_key, app_secret)
         # Have the user sign in and authorize this token
         authorize_url = flow.start()
@@ -38,7 +38,7 @@ class DropboxAccount(account.Account):
         print('3. Copy the authorization code.')
         code = input("Enter the authorization code here: ").strip()
         self.access_token, self.user_id = flow.finish(code)
-        token_file.write("%s|%s" % (self.access_token, self.user_id))
+        self.updateAccountInfo()
 
     def __getDropboxClient(self):
         self.logger.info("Getting Dropbox Client")
@@ -59,6 +59,21 @@ class DropboxAccount(account.Account):
         try:
             user_info = client.account_info()
             self.logger.info(user_info)
+        except ErrorResponse:
+            raise RuntimeError()
+
+    def updateAccountInfo(self):
+        client = self.__getDropboxClient()
+        self.logger.info("Getting account information")
+        try:
+            account_info = client.account_info()
+
+            quota_info = account_info['quota_info']
+            self.free_quota = quota_info['quota'] - quota_info['normal'] - quota_info['shared']
+            self.logger.debug("Remaining space = <" + str(self.free_quota) + "> bytes")
+
+            self.email = account_info['email']
+            self.logger.debug("Email = <" + str(self.email) + ">")
         except ErrorResponse:
             raise RuntimeError()
 
@@ -177,9 +192,11 @@ class DropboxAccountStub(DropboxAccount):
         self.logger.info("Creating Dropbox Account")
         self.fileSystemModule = fileSystemModule
         self.user = user
+        self.email = user + '@mail.com'
         self.access_token = None
         self.user_id = None
         self.last_cursor = None
+
         # You shouldn't use self.__client, call __getDropboxClient() to get it safely
         self.__client = None
 
@@ -260,3 +277,6 @@ class DropboxAccountStub(DropboxAccount):
 
     def resetChanges(self):
         self.__delta_acum__ = []
+
+    def updateAccountInfo(self):
+        pass
