@@ -4,6 +4,8 @@ import dropboxAccount
 import dataset
 import datetime
 from fileSystemModule import FileSystemModule
+from exceptions import RetryException, FullStorageException, APILimitedException
+
 
 config_file = "config/config.json"
 
@@ -330,7 +332,7 @@ class Manager():
                     try:
                         self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
                         revision = element['account'].uploadFile(element["path"], element.get('revision'))  # TODO: Aquí tendré que encriptar el fichero...
-                    except RuntimeError:  # si no cabe en la cuenta... # TODO: ver qué excepción concreta es...
+                    except FullStorageException:  # si no cabe en la cuenta...
                         old_account = element['account']
                         fits_account = self.fitToNewAccount(element)
                         if fits_account:
