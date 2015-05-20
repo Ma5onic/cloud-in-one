@@ -1,5 +1,6 @@
 import account
 import dropbox
+from exceptions import RetryException, FullStorageException, APILimitedException
 import os
 from log import *
 from fileSystemModule import FileSystemModule
@@ -52,6 +53,21 @@ class DropboxAccount(account.Account):
 
         return self.__client
 
+    def __manageException(self, error):
+        self.logger.error(error)
+        if error.status == 401:
+            self.access_token = None
+            self.__getDropboxClient()
+            raise RetryException(error.reason) from error
+        elif error.status == 507:
+            raise FullStorageException(error.reason) from error
+        elif error.status == 429 or error.status == 503:
+            # TODO: wait until API rate gets unlimited
+            raise APILimitedException(error.reason) from error
+        else:
+            # TODO: better exception
+            raise RuntimeError('Other error happened') from error
+
     def getUserInfo(self):
         client = self.__getDropboxClient()
         self.logger.info("Getting User Info")
@@ -59,8 +75,8 @@ class DropboxAccount(account.Account):
         try:
             user_info = client.account_info()
             self.logger.info(user_info)
-        except ErrorResponse:
-            raise RuntimeError()
+        except ErrorResponse as error:
+            self.__manageException(error)
 
     def updateAccountInfo(self):
         client = self.__getDropboxClient()
@@ -74,8 +90,8 @@ class DropboxAccount(account.Account):
 
             self.email = account_info['email']
             self.logger.debug("Email = <" + str(self.email) + ">")
-        except ErrorResponse:
-            raise RuntimeError()
+        except ErrorResponse as error:
+            self.__manageException(error)
 
     def getFreeSpace(self):
         client = self.__getDropboxClient()
@@ -88,8 +104,8 @@ class DropboxAccount(account.Account):
 
             self.free_quota = quota - normal_used - shared_used
             self.logger.debug("Remaining space = <" + str(self.free_quota) + "> bytes")
-        except ErrorResponse:
-            raise RuntimeError()
+        except ErrorResponse as error:
+            self.__manageException(error)
 
     def getMetadata(self, folder):
         client = self.__getDropboxClient()
@@ -98,8 +114,8 @@ class DropboxAccount(account.Account):
             metadata = client.metadata(folder)
             # for now, it will return all what Dropbox sends, but as we move forward we will return a custom metadata dict
             return metadata
-        except ErrorResponse:
-            raise RuntimeError()
+        except ErrorResponse as error:
+            self.__manageException(error)
 
     def delta(self, returnDict=None):
         client = self.__getDropboxClient()
@@ -123,8 +139,8 @@ class DropboxAccount(account.Account):
 
             self.logger.debug("returnDict = <" + str(returnDict) + ">")
             return returnDict
-        except ErrorResponse:
-            raise RuntimeError()
+        except ErrorResponse as error:
+            self.__manageException(error)
 
     def getFile(self, file_path):
         client = self.__getDropboxClient()
@@ -134,8 +150,8 @@ class DropboxAccount(account.Account):
             outputFile = client.get_file(file_path)
             self.logger.debug("outputFile = <" + str(outputFile) + ">")
             return outputFile
-        except ErrorResponse:
-            raise RuntimeError()
+        except ErrorResponse as error:
+            self.__manageException(error)
 
     def getAccountType(self):
         return "dropbox"
@@ -151,8 +167,8 @@ class DropboxAccount(account.Account):
             self.logger.debug("Response = <" + str(response) + ">")
             self.fileSystemModule.closeFile(file_path, stream)
             return response['rev']
-        except ErrorResponse:
-            raise RuntimeError()
+        except ErrorResponse as error:
+            self.__manageException(error)
 
     def renameFile(self, oldpath, newpath):
         client = self.__getDropboxClient()
@@ -163,8 +179,8 @@ class DropboxAccount(account.Account):
             response = client.file_move(oldpath, newpath)
             self.logger.debug("Response = <" + str(response) + ">")
             return response['rev']
-        except ErrorResponse:
-            raise RuntimeError()
+        except ErrorResponse as error:
+            self.__manageException(error)
 
     def deleteFile(self, file_path):
         client = self.__getDropboxClient()
@@ -174,8 +190,8 @@ class DropboxAccount(account.Account):
         try:
             response = client.file_delete(file_path)
             return True
-        except ErrorResponse:
-            raise RuntimeError()
+        except ErrorResponse as error:
+            self.__manageException(error)
 
     def fits(self, file_size):
         return file_size <= self.free_quota
@@ -242,7 +258,8 @@ class DropboxAccountStub(DropboxAccount):
         if rev:
             size = self.fileSystemModule.getFileSize(file_path)
             if not self.fits(size):
-                raise RuntimeError()
+                raise FullStorageException()
+
         if file_path not in self.__file_list__:
             self.__file_list__.append(file_path)
 
@@ -257,20 +274,24 @@ class DropboxAccountStub(DropboxAccount):
         return deltaItem[1]['rev']
 
     def renameFile(self, oldpath, newpath):
-        index = self.__file_list__.index(oldpath)
-        self.__file_list__[index] = newpath
-        deltaItem = [oldpath.lower(), None]
-        self.__delta_acum__.append(deltaItem)
-        deltaItem = [newpath.lower(), {'is_dir': False, 'path': newpath, 'rev': 'renamed', 'bytes': len(newpath)}]
-        self.__delta_acum__.append(deltaItem)
-        return deltaItem[1]['rev']
+        try:
+            index = self.__file_list__.index(oldpath)
+            self.__file_list__[index] = newpath
+            deltaItem = [oldpath.lower(), None]
+            self.__delta_acum__.append(deltaItem)
+            deltaItem = [newpath.lower(), {'is_dir': False, 'path': newpath, 'rev': 'renamed', 'bytes': len(newpath)}]
+            self.__delta_acum__.append(deltaItem)
+            return deltaItem[1]['rev']
+        except ValueError as e:
+            raise RuntimeError from e
 
     def deleteFile(self, file_path):
-        if file_path in self.__file_list__:
+        try:
             self.__file_list__.remove(file_path)
             self.__delta_acum__.append([file_path.lower(), None])
             return True
-        return False
+        except ValueError as e:
+            raise RuntimeError from e
 
     def getFileList(self):
         return self.__file_list__
