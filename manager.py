@@ -375,6 +375,7 @@ class Manager():
 
     def applyChangesOnDB(self, changesOnDB):
         self.logger.info("Applying changes on database")
+        self.logger.debug(changesOnDB)
         for element in changesOnDB:
             if 'account' not in element or not element['account']:  # if it doesn't have account, ignore it
                 self.logger.warn("The file <" + element['path'] + "> doesn't have account")
@@ -402,10 +403,15 @@ class Manager():
                     continue
 
             elif element['hash']:  # created or modified
-                self.logger.debug("Downloading file <" + element['path'] + ">")
-                streamFile = element['account'].getFile(element["path"])  # TODO: Aquí tendré que DESencriptar el fichero...
-                self.fileSystemModule.createFile(element["path"], streamFile)
-                streamFile.close()
+                try:
+                    self.logger.debug("Downloading file <" + element['path'] + ">")
+                    streamFile = element['account'].getFile(element["path"])  # TODO: Aquí tendré que DESencriptar el fichero...
+                    self.fileSystemModule.createFile(element["path"], streamFile)
+                    streamFile.close()
+                except FileNotFoundError as e:
+                    self.logger.error("File not found in the remote. Deleting it")
+                    self.logger.exception(e)
+                    element['hash'] = None
 
             else:  # deleted
                 cased_path = self.getCasedPath(element['path'], element['account'])

@@ -94,3 +94,33 @@ class TestExceptions(object):
         assert_equal(fileList, expected_fileList)
         assert_equal(remoteFileList_0, expected_remoteFileList_0)
         compareChangeLists(DBFiles, expected_DBFiles)
+
+    def test_rename_not_found(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.newAccount('dropbox_stub', 'user2')
+        filename = 'test_file.txt'
+        self.man.fileSystemModule.createFile(filename)  # create a file
+        self.man.cuentas[0].uploadFile(filename)  # file uploaded
+        self.man.cuentas[1].uploadFile(filename)  # file uploaded in both accounts
+
+        # This simulates deleting a file just before trying to rename it
+        self.man.cuentas[0].renameFile = pre_execute_decorator(lambda: self.man.cuentas[0].deleteFile(filename), self.man.cuentas[0].renameFile)
+
+        self.man.updateLocalSyncFolder()  # this conflicts
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList_0 = self.man.cuentas[0].getFileList()
+        remoteFileList_1 = self.man.cuentas[1].getFileList()
+
+        date = datetime.date.today()
+        expected_fileList = [filename + '__CONFLICTED_COPY__' + date.isoformat(), filename]
+        expected_DBFiles = [{'path': filename + '__CONFLICTED_COPY__' + date.isoformat(), 'hash': filename, 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user},
+                            {'path': filename, 'hash': filename, 'account': self.man.cuentas[1].getAccountType(), 'user': self.man.cuentas[1].user}]
+        expected_remoteFileList_0 = [filename + '__CONFLICTED_COPY__' + date.isoformat()]
+        expected_remoteFileList_1 = [filename]
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(remoteFileList_0, expected_remoteFileList_0)
+        assert_equal(remoteFileList_1, expected_remoteFileList_1)
+        compareChangeLists(DBFiles, expected_DBFiles)
