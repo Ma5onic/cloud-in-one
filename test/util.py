@@ -1,6 +1,7 @@
 from nose.tools import assert_equal
 from nose.tools import assert_greater_equal
 from nose.tools import assert_true
+from exceptions import RetryException, FullStorageException, APILimitedException
 
 
 def Ignore(fn):
@@ -14,6 +15,11 @@ def returnFalse(*args, **kwargs):
     return False
 
 
+def returnEmptyList(*args, **kwargs):
+    ''' This function ignores all arguments, and always returns [] '''
+    return []
+
+
 def compareChangeLists(changeList, expected_changeList):
     changeList = sorted(set(i.items()) for i in changeList)
     expected_changeList = sorted(set(i.items()) for i in expected_changeList)
@@ -21,3 +27,25 @@ def compareChangeLists(changeList, expected_changeList):
     assert_greater_equal(changeList, expected_changeList)
     assert_equal(len(changeList), len(expected_changeList))
     # assert_true(expected_changeList <= changeList)
+
+
+def pre_execute_decorator(previous_fn, fn):
+    def wrapped(*args, **kwargs):
+        print('This is wrapped')
+        previous_fn()
+        fn(*args, **kwargs)
+    return wrapped
+
+
+def raise_Retry_first_decorator(fn):
+    should_raise = True
+
+    def wrapped(*args, **kwargs):
+        nonlocal should_raise
+        if should_raise:
+            should_raise = False
+            raise RetryException
+        else:
+            should_raise = True
+            fn(*args, **kwargs)
+    return wrapped
