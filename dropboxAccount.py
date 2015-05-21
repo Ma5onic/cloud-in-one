@@ -225,9 +225,9 @@ class DropboxAccountStub(DropboxAccount):
         self.__client = None
 
         self.free_quota = 100
-        self.__file_list__ = []
-        self.__delta_acum__ = []
-        self._delta_reset_ = False
+        self.__file_list = []
+        self.__delta_acum = []
+        self._delta_reset = False
 
     def __getDropboxClient(self):
         return None
@@ -241,10 +241,10 @@ class DropboxAccountStub(DropboxAccount):
         raise NotImplemented()
 
     def delta(self, returnDict=dict()):
-        returnDict["entries"] = self.__delta_acum__
+        returnDict["entries"] = self.__delta_acum
         self.resetChanges()
 
-        returnDict["reset"] = self._delta_reset_
+        returnDict["reset"] = self._delta_reset
         return returnDict
 
     def deltaEmpty(self, returnDict=dict()):
@@ -253,7 +253,7 @@ class DropboxAccountStub(DropboxAccount):
         return returnDict
 
     def getFile(self, file_path):
-        for i in self.__file_list__:
+        for i in self.__file_list:
             if i == file_path:
                 f = open('test/muerte.txt', 'rb')
                 return f
@@ -268,44 +268,44 @@ class DropboxAccountStub(DropboxAccount):
             if not self.fits(size):
                 raise FullStorageException()
 
-        if file_path not in self.__file_list__:
-            self.__file_list__.append(file_path)
+        if file_path not in self.__file_list:
+            self.__file_list.append(file_path)
 
         if not rev:
             rev = 'revision_number'
         else:
             rev = rev + '1'
         deltaItem = [file_path.lower(), {'is_dir': False, 'path': file_path, 'rev': rev, 'bytes': len(file_path)}]
-        if deltaItem not in self.__delta_acum__:
-            self.__delta_acum__.append(deltaItem)
+        if deltaItem not in self.__delta_acum:
+            self.__delta_acum.append(deltaItem)
 
         return deltaItem[1]['rev']
 
     def renameFile(self, oldpath, newpath):
         try:
-            index = self.__file_list__.index(oldpath)
-            self.__file_list__[index] = newpath
+            index = self.__file_list.index(oldpath)
+            self.__file_list[index] = newpath
             deltaItem = [oldpath.lower(), None]
-            self.__delta_acum__.append(deltaItem)
+            self.__delta_acum.append(deltaItem)
             deltaItem = [newpath.lower(), {'is_dir': False, 'path': newpath, 'rev': 'renamed', 'bytes': len(newpath)}]
-            self.__delta_acum__.append(deltaItem)
+            self.__delta_acum.append(deltaItem)
             return deltaItem[1]['rev']
         except ValueError as e:
             raise RuntimeError from e
 
     def deleteFile(self, file_path):
         try:
-            self.__file_list__.remove(file_path)
-            self.__delta_acum__.append([file_path.lower(), None])
+            self.__file_list.remove(file_path)
+            self.__delta_acum.append([file_path.lower(), None])
             return True
         except ValueError as e:
             raise RuntimeError from e
 
     def getFileList(self):
-        return self.__file_list__
+        return self.__file_list
 
     def resetChanges(self):
-        self.__delta_acum__ = []
+        self.__delta_acum = []
 
     def updateAccountInfo(self):
         pass

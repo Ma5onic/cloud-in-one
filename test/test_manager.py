@@ -632,7 +632,7 @@ class TestManager(object):
         self.man.fileSystemModule.createFile(filename)  # create a file with size len(filename)
         self.man.updateLocalSyncFolder()  # upload it...
         self.man.cuentas[0].resetChanges()
-        self.man.cuentas[0]._delta_reset_ = True
+        self.man.cuentas[0]._delta_reset = True
         self.man.cuentas[0].uploadFile(filename, 'revision_number')
         self.man.fileSystemModule.createFile(filename)  # create a file with size len(filename)
 

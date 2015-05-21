@@ -138,7 +138,7 @@ class FileSystemModuleStub(FileSystemModule):
     """stub for the filesystem module."""
     def __init__(self):
         self.main_path = 'test'
-        self.__file_list__ = []
+        self.__file_list = []
 
     def createDirectory(self, dir_path):
         return os.path.join(self.main_path, dir_path)
@@ -146,15 +146,15 @@ class FileSystemModuleStub(FileSystemModule):
     def createFile(self, file_path, stream=None):
         try:
             # If the file already existed
-            file_info = (next(item for item in self.__file_list__ if item['path'] == file_path))
+            file_info = (next(item for item in self.__file_list if item['path'] == file_path))
             file_info['stream'] = stream
             file_info['hash'] = 'modified'
             file_info['size'] = len(file_path) + 1
         except StopIteration:
-            self.__file_list__.append({'path': file_path, 'stream': stream, 'hash': file_path, 'size': len(file_path)})
+            self.__file_list.append({'path': file_path, 'stream': stream, 'hash': file_path, 'size': len(file_path)})
 
     def openFile(self, file_path):
-        for i in self.__file_list__:
+        for i in self.__file_list:
             if i['path'] == file_path:
                 return i['stream']
         return None
@@ -164,17 +164,17 @@ class FileSystemModuleStub(FileSystemModule):
 
     def renameFile(self, oldpath, newpath):
         try:
-            (next(i for i in self.__file_list__ if i['path'] == newpath))
+            (next(i for i in self.__file_list if i['path'] == newpath))
             raise FileExistsError
         except StopIteration:
-            item = (next(i for i in self.__file_list__ if i['path'] == oldpath))
+            item = (next(i for i in self.__file_list if i['path'] == oldpath))
             item['path'] = newpath
         return True
 
     def remove(self, path):
-        for i in self.__file_list__:
+        for i in self.__file_list:
             if i['path'] == path:
-                self.__file_list__.remove(i)
+                self.__file_list.remove(i)
 
     def getFullPath(self, path=None, name=None):
         return os.path.join(self.main_path, name)
@@ -183,16 +183,16 @@ class FileSystemModuleStub(FileSystemModule):
         return self.main_path
 
     def getFileList(self):
-        return [i['path'] for i in self.__file_list__]
+        return [i['path'] for i in self.__file_list]
 
     def md5sum(self, filename):
-        for i in self.__file_list__:
+        for i in self.__file_list:
             if i['path'] == filename:
                 return i['hash']
         return None
 
     def getFileSize(self, filename):
         try:
-            return next((i['size'] for i in self.__file_list__ if i['path'] == filename))
+            return next((i['size'] for i in self.__file_list if i['path'] == filename))
         except StopIteration:
             raise FileNotFoundError(filename)
