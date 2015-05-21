@@ -291,7 +291,7 @@ class DropboxAccountStub(DropboxAccount):
             self.__delta_acum.append(deltaItem)
             return deltaItem[1]['rev']
         except ValueError as e:
-            raise RuntimeError from e
+            raise FileNotFoundError from e
 
     def deleteFile(self, file_path):
         try:

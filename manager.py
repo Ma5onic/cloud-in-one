@@ -390,6 +390,7 @@ class Manager():
 
     def applyChangesOnLocal(self, changesOnLocal):
         self.logger.info("Applying changes on local")
+        self.logger.debug(changesOnLocal)
         for i, element in enumerate(changesOnLocal):
             if 'oldpath' in element and not 'remote_move' in element:  # rename
                 try:

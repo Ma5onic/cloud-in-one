@@ -37,14 +37,14 @@ def pre_execute_decorator(previous_fn, fn):
     return wrapped
 
 
-def raise_Retry_first_decorator(fn):
+def raise_first_decorator(fn, exception_to_raise):
     should_raise = True
 
     def wrapped(*args, **kwargs):
         nonlocal should_raise
         if should_raise:
             should_raise = False
-            raise RetryException
+            raise exception_to_raise
         else:
             should_raise = True
             fn(*args, **kwargs)
