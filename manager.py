@@ -324,7 +324,7 @@ class Manager():
                     try:
                         self.logger.debug("Renaming file <" + element['oldpath'] + "> to <" + element['path'] + "> in account <" + str(element['account']) + ">")
                         revision = element['account'].renameFile(element['oldpath'], element["path"])  # TODO: Aquí tendré que encriptar el fichero...
-                    except:  # TODO: except solo en el caso de "ya existe"
+                    except FileExistsError:
                         element['path'] += '_2'
                         changesOnRemote.insert(i+1, element)
                         continue
@@ -333,14 +333,19 @@ class Manager():
                         self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
                         revision = element['account'].uploadFile(element["path"], element.get('revision'))  # TODO: Aquí tendré que encriptar el fichero...
                     except FullStorageException:  # si no cabe en la cuenta...
-                        old_account = element['account']
+                        old_account = self.getAccountFromFile(element['path'])
                         fits_account = self.fitToNewAccount(element)
                         if fits_account:
                             self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
                             revision = element['account'].uploadFile(element["path"], element.get('revision'))  # TODO: Aquí tendré que encriptar el fichero...
-                            old_account.deleteFile(element['path'])
+                            if old_account:
+                                old_account.deleteFile(element['path'])
                         else:
                             element['account'] = None
+                    except RetryException:
+                        self.logger.debug("Adding to the current list to retry")
+                        changesOnRemote.insert(i+1, element)
+
                 element['revision'] = revision
 
             else:  # deleted, remove from the remote
@@ -353,9 +358,9 @@ class Manager():
             if account is current_account:
                 continue
 
-            self.logger.debug("Trying to save file <" + element['path'] + "> in account <" + str(account) + ">")
+            self.logger.debug("Trying to fit file <" + element['path'] + "> in account <" + str(account) + ">")
             if account.fits(element['size']):
-                self.logger.debug("Saved to account <" + str(account) + ">")
+                self.logger.debug("It fits in account <" + str(account) + ">")
                 element['account'] = account
                 return True
             else:

@@ -64,6 +64,8 @@ class DropboxAccount(account.Account):
         elif error.status == 429 or error.status == 503:
             # TODO: wait until API rate gets unlimited
             raise APILimitedException(error.reason) from error
+        elif error.status == 403:  # You keep using that status. I do not think it means what you think it means.
+            raise FileExistsError(error.reason) from error
         else:
             # TODO: better exception
             raise RuntimeError('Other error happened') from error
