@@ -67,7 +67,10 @@ class DropboxAccount(account.Account):
             raise FullStorageException(error.reason) from error
         elif error.status == 429 or error.status == 503:
             # TODO: wait until API rate gets unlimited
-            raise APILimitedException(error.reason) from error
+            import time
+            time.sleep(60)  # for now, sleep one minute and retry
+            raise RetryException(error.reason) from error
+            # raise APILimitedException(error.reason) from error
         elif error.status == 403:  # You keep using that status. I do not think it means what you think it means.
             raise FileExistsError(error.reason) from error
         elif error.status == 404:
