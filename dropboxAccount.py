@@ -240,7 +240,9 @@ class DropboxAccountStub(DropboxAccount):
     def getMetadata(self, folder):
         raise NotImplemented()
 
-    def delta(self, returnDict=dict()):
+    def delta(self, returnDict=None):
+        if not returnDict:
+            returnDict = dict()
         returnDict["entries"] = self.__delta_acum
         self.resetChanges()
 
@@ -253,11 +255,11 @@ class DropboxAccountStub(DropboxAccount):
         return returnDict
 
     def getFile(self, file_path):
-        for i in self.__file_list:
-            if i == file_path:
-                f = open('test/muerte.txt', 'rb')
-                return f
-        return None
+        if file_path in self.__file_list:
+            f = open('test/muerte.txt', 'rb')
+            return f
+        else:
+            raise FileNotFoundError(file_path)
 
     def getAccountType(self):
         return "dropbox_stub"
@@ -266,7 +268,7 @@ class DropboxAccountStub(DropboxAccount):
         if rev:
             size = self.fileSystemModule.getFileSize(file_path)
             if not self.fits(size):
-                raise FullStorageException()
+                raise FullStorageException(file_path)
 
         if file_path not in self.__file_list:
             self.__file_list.append(file_path)
@@ -299,7 +301,7 @@ class DropboxAccountStub(DropboxAccount):
             self.__delta_acum.append([file_path.lower(), None])
             return True
         except ValueError as e:
-            raise FileNotFoundError()
+            raise FileNotFoundError(file_path)
 
     def getFileList(self):
         return self.__file_list
