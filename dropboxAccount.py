@@ -1,10 +1,12 @@
-import account
-import dropbox
-from exceptions import RetryException, FullStorageException, APILimitedException
 import os
-from log import *
-from fileSystemModule import FileSystemModule
+import webbrowser
+import dropbox
 from dropbox.rest import ErrorResponse
+
+from log import *
+import account
+from exceptions import RetryException, FullStorageException, APILimitedException
+from fileSystemModule import FileSystemModule
 
 app_key = os.getenv("APP_KEY")
 app_secret = os.getenv("APP_SECRET")
@@ -35,6 +37,7 @@ class DropboxAccount(account.Account):
         # Have the user sign in and authorize this token
         authorize_url = flow.start()
         print('1. Go to: ' + authorize_url)
+        webbrowser.open_new(authorize_url)
         print('2. Click "Allow" (you might have to log in first)')
         print('3. Copy the authorization code.')
         code = input("Enter the authorization code here: ").strip()
