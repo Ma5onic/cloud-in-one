@@ -353,6 +353,9 @@ class Manager():
             except RetryException:
                 self.logger.debug("Adding to the current list to retry")
                 changesOnRemote.insert(i+1, element)
+            except FileNotFoundError as e:
+                self.logger.error("File not found in the remote account")
+                self.logger.exception(e)
 
     def fitToNewAccount(self, element):
         current_account = element.get('account', None)

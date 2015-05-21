@@ -299,7 +299,7 @@ class DropboxAccountStub(DropboxAccount):
             self.__delta_acum.append([file_path.lower(), None])
             return True
         except ValueError as e:
-            raise RuntimeError from e
+            raise FileNotFoundError()
 
     def getFileList(self):
         return self.__file_list
