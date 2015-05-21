@@ -45,7 +45,7 @@ class Manager():
         #TODO: inicializar los módulos de seguridad y FS
         self.securityModule = None
 
-    def __CreateAccount__(self, type, user):
+    def __CreateAccount(self, type, user):
         if type is "dropbox":
             return dropboxAccount.DropboxAccount(self.fileSystemModule, user)
         elif type is "dropbox_stub":
@@ -56,7 +56,7 @@ class Manager():
         self.logger.debug("type = %s", type)
         self.logger.debug("user = %s", user)
 
-        newAcc = self.__CreateAccount__(type, user)
+        newAcc = self.__CreateAccount(type, user)
         self.cuentas.append(newAcc)
         self.saveAccount(newAcc)
 
@@ -118,7 +118,7 @@ class Manager():
 
                             old_account = self.getAccountFromFile(metadata['path'])
                             if old_account and old_account != account:
-                                self.__remote_conflicted_copy__(newChange)
+                                self.__remote_conflicted_copy(newChange)
 
                             remoteChanges.append(newChange)
 
@@ -128,7 +128,7 @@ class Manager():
         self.logger.debug(remoteChanges)
         return remoteChanges
 
-    def __fixAutoCollisions__(self, changeList):
+    def __fixAutoCollisions(self, changeList):
         self.logger.debug('changeList <' + str(changeList) + '>')
 
         elementsToDel = []
@@ -148,7 +148,7 @@ class Manager():
                     if change['hash']:  # the other too!
                         try:
                             if change['account'] != collided['account']:  # they come from different places
-                                self.__remote_conflicted_copy__(change)
+                                self.__remote_conflicted_copy(change)
                             else:  # they come from the same place
                                 self.logger.warn("Same file changed twice in the same changelist. That's a bug")
                                 elementsToDel.append(collided)
@@ -176,7 +176,7 @@ class Manager():
 
         return changeList
 
-    def __remote_conflicted_copy__(self, change):
+    def __remote_conflicted_copy(self, change):
         self.logger.debug("CONFLICTED COPY")
         date = datetime.date.today()
         oldpath = change['path']
@@ -187,7 +187,7 @@ class Manager():
         change['remote_move'] = True
         self.logger.debug(change)
 
-    def __conflicted_copy__(self, change_info):
+    def __conflicted_copy(self, change_info):
         date = datetime.date.today()
         oldpath = change_info['path']
         newname = oldpath+'__CONFLICTED_COPY__'+date.isoformat()
@@ -205,8 +205,8 @@ class Manager():
         self.logger.debug('localChanges <' + str(localChanges) + '>')
         self.logger.debug('remoteChanges <' + str(remoteChanges) + '>')
 
-        localChanges = self.__fixAutoCollisions__(localChanges)
-        remoteChanges = self.__fixAutoCollisions__(remoteChanges)
+        localChanges = self.__fixAutoCollisions(localChanges)
+        remoteChanges = self.__fixAutoCollisions(remoteChanges)
 
         self.logger.debug('localChanges <' + str(localChanges) + '>')
         self.logger.debug('remoteChanges <' + str(remoteChanges) + '>')
@@ -228,7 +228,7 @@ class Manager():
                             else:
                                 raise KeyError
                         except(KeyError):
-                            self.__conflicted_copy__(local)
+                            self.__conflicted_copy(local)
                             # localChanges.append(local)
                             changesOnLocal.append(collided)
                             changesOnDB.append(local)
@@ -261,9 +261,9 @@ class Manager():
         self.logger.debug('changesOnDB <' + str(changesOnDB) + '>')
         self.logger.debug('changesOnRemote <' + str(changesOnRemote) + '>')
 
-        changesOnLocal = self.__fixAutoCollisions__(changesOnLocal)
-        changesOnDB = self.__fixAutoCollisions__(changesOnDB)
-        changesOnRemote = self.__fixAutoCollisions__(changesOnRemote)
+        changesOnLocal = self.__fixAutoCollisions(changesOnLocal)
+        changesOnDB = self.__fixAutoCollisions(changesOnDB)
+        changesOnRemote = self.__fixAutoCollisions(changesOnRemote)
         changesOnLocal = [item for item in changesOnLocal if item['hash'] is None] + [item for item in changesOnLocal if item['hash'] is not None]
         changesOnDB = [item for item in changesOnDB if item['hash'] is None] + [item for item in changesOnDB if item['hash'] is not None]
         changesOnRemote = [item for item in changesOnRemote if item['hash'] is None] + [item for item in changesOnRemote if item['hash'] is not None]
