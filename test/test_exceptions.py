@@ -77,7 +77,7 @@ class TestExceptions(object):
 
         self.man.fileSystemModule.remove(filename)  # we delete file the file locally
 
-        self.man.cuentas[0].deleteFile = raise_Retry_first_decorator(self.man.cuentas[0].deleteFile)
+        self.man.cuentas[0].deleteFile = raise_first_decorator(self.man.cuentas[0].deleteFile, RetryException)
 
         # We receive a RetryException and retry the last action
 
