@@ -141,3 +141,45 @@ class TestExceptions(object):
         assert_equal(fileList, expected_fileList)
         assert_equal(remoteFileList_0, expected_remoteFileList_0)
         compareChangeLists(DBFiles, expected_DBFiles)
+
+    def test_delta_first_unknown(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        filename = 'test_file.txt'
+        self.man.cuentas[0].uploadFile(filename)  # file uploaded
+
+        self.man.cuentas[0].delta = raise_first_decorator(self.man.cuentas[0].delta, UnknownError)
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList_0 = self.man.cuentas[0].getFileList()
+
+        expected_fileList = [filename]
+        expected_DBFiles = [{'path': filename, 'hash': filename, 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
+        expected_remoteFileList_0 = [filename]
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(remoteFileList_0, expected_remoteFileList_0)
+        compareChangeLists(DBFiles, expected_DBFiles)
+
+    def test_delta_always_raise(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        filename = 'test_file.txt'
+        self.man.cuentas[0].uploadFile(filename)  # file uploaded
+
+        self.man.cuentas[0].delta = raise_always_decorator(UnknownError)
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList_0 = self.man.cuentas[0].getFileList()
+
+        expected_fileList = []
+        expected_DBFiles = []
+        expected_remoteFileList_0 = [filename]
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(remoteFileList_0, expected_remoteFileList_0)
+        compareChangeLists(DBFiles, expected_DBFiles)

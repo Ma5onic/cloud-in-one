@@ -94,9 +94,23 @@ class Manager():
     def findRemoteChanges(self):
         self.logger.info('Getting Remote differences')
         remoteChanges = []
+
         for account in self.cuentas:
             self.logger.debug('Account <' + str(account) + '>')
-            deltaDict = account.delta()
+            deltaDict = None
+            try:
+                deltaDict = account.delta()
+                self.logger.debug(deltaDict)
+            except UnknownError as first:
+                self.logger.warn("Error when calling delta. Retrying once")
+                try:
+                    deltaDict = account.delta()
+                    self.logger.debug(deltaDict)
+                except UnknownError:
+                    self.logger.error("Error when calling delta for account <" + str(account) + ">")
+                    self.logger.exception(first)
+                    continue
+
             self.logger.debug(deltaDict)
             if deltaDict['reset']:
                 self.logger.debug('Reset recieved. Resetting account <' + str(account) + '>')
