@@ -337,10 +337,9 @@ class Manager():
                             old_account = self.getAccountFromFile(element['path'])
                             fits_account = self.fitToNewAccount(element)
                             if fits_account:
-                                self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
-                                revision = element['account'].uploadFile(element["path"], element.get('revision'))  # TODO: Aquí tendré que encriptar el fichero...
                                 if old_account:
                                     old_account.deleteFile(element['path'])
+                                raise RetryException
                             else:
                                 element['account'] = None
 
