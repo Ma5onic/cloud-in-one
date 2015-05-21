@@ -83,8 +83,12 @@ class Manager():
 
         self.syncAccounts(changesOnLocal, changesOnDB, changesOnRemote)
         for i in self.cuentas:
-            i.updateAccountInfo()
-            self.saveAccount(i)
+            try:
+                i.updateAccountInfo()
+                self.saveAccount(i)
+            except UnknownError as e:
+                self.logger.error("Error updating account information.")
+                self.logger.exception(e)
 
     def syncAccounts(self, changesOnLocal, changesOnDB, changesOnRemote):
         self.applyChangesOnRemote(changesOnRemote)
@@ -262,7 +266,7 @@ class Manager():
                 remoteChanges.remove(collided)  # We remove it from the remoteChanges
 
             else:
-                self.logger.debug("Didn't collide. Uploading <" + local['path'] + ">")
+                self.logger.debug("Didn't collide. <" + local['path'] + ">")
                 changesOnDB.append(local)
                 changesOnRemote.append(local)
 
@@ -352,7 +356,12 @@ class Manager():
                             fits_account = self.fitToNewAccount(element)
                             if fits_account:
                                 if old_account:
-                                    old_account.deleteFile(element['path'])
+                                    try:
+                                        old_account.deleteFile(element['path'])
+                                    except FileNotFoundError:
+                                        self.logger.warn("File already deleted")
+                                    except Exception as e:
+                                        self.logger.exception(e)
                                 raise RetryException
                             else:
                                 element['account'] = None
@@ -360,8 +369,11 @@ class Manager():
                     element['revision'] = revision
 
                 else:  # deleted, remove from the remote
-                    self.logger.debug("Deleting file <" + element['path'] + ">")
-                    element['account'].deleteFile(element['path'])
+                    if element['account']:
+                        self.logger.debug("Deleting file <" + element['path'] + ">")
+                        element['account'].deleteFile(element['path'])
+                    else:
+                        self.logger.warn("Trying to remove a file without account")
 
             except RetryException:
                 self.logger.debug("Adding to the current list to retry")
@@ -369,6 +381,13 @@ class Manager():
             except FileNotFoundError as e:
                 self.logger.error("File not found in the remote account")
                 self.logger.exception(e)
+            except UnknownError as unknown:
+                self.logger.exception(unknown)
+                self.logger.error("Unknown Error. Setting account quota to 0 to prevent new uploads")  # will be reset at the end of the sync
+                element['account'].free_quota = 0
+                element['account'] = None  # applyDB will ignore it
+                self.logger.debug("Adding to the current list to retry")
+                changesOnRemote.insert(i+1, element)
 
     def fitToNewAccount(self, element):
         current_account = element.get('account', None)

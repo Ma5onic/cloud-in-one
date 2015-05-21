@@ -183,3 +183,132 @@ class TestExceptions(object):
         assert_equal(fileList, expected_fileList)
         assert_equal(remoteFileList_0, expected_remoteFileList_0)
         compareChangeLists(DBFiles, expected_DBFiles)
+
+    def test_delta_always_raise_local_changes(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        filename = 'test_file.txt'
+        filename_local = filename + '_local'
+        self.man.fileSystemModule.createFile(filename_local)  # create a file
+        self.man.cuentas[0].uploadFile(filename)  # file uploaded
+
+        self.man.cuentas[0].delta = raise_always_decorator(UnknownError)
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList_0 = self.man.cuentas[0].getFileList()
+
+        expected_fileList = [filename_local]
+        expected_DBFiles = [{'path': filename_local, 'hash': filename_local, 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
+        expected_remoteFileList_0 = [filename, filename_local]
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(remoteFileList_0, expected_remoteFileList_0)
+        compareChangeLists(DBFiles, expected_DBFiles)
+
+    def test_delta_always_raise_local_changes_two_accounts(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.newAccount('dropbox_stub', 'user2')
+        filename = 'test_file.txt'
+        filename_local = filename + '_local'
+        filename_remote = filename + '_remote'
+        self.man.fileSystemModule.createFile(filename_local)  # create a file
+        self.man.cuentas[0].uploadFile(filename)  # file uploaded
+        self.man.cuentas[1].uploadFile(filename_remote)  # file uploaded
+
+        self.man.cuentas[0].delta = raise_always_decorator(UnknownError)
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList_0 = self.man.cuentas[0].getFileList()
+        remoteFileList_1 = self.man.cuentas[1].getFileList()
+
+        expected_fileList = [filename_local, filename_remote]
+        expected_DBFiles = [{'path': filename_local, 'hash': filename_local, 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user},
+                            {'path': filename_remote, 'hash': filename_remote, 'account': self.man.cuentas[1].getAccountType(), 'user': self.man.cuentas[1].user}]
+        expected_remoteFileList_0 = [filename, filename_local]
+        expected_remoteFileList_1 = [filename_remote]
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(remoteFileList_0, expected_remoteFileList_0)
+        assert_equal(remoteFileList_1, expected_remoteFileList_1)
+        compareChangeLists(DBFiles, expected_DBFiles)
+
+    def test_two_accounts_one_useless(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.newAccount('dropbox_stub', 'user2')
+        filename = 'test_file.txt'
+        filename_local = filename + '_local'
+        filename_remote = filename + '_remote'
+        self.man.fileSystemModule.createFile(filename_local)  # create a file
+        self.man.cuentas[0].uploadFile(filename)  # file uploaded
+        self.man.cuentas[1].uploadFile(filename_remote)  # file uploaded
+
+        # The first account will always throw exception
+        self.man.cuentas[0].delta = raise_always_decorator(UnknownError)
+        self.man.cuentas[0].uploadFile = raise_always_decorator(UnknownError)
+        self.man.cuentas[0].getFile = raise_always_decorator(UnknownError)
+        self.man.cuentas[0].updateAccountInfo = raise_always_decorator(UnknownError)
+        self.man.cuentas[0].deleteFile = raise_always_decorator(UnknownError)
+        self.man.cuentas[0].renameFile = raise_always_decorator(UnknownError)
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList_0 = self.man.cuentas[0].getFileList()
+        remoteFileList_1 = self.man.cuentas[1].getFileList()
+
+        expected_fileList = [filename_local, filename_remote]
+        expected_DBFiles = [{'path': filename_local, 'hash': filename_local, 'account': self.man.cuentas[1].getAccountType(), 'user': self.man.cuentas[1].user},
+                            {'path': filename_remote, 'hash': filename_remote, 'account': self.man.cuentas[1].getAccountType(), 'user': self.man.cuentas[1].user}]
+        expected_remoteFileList_0 = [filename]
+        expected_remoteFileList_1 = [filename_remote, filename_local]
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(remoteFileList_0, expected_remoteFileList_0)
+        assert_equal(remoteFileList_1, expected_remoteFileList_1)
+        compareChangeLists(DBFiles, expected_DBFiles)
+
+    def test_two_accounts_delete_exception(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        self.man.newAccount('dropbox_stub', 'user2')
+        filename = 'test_file.txt'
+        filename_local = filename + '_local'
+        filename_remote = filename + '_remote'
+        self.man.fileSystemModule.createFile(filename_local)  # create a file
+        self.man.cuentas[0].uploadFile(filename)  # file uploaded
+        self.man.cuentas[1].uploadFile(filename_remote)  # file uploaded
+        self.man.updateLocalSyncFolder()
+
+        self.man.fileSystemModule.remove(filename_local)
+
+        # The first account will always throw exception
+        self.man.cuentas[0].delta = raise_always_decorator(UnknownError)
+        self.man.cuentas[0].uploadFile = raise_always_decorator(UnknownError)
+        self.man.cuentas[0].getFile = raise_always_decorator(UnknownError)
+        self.man.cuentas[0].updateAccountInfo = raise_always_decorator(UnknownError)
+        self.man.cuentas[0].deleteFile = raise_always_decorator(UnknownError)
+        self.man.cuentas[0].renameFile = raise_always_decorator(UnknownError)
+
+        self.man.updateLocalSyncFolder()
+
+        fileList = self.man.fileSystemModule.getFileList()
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        remoteFileList_0 = self.man.cuentas[0].getFileList()
+        remoteFileList_1 = self.man.cuentas[1].getFileList()
+
+        expected_fileList = [filename, filename_remote]
+        expected_DBFiles = [{'path': filename_local, 'hash': filename_local, 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user},
+                            {'path': filename, 'hash': filename, 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user},
+                            {'path': filename_remote, 'hash': filename_remote, 'account': self.man.cuentas[1].getAccountType(), 'user': self.man.cuentas[1].user}]
+        expected_remoteFileList_0 = [filename, filename_local]
+        expected_remoteFileList_1 = [filename_remote]
+
+        assert_equal(fileList, expected_fileList)
+        assert_equal(remoteFileList_0, expected_remoteFileList_0)
+        assert_equal(remoteFileList_1, expected_remoteFileList_1)
+        compareChangeLists(DBFiles, expected_DBFiles)
