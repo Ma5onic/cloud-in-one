@@ -12,3 +12,8 @@ class FullStorageException(Exception):
 class APILimitedException(Exception):
     """This exception means that you used the API too much"""
     pass
+
+
+class UnknownError(Exception):
+    """This exception is generic. We don't know what happened"""
+    pass
