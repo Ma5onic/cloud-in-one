@@ -4,7 +4,7 @@ import dropboxAccount
 import dataset
 import datetime
 from fileSystemModule import FileSystemModule
-from exceptions import RetryException, FullStorageException, APILimitedException
+from exceptions import RetryException, FullStorageException, APILimitedException, UnknownError
 
 
 config_file = "config/config.json"

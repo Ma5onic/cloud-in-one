@@ -1,7 +1,7 @@
 from nose.tools import assert_equal
 from nose.tools import assert_greater_equal
 from nose.tools import assert_true
-from exceptions import RetryException, FullStorageException, APILimitedException
+from exceptions import RetryException, FullStorageException, APILimitedException, UnknownError
 
 
 def Ignore(fn):
@@ -33,7 +33,7 @@ def pre_execute_decorator(previous_fn, fn):
     def wrapped(*args, **kwargs):
         print('This is wrapped')
         previous_fn()
-        fn(*args, **kwargs)
+        return fn(*args, **kwargs)
     return wrapped
 
 
@@ -47,5 +47,11 @@ def raise_first_decorator(fn, exception_to_raise):
             raise exception_to_raise
         else:
             should_raise = True
-            fn(*args, **kwargs)
+            return fn(*args, **kwargs)
+    return wrapped
+
+
+def raise_always_decorator(exception):
+    def wrapped(*args, **kwargs):
+        raise exception()
     return wrapped

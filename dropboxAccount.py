@@ -5,7 +5,7 @@ from dropbox.rest import ErrorResponse
 
 from log import *
 import account
-from exceptions import RetryException, FullStorageException, APILimitedException
+from exceptions import RetryException, FullStorageException, APILimitedException, UnknownError
 from fileSystemModule import FileSystemModule
 
 app_key = os.getenv("APP_KEY")
@@ -73,8 +73,7 @@ class DropboxAccount(account.Account):
         elif error.status == 404:
             raise FileNotFoundError(error.reason) from error
         else:
-            # TODO: better exception
-            raise RuntimeError('Other error happened') from error
+            raise UnknownError('Other error happened') from error
 
     def getUserInfo(self):
         client = self.__getDropboxClient()

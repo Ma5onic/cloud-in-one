@@ -9,11 +9,6 @@ import datetime
 from util import *
 from fileSystemModule import FileSystemModuleStub
 
-flag = False
-
-
-
-
 
 class TestExceptions(object):
     def __init__(self):
