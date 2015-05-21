@@ -311,46 +311,48 @@ class Manager():
     def applyChangesOnRemote(self, changesOnRemote):
         self.logger.info("Applying changes on remote")
         for i, element in enumerate(changesOnRemote):
-            if element['hash']:  # created or modified, upload to account
-                if 'account' not in element or not element['account']:  # if newly created
-                    fits_account = self.fitToNewAccount(element)
-                    if not fits_account:  # doesn't fit! We log it and continue with the others.
-                        self.logger.error("The file <" + element['path'] + "> doesn't fit anywhere")
-                        element['account'] = None
-                        continue
-
-                revision = None
-                if 'remote_move' in element:  # rename
-                    try:
-                        self.logger.debug("Renaming file <" + element['oldpath'] + "> to <" + element['path'] + "> in account <" + str(element['account']) + ">")
-                        revision = element['account'].renameFile(element['oldpath'], element["path"])  # TODO: Aquí tendré que encriptar el fichero...
-                    except FileExistsError:
-                        element['path'] += '_2'
-                        changesOnRemote.insert(i+1, element)
-                        continue
-                else:  # normal upload
-                    try:
-                        self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
-                        revision = element['account'].uploadFile(element["path"], element.get('revision'))  # TODO: Aquí tendré que encriptar el fichero...
-                    except FullStorageException:  # si no cabe en la cuenta...
-                        old_account = self.getAccountFromFile(element['path'])
+            try:
+                if element['hash']:  # created or modified, upload to account
+                    if 'account' not in element or not element['account']:  # if newly created
                         fits_account = self.fitToNewAccount(element)
-                        if fits_account:
+                        if not fits_account:  # doesn't fit! We log it and continue with the others.
+                            self.logger.error("The file <" + element['path'] + "> doesn't fit anywhere")
+                            element['account'] = None
+                            continue
+
+                    revision = None
+                    if 'remote_move' in element:  # rename
+                        try:
+                            self.logger.debug("Renaming file <" + element['oldpath'] + "> to <" + element['path'] + "> in account <" + str(element['account']) + ">")
+                            revision = element['account'].renameFile(element['oldpath'], element["path"])  # TODO: Aquí tendré que encriptar el fichero...
+                        except FileExistsError:
+                            element['path'] += '_2'
+                            changesOnRemote.insert(i+1, element)
+                            continue
+                    else:  # normal upload
+                        try:
                             self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
                             revision = element['account'].uploadFile(element["path"], element.get('revision'))  # TODO: Aquí tendré que encriptar el fichero...
-                            if old_account:
-                                old_account.deleteFile(element['path'])
-                        else:
-                            element['account'] = None
-                    except RetryException:
-                        self.logger.debug("Adding to the current list to retry")
-                        changesOnRemote.insert(i+1, element)
+                        except FullStorageException:  # si no cabe en la cuenta...
+                            old_account = self.getAccountFromFile(element['path'])
+                            fits_account = self.fitToNewAccount(element)
+                            if fits_account:
+                                self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
+                                revision = element['account'].uploadFile(element["path"], element.get('revision'))  # TODO: Aquí tendré que encriptar el fichero...
+                                if old_account:
+                                    old_account.deleteFile(element['path'])
+                            else:
+                                element['account'] = None
 
-                element['revision'] = revision
+                    element['revision'] = revision
 
-            else:  # deleted, remove from the remote
-                self.logger.debug("Deleting file <" + element['path'] + ">")
-                element['account'].deleteFile(element['path'])
+                else:  # deleted, remove from the remote
+                    self.logger.debug("Deleting file <" + element['path'] + ">")
+                    element['account'].deleteFile(element['path'])
+
+            except RetryException:
+                self.logger.debug("Adding to the current list to retry")
+                changesOnRemote.insert(i+1, element)
 
     def fitToNewAccount(self, element):
         current_account = element.get('account', None)
