@@ -566,16 +566,31 @@ class Manager():
         return [{'path': element['path'], 'hash': element['hash'], 'account': account, 'revision': element['revision']} for element in files]
 
 
-if __name__ == '__main__':
-    man = Manager('user', 'password')
-    if not man.cuentas:
-        man.newAccount('dropbox_stub', 'user')
-    man.cuentas[0].getUserInfo()
-    man.updateLocalSyncFolder()
-    #if len(man.cuentas) > 1:
-        #for i in range(1, len(man.cuentas)):
-         #   man.deleteAccount(man.cuentas[i])
+def _menu():
+    print("====================== CLOUD IN ONE ======================")
+    print("                        MAIN MENU                         ")
+    print("1. New account")
+    print("2. List accounts")
+    print("3. Delete account")
+    print("0. EXIT")
+    print("")
+    opt = input("Please select an option: ")
+    print(chr(27) + "[2J")  # clear screen
+    return opt
 
-    list_files = man.fileSystemModule.getFileList()
-    database_files = man.getFilesPaths(man.cuentas[0].getAccountType(), man.cuentas[0].user)
-    assert(sorted(list_files) == sorted(database_files))
+
+def main():
+    man = Manager('user', 'password')
+    option = None
+    while option != '0':
+        option = _menu()
+        if option == '1':
+            print("newAccount")
+        elif option == '2':
+            print("List")
+        elif option == '3':
+            print("deleteAccount")
+
+
+if __name__ == '__main__':
+    main()
