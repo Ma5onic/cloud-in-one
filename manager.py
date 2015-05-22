@@ -496,7 +496,7 @@ class Manager():
         cuentas_list = []
         for acc in accounts_data:
             if acc["accountType"] == 'dropbox':
-                cuentas_list.append(dropboxAccount.DropboxAccount(self.fileSystemModule, acc['user'], access_token=acc['token'], user_id=acc['userid'], cursor=acc['cursor']))
+                cuentas_list.append(dropboxAccount.DropboxAccount(self.fileSystemModule, acc['user'], access_token=acc['token'], user_id=acc['userid'], cursor=acc['cursor'], email=acc['email']))
 
         return cuentas_list
 
@@ -565,32 +565,5 @@ class Manager():
         files = files_table.find(accountType=account.getAccountType(), user=account.user)
         return [{'path': element['path'], 'hash': element['hash'], 'account': account, 'revision': element['revision']} for element in files]
 
-
-def _menu():
-    print("====================== CLOUD IN ONE ======================")
-    print("                        MAIN MENU                         ")
-    print("1. New account")
-    print("2. List accounts")
-    print("3. Delete account")
-    print("0. EXIT")
-    print("")
-    opt = input("Please select an option: ")
-    print(chr(27) + "[2J")  # clear screen
-    return opt
-
-
-def main():
-    man = Manager('user', 'password')
-    option = None
-    while option != '0':
-        option = _menu()
-        if option == '1':
-            print("newAccount")
-        elif option == '2':
-            print("List")
-        elif option == '3':
-            print("deleteAccount")
-
-
-if __name__ == '__main__':
-    main()
+    def listAccounts(self):
+        return (str(i) for i in self.cuentas)
