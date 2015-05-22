@@ -51,18 +51,22 @@ class Menu(object):
         return opt
 
     def start(self):
-        option = None
-        while option != '0':
-            option = self._showMenu()
-            if option in {'1', '2', '3', '4'}:
-                with self.lock:
-                    if option == '1':
-                        self.__newAccountInteractive()
-                    elif option == '2':
-                        self._listAccounts()
-                    elif option == '3':
-                        self.__deleteAccountInteractive()
-                    elif option == '4':
-                        self._forceSync()
-        self.finish.set()
-        self._forceSync()
+        try:
+            option = None
+            while option != '0':
+                option = self._showMenu()
+                if option in {'1', '2', '3', '4'}:
+                    with self.lock:
+                        if option == '1':
+                            self.__newAccountInteractive()
+                        elif option == '2':
+                            self._listAccounts()
+                        elif option == '3':
+                            self.__deleteAccountInteractive()
+                        elif option == '4':
+                            self._forceSync()
+        except:
+            raise
+        finally:
+            self.finish.set()
+            self._forceSync()
