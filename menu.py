@@ -1,12 +1,15 @@
 class Menu(object):
     """Main menu, with options to start things"""
-    def __init__(self, manager):
+    def __init__(self, manager, event, lock, finish):
         super(Menu, self).__init__()
         self.manager = manager
+        self.event = event
+        self.finish = finish
+        self.lock = lock
 
     def _listAccounts(self):
         print("Account list:")
-        for i, account in enumerate(self.manager.listAccounts(),1):
+        for i, account in enumerate(self.manager.listAccounts(), 1):
             print(i, account)
 
     def __newAccountInteractive(self):
@@ -28,17 +31,21 @@ class Menu(object):
             print("ERROR: invalid account")
             return
 
+    def _forceSync(self):
+        self.event.set()
+
     def _showMenu(self):
         print()
-        print("====================== CLOUD IN ONE ======================")
-        print("                        MAIN MENU                         ")
-        print("1. New account")
-        print("2. List accounts")
-        print("3. Delete account")
-        print("4. Force start sync")
-        print("0. EXIT")
-        print("")
-        opt = input("Please select an option: ")
+        print("""====================== CLOUD IN ONE ======================
+                      MAIN MENU
+1. New account
+2. List accounts
+3. Delete account
+4. Force start sync
+0. EXIT
+
+        Please select an option: """)
+        opt = input()
         print(chr(27) + "[2J")  # clear screen
 
         return opt
@@ -47,11 +54,15 @@ class Menu(object):
         option = None
         while option != '0':
             option = self._showMenu()
-            if option == '1':
-                self.__newAccountInteractive()
-            elif option == '2':
-                self._listAccounts()
-            elif option == '3':
-                self.__deleteAccountInteractive()
-            elif option == '4':
-                print("force sync")
+            if option in {'1', '2', '3', '4'}:
+                with self.lock:
+                    if option == '1':
+                        self.__newAccountInteractive()
+                    elif option == '2':
+                        self._listAccounts()
+                    elif option == '3':
+                        self.__deleteAccountInteractive()
+                    elif option == '4':
+                        self._forceSync()
+        self.finish.set()
+        self._forceSync()
