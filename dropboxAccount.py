@@ -23,6 +23,7 @@ class DropboxAccount(account.Account):
         self.access_token = access_token
         self.user_id = user_id
         self.last_cursor = cursor
+        self.timeout = 30
         self.email = ''
         self.free_quota = 0
         # You shouldn't use self.__client, call __getDropboxClient() to get it safely
@@ -127,7 +128,7 @@ class DropboxAccount(account.Account):
         except ErrorResponse as error:
             self.__manageException(error)
 
-    def delta(self, returnDict=None):
+    def delta(self, returnDict=None, longpoll=False):
         client = self.__getDropboxClient()
         self.logger.info("Calling delta")
         self.logger.debug("Last cursor = <" + str(self.last_cursor) + ">")
@@ -137,6 +138,15 @@ class DropboxAccount(account.Account):
             returnDict["reset"] = False
 
         try:
+            if longpoll and self.last_cursor:
+                self.logger.debug("Calling longpoll_delta")
+                longpoll_dict = client.longpoll_delta(cursor=self.last_cursor, timeout=self.timeout)
+                self.logger.debug("longpoll_dict = <" + str(longpoll_dict) + ">")
+                if not longpoll_dict['changes']:
+                    self.logger.debug("No changes")
+                    return returnDict
+
+            self.logger.debug("Calling delta")
             deltaDict = client.delta(cursor=self.last_cursor)
             self.last_cursor = deltaDict["cursor"]
             self.logger.debug(deltaDict)
