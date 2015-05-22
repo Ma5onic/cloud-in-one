@@ -15,7 +15,7 @@ TOKEN_FILE = "config/dropbox_token.txt"
 
 class DropboxAccount(account.Account):
     """docstring for DropboxAccount"""
-    def __init__(self, fileSystemModule, user, cursor=None, access_token=None, user_id=None):
+    def __init__(self, fileSystemModule, user, cursor=None, access_token=None, user_id=None, email=None):
         self.logger = Logger(__name__)
         self.logger.info("Creating Dropbox Account")
         self.fileSystemModule = fileSystemModule
@@ -24,7 +24,7 @@ class DropboxAccount(account.Account):
         self.user_id = user_id
         self.last_cursor = cursor
         self.timeout = 30
-        self.email = ''
+        self.email = email
         self.free_quota = 0
         # You shouldn't use self.__client, call __getDropboxClient() to get it safely
         self.__client = None
@@ -217,7 +217,7 @@ class DropboxAccount(account.Account):
         return file_size <= self.free_quota
 
     def __repr__(self):
-        return self.getAccountType() + '-' + self.user + ''
+        return self.getAccountType() + '-' + self.user + '-' + self.email
 
 
 class DropboxAccountStub(DropboxAccount):
