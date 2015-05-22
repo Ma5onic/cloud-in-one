@@ -1,10 +1,16 @@
+import threading
+
 from menu import Menu
 from manager import Manager
 
 
 def main():
-    man = Manager('user', 'password')
-    menu = Menu(man)
+    event = threading.Event()
+    finish_event = threading.Event()
+    lock = threading.Lock()
+    man = Manager('user', 'password', event=event, lock=lock, finish=finish_event)
+    menu = Menu(man, event=event, lock=lock, finish=finish_event)
+    man.start()
     menu.start()
 
 

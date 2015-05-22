@@ -1,8 +1,9 @@
-from log import Logger
 import json
-import dropboxAccount
 import dataset
 import datetime
+import threading
+from log import Logger
+import dropboxAccount
 from fileSystemModule import FileSystemModule
 from exceptions import RetryException, FullStorageException, APILimitedException, UnknownError
 
@@ -10,10 +11,23 @@ from exceptions import RetryException, FullStorageException, APILimitedException
 config_file = "config/config.json"
 
 
-class Manager():
+class Manager(threading.Thread):
     """Manager of the Cloud-In-One application.
     It is responsible for the control flow and coordination of components"""
-    def __init__(self, user, password, config=None):
+    def __init__(self, user, password, event=None, lock=None, config=None, finish=None):
+        threading.Thread.__init__(self)
+        if not event:
+            event = threading.Event()
+        self.event = event
+
+        if not finish:
+            finish = threading.Event()
+        self.finish = finish
+
+        if not lock:
+            lock = threading.Lock()
+        self.lock = lock
+
         self.logger = Logger(__name__)
         self.logger.info("Creating Manager")
 
@@ -567,3 +581,23 @@ class Manager():
 
     def listAccounts(self):
         return (str(i) for i in self.cuentas)
+
+    def run(self):
+        timeout = 300.0
+        while not self.finish.is_set():
+            if self.event.is_set():
+                self.event.clear()
+
+                self.logger.debug("Acquiring lock")
+                self.lock.acquire()
+                self.logger.debug("Lock acquired")
+
+                self.updateLocalSyncFolder()
+
+                self.logger.debug("Releasing lock")
+                self.lock.release()
+                self.logger.debug("Lock released")
+
+            self.logger.debug("Waiting " + str(timeout) + " seconds or until forced by menu")
+            self.event.wait(timeout)
+            self.logger.debug("Awaken")
