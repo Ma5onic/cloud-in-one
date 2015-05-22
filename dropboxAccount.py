@@ -252,7 +252,7 @@ class DropboxAccountStub(DropboxAccount):
     def getMetadata(self, folder):
         raise NotImplemented()
 
-    def delta(self, returnDict=None):
+    def delta(self, returnDict=None, longpoll=False):
         if not returnDict:
             returnDict = dict()
         returnDict["entries"] = self.__delta_acum
