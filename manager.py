@@ -70,12 +70,17 @@ class Manager(threading.Thread):
         self.logger.debug("type = %s", type)
         self.logger.debug("user = %s", user)
 
-        newAcc = self.__CreateAccount(type, user)
-        self.cuentas.append(newAcc)
-        self.saveAccount(newAcc)
+        try:
+            newAcc = self.__CreateAccount(type, user)
+            self.cuentas.append(newAcc)
+            self.saveAccount(newAcc)
 
-        #TODO: Do whatever it's needed to add a new account
-        return True
+            #TODO: Do whatever it's needed to add a new account
+            return True
+        except UnknownError as e:
+            self.logger.error("Cannot create the new account")
+            self.logger.exception(e)
+            return False
 
     def deleteAccount(self, account):
         self.logger.info("Deleting account")
@@ -600,4 +605,5 @@ class Manager(threading.Thread):
 
             self.logger.debug("Waiting " + str(timeout) + " seconds or until forced by menu")
             self.event.wait(timeout)
+            self.event.set()
             self.logger.debug("Awaken")

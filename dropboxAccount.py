@@ -48,12 +48,15 @@ class DropboxAccount(account.Account):
     def __getDropboxClient(self):
         self.logger.info("Getting Dropbox Client")
         self.logger.debug("__client <" + str(self.__client) + ">")
-        if self.__client is None:
-            self.logger.debug("access_token =<" + str(self.access_token) + ">, user_id =<" + str(self.user_id) + ">")
-            if self.access_token is None or self.user_id is None:
-                self.__startOAuthFlow()
-            self.logger.debug("Creating Client. Token = <" + str(self.access_token) + "> user_id = <" + str(self.user_id) + ">")
-            self.__client = dropbox.client.DropboxClient(self.access_token)
+        try:
+            if not self.__client:
+                self.logger.debug("access_token =<" + str(self.access_token) + ">, user_id =<" + str(self.user_id) + ">")
+                if not self.access_token or not self.user_id:
+                    self.__startOAuthFlow()
+                self.logger.debug("Creating Client. Token = <" + str(self.access_token) + "> user_id = <" + str(self.user_id) + ">")
+                self.__client = dropbox.client.DropboxClient(self.access_token)
+        except ErrorResponse as error:
+            self.__manageException(error)
 
         return self.__client
 
