@@ -58,10 +58,7 @@ class DatabaseManager(object):
     def getAccountFromFile(self, path):
         files_table = self.database['files']
         row = files_table.find_one(internal_path=path.lower())
-        account = None
-        if row:
-            account = next((cuenta for cuenta in self.cuentas if cuenta.getAccountType() == row['accountType'] and cuenta.user == row['user']), None)
-        return account
+        return row
 
     def saveAccount(self, account):
         accounts_table = self.database['accounts']
