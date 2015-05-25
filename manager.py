@@ -1,10 +1,10 @@
 import json
-import dataset
 import datetime
 import threading
 from log import Logger
 import dropboxAccount
 from fileSystemModule import FileSystemModule
+from databaseManager import DatabaseManager
 from exceptions import RetryException, FullStorageException, APILimitedException, UnknownError
 
 
@@ -45,12 +45,8 @@ class Manager(threading.Thread):
         self.logger.debug("===== END Config contents: ======")
 
         database_file = self.config["database"]
-        from os import makedirs
-        import os.path
-        database_dir = os.path.dirname(database_file)
-        if database_dir and not os.path.isdir(database_dir):
-            makedirs(database_dir)
-        self.database = self.connectDB(database_file)
+
+        self.databaseManager = DatabaseManager(database_file)
 
         self.fileSystemModule = FileSystemModule(self.config["sync_folder_name"])
 
@@ -73,7 +69,7 @@ class Manager(threading.Thread):
         try:
             newAcc = self.__CreateAccount(type, user)
             self.cuentas.append(newAcc)
-            self.saveAccount(newAcc)
+            self.databaseManager.saveAccount(newAcc)
 
             #TODO: Do whatever it's needed to add a new account
             return True
@@ -86,10 +82,19 @@ class Manager(threading.Thread):
         self.logger.info("Deleting account")
         self.logger.debug("account = %s", account)
 
-        self.deleteAccountDB(account)
+        self.databaseManager.deleteAccountDB(account)
         self.cuentas.remove(account)
         #TODO: Do things to delete an account
         return True
+
+    def getAccounts(self):
+        cuentas_list = []
+        accounts_data = self.databaseManager.getAccounts()
+        for acc in accounts_data:
+            if acc["accountType"] == 'dropbox':
+                cuentas_list.append(dropboxAccount.DropboxAccount(self.fileSystemModule, acc['user'], access_token=acc['token'], user_id=acc['userid'], cursor=acc['cursor'], email=acc['email']))
+
+        return cuentas_list
 
     def updateLocalSyncFolder(self, folder="/"):
         self.logger.info("Updating sync folder")
@@ -104,7 +109,7 @@ class Manager(threading.Thread):
         for i in self.cuentas:
             try:
                 i.updateAccountInfo()
-                self.saveAccount(i)
+                self.databaseManager.saveAccount(i)
             except UnknownError as e:
                 self.logger.error("Error updating account information.")
                 self.logger.exception(e)
@@ -141,7 +146,7 @@ class Manager(threading.Thread):
             self.logger.debug(deltaDict)
             if deltaDict['reset']:
                 self.logger.debug('Reset recieved. Resetting account <' + str(account) + '>')
-                resetChanges = self.getFiles(account)
+                resetChanges = self.databaseManager.getFiles(account)
                 for i in resetChanges:
                     i['hash'] = None
                 remoteChanges += resetChanges
@@ -153,11 +158,11 @@ class Manager(threading.Thread):
                         self.logger.debug('is_dir = True')
                     else:
                         self.logger.debug('is_dir = False')
-                        old_revision = self.getRevisionDB(metadata['path'])
+                        old_revision = self.databaseManager.getRevisionDB(metadata['path'])
                         if old_revision != metadata['rev'] or deltaDict['reset']:
                             newChange = {'path': metadata['path'], 'hash': 'MISSING', 'account': account, 'revision': metadata['rev'], 'size': metadata['bytes']}
 
-                            old_account = self.getAccountFromFile(metadata['path'])
+                            old_account = self.databaseManager.getAccountFromFile(metadata['path'])
                             if old_account and old_account != account:
                                 self.__remote_conflicted_copy(newChange)
 
@@ -233,7 +238,7 @@ class Manager(threading.Thread):
         oldpath = change_info['path']
         newname = oldpath+'__CONFLICTED_COPY__'+date.isoformat()
         i = 1
-        while self.existsPathDB(newname):
+        while self.databaseManager.existsPathDB(newname):
             newname += '_' + str(i)
             i += 1
         self.logger.debug('Both modified. New name = <' + newname + '>')
@@ -321,7 +326,7 @@ class Manager(threading.Thread):
 
         toCheck = []
         for i in self.cuentas:
-            toCheck += self.getFiles(i)
+            toCheck += self.databaseManager.getFiles(i)
 
         localChanges = []
         for checking in toCheck:
@@ -375,7 +380,7 @@ class Manager(threading.Thread):
                             self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
                             revision = element['account'].uploadFile(element["path"], element.get('revision'))  # TODO: Aquí tendré que encriptar el fichero...
                         except FullStorageException:  # si no cabe en la cuenta...
-                            old_account = self.getAccountFromFile(element['path'])
+                            old_account = self.databaseManager.getAccountFromFile(element['path'])
                             fits_account = self.fitToNewAccount(element)
                             if fits_account:
                                 if old_account:
@@ -439,10 +444,10 @@ class Manager(threading.Thread):
             if element['hash']:  # created or modified, upsert in the db
                 if element['hash'] == 'MISSING':
                     element['hash'] = self.fileSystemModule.md5sum(element['path'])
-                self.saveFile(element)
+                self.databaseManager.saveFile(element)
 
             else:  # deleted, remove from the db
-                self.deleteFileDB(element['path'], element['account'])
+                self.databaseManager.deleteFileDB(element['path'], element['account'])
 
     def applyChangesOnLocal(self, changesOnLocal):
         self.logger.info("Applying changes on local")
@@ -469,120 +474,11 @@ class Manager(threading.Thread):
                     element['hash'] = None
 
             else:  # deleted
-                cased_path = self.getCasedPath(element['path'], element['account'])
+                cased_path = self.databaseManager.getCasedPath(element['path'], element['account'])
                 if not cased_path:
                     continue
                 self.logger.debug("Deleting file <" + cased_path + ">")
                 self.fileSystemModule.remove(cased_path)
-
-    def getMD5BD(self, filename):
-        files_table = self.database['files']
-        row = files_table.find_one(internal_path=filename.lower())
-        return row['hash']
-
-    def getRevisionDB(self, filename):
-        files_table = self.database['files']
-        row = files_table.find_one(internal_path=filename.lower())
-        if row:
-            return row['revision']
-        else:
-            return None
-
-    def getCasedPath(self, path, account=None):
-        files_table = self.database['files']
-        row = None
-        if account:
-            row = files_table.find_one(internal_path=path.lower(), accountType=account.getAccountType(), user=account.user)
-        else:
-            row = files_table.find_one(internal_path=path.lower())
-        if row:
-            return row['path']
-        else:
-            return None
-
-    def getFileSizeDB(self, path):
-        files_table = self.database['files']
-        row = files_table.find_one(internal_path=path.lower())
-        if row:
-            return row['size']
-        else:
-            return None
-
-    # TODO: generalize
-    def getAccounts(self):
-        accounts_table = self.database['accounts']
-        accounts_data = accounts_table.all()
-        cuentas_list = []
-        for acc in accounts_data:
-            if acc["accountType"] == 'dropbox':
-                cuentas_list.append(dropboxAccount.DropboxAccount(self.fileSystemModule, acc['user'], access_token=acc['token'], user_id=acc['userid'], cursor=acc['cursor'], email=acc['email']))
-
-        return cuentas_list
-
-    def getAccountFromFile(self, path):
-        files_table = self.database['files']
-        row = files_table.find_one(internal_path=path.lower())
-        account = None
-        if row:
-            account = next((cuenta for cuenta in self.cuentas if cuenta.getAccountType() == row['accountType'] and cuenta.user == row['user']), None)
-        return account
-
-    def saveAccount(self, account):
-        accounts_table = self.database['accounts']
-        accounts_table.upsert(dict(accountType=account.getAccountType(), user=account.user, token=account.access_token, userid=account.user_id, cursor=account.last_cursor, email=account.email), ['accountType', 'user'])
-
-    def deleteAccountDB(self, account):
-        accounts_table = self.database['accounts']
-        accounts_table.delete(accountType=account.getAccountType(), user=account.user)
-
-    def remove(self, path, account):
-        self.fileSystemModule.remove(path)
-        self.deleteFileDB(path, account)
-
-    def deleteFileDB(self, path, account=None):
-        self.logger.debug('deleting file <' + path + '>')
-        files_table = self.database['files']
-        if account:
-            files_table.delete(internal_path=path.lower(), accountType=account.getAccountType(), user=account.user)
-        else:
-            files_table.delete(internal_path=path.lower())
-
-
-    def saveFile(self, element):
-        size = element['size']
-        account = element['account']
-        path = element['path']
-        file_hash = element['hash']
-        self.logger.debug('saving file <' + path + '> with hash <' + str(file_hash) + '> to account <' + account.getAccountType() + ', ' + account.user + '>')
-        files_table = self.database['files']
-        files_table.upsert(dict(accountType=account.getAccountType(), user=account.user, path=path, internal_path=path.lower(), hash=file_hash, revision=element['revision'], size=size), ['internal_path'])
-        # TODO: check if can be inserted and this...
-        return True
-
-    def existsPathDB(self, newname):
-        files_table = self.database['files']
-        files = files_table.find(internal_path=newname.lower())
-        if list(files):
-            return True
-        else:
-            return False
-
-    def connectDB(self, database):
-        return dataset.connect('sqlite:///' + database)
-
-    def getFilesPaths(self, account, user):
-        files_table = self.database['files']
-        files = files_table.find(accountType=account, user=user)
-        filesPaths = []
-        for i in files:
-            filesPaths.append(i['path'])
-        self.logger.debug('filesPaths for account <' + account + ', ' + user + '> = ' + str(filesPaths))
-        return filesPaths
-
-    def getFiles(self, account):
-        files_table = self.database['files']
-        files = files_table.find(accountType=account.getAccountType(), user=account.user)
-        return [{'path': element['path'], 'hash': element['hash'], 'account': account, 'revision': element['revision']} for element in files]
 
     def listAccounts(self):
         return (str(i) for i in self.cuentas)
