@@ -480,6 +480,13 @@ class Manager(threading.Thread):
                 self.logger.debug("Deleting file <" + cased_path + ">")
                 self.fileSystemModule.remove(cased_path)
 
+    def getAccountFromFile(self, path):
+        row = self.databaseManager.getAccountFromFile(path)
+        account = None
+        if row:
+            account = next((cuenta for cuenta in self.cuentas if cuenta.getAccountType() == row['accountType'] and cuenta.user == row['user']), None)
+        return account
+
     def listAccounts(self):
         return (str(i) for i in self.cuentas)
 
