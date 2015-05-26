@@ -375,7 +375,8 @@ class Manager(threading.Thread):
                     else:  # normal upload
                         try:
                             self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
-                            revision = element['account'].uploadFile(element["path"], element.get('revision'))  # TODO: Aquí tendré que encriptar el fichero...
+                            stream = self.securityModule.encrypt(self.fileSystemModule.openFile(element['path']))
+                            revision = element['account'].uploadFile(element["path"], element.get('revision'), stream)
                         except FullStorageException:  # si no cabe en la cuenta...
                             old_account = self.getAccountFromFile(element['path'])
                             fits_account = self.fitToNewAccount(element)
@@ -462,7 +463,7 @@ class Manager(threading.Thread):
             elif element['hash']:  # created or modified
                 try:
                     self.logger.debug("Downloading file <" + element['path'] + ">")
-                    streamFile = element['account'].getFile(element["path"])  # TODO: Aquí tendré que DESencriptar el fichero...
+                    streamFile = self.securityModule.decrypt(element['account'].getFile(element["path"]))
                     self.fileSystemModule.createFile(element["path"], streamFile)
                     streamFile.close()
                 except FileNotFoundError as e:

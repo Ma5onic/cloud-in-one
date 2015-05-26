@@ -60,7 +60,9 @@ class SecurityModule():
         return hashlib.sha256(('th¡5iS@sal7' + password).encode('utf-8')).hexdigest()
 
     def encrypt(self, streamFile):
-        encrypted_IO = BytesIO(simplecrypt.encrypt(self.password, streamFile.read()))
+        content = streamFile.read()
+        encrypted = simplecrypt.encrypt(self.password, content)
+        encrypted_IO = BytesIO(encrypted)
         streamFile.close()
         return encrypted_IO
 
