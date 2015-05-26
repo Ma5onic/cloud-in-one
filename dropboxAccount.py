@@ -179,12 +179,13 @@ class DropboxAccount(account.Account):
     def getAccountType(self):
         return "dropbox"
 
-    def uploadFile(self, file_path, rev):
+    def uploadFile(self, file_path, rev, stream):
         client = self.__getDropboxClient()
         self.logger.info("Calling uploadFile")
         self.logger.debug("file_path = <" + file_path + ">")
 
-        stream = self.fileSystemModule.openFile(file_path)
+        if not stream:
+            stream = self.fileSystemModule.openFile(file_path)
         try:
             response = client.put_file(file_path, stream, parent_rev=rev)
             self.logger.debug("Response = <" + str(response) + ">")
