@@ -16,17 +16,7 @@ class Manager(threading.Thread):
     It is responsible for the control flow and coordination of components"""
     def __init__(self, user, password, event=None, lock=None, config=None, finish=None):
         threading.Thread.__init__(self)
-        if not event:
-            event = threading.Event()
-        self.event = event
-
-        if not finish:
-            finish = threading.Event()
-        self.finish = finish
-
-        if not lock:
-            lock = threading.Lock()
-        self.lock = lock
+        self.__initLocks(event, lock, finish)
 
         self.logger = Logger(__name__)
         self.logger.info("Creating Manager")
@@ -58,6 +48,19 @@ class Manager(threading.Thread):
 
         #TODO: inicializar los módulos de seguridad y FS
         self.securityModule = None
+
+    def __initLocks(self, event, lock, finish):
+        if not event:
+            event = threading.Event()
+        self.event = event
+
+        if not finish:
+            finish = threading.Event()
+        self.finish = finish
+
+        if not lock:
+            lock = threading.Lock()
+        self.lock = lock
 
     def __CreateAccount(self, type, user):
         if type is "dropbox":
