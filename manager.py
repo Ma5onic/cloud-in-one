@@ -488,13 +488,9 @@ class Manager(threading.Thread):
         else:
             return None
 
-    def getCasedPath(self, path, account=None):
+    def getCasedPath(self, path, account):
         files_table = self.database['files']
-        row = None
-        if account:
-            row = files_table.find_one(internal_path=path.lower(), accountType=account.getAccountType(), user=account.user)
-        else:
-            row = files_table.find_one(internal_path=path.lower())
+        row = files_table.find_one(internal_path=path.lower(), accountType=account.getAccountType(), user=account.user)
         if row:
             return row['path']
         else:
