@@ -465,7 +465,7 @@ class Manager(threading.Thread):
                     self.logger.debug("Downloading file <" + element['path'] + ">")
                     streamFile = element['account'].getFile(element["path"])
                     streamFile_decrypted = self.securityModule.decrypt(streamFile)
-                    self.fileSystemModule.createFile(element["path"], streamFile)
+                    self.fileSystemModule.createFile(element["path"], streamFile_decrypted)
                     streamFile.close()
                     streamFile_decrypted.close()
                 except FileNotFoundError as e:
