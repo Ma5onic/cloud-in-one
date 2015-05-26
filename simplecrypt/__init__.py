@@ -25,7 +25,32 @@ for header in HEADER:
     assert len(header) == HEADER_LEN
 
 
+def encrypt(password, data):
+    '''
+    Encrypt some data.  Input can be bytes or a string (which will be encoded
+    using UTF-8).
+
+    @param password: The secret value used as the basis for a key.
+    This should be as long as varied as possible.  Try to avoid common words.
+
+    @param data: The data to be encrypted.
+
+    @return: The encrypted data, as bytes.
+    '''
+    return _encrypt_internal(password, data)[0]
+
+
 def encrypt_file(password, infile):
+    '''
+    Encrypt some file.  Input must be a file-like object.
+
+    @param password: The secret value used as the basis for a key.
+    This should be as long as varied as possible.  Try to avoid common words.
+
+    @param infile: The file to be encrypted.
+
+    @return: A temporary file-like object with the encrypted data.
+    '''
     cipher = None
     chunksize = 64 * 1024
 
@@ -42,35 +67,32 @@ def encrypt_file(password, infile):
     return outfile
 
 
-def _encrypt_internal(password, data, cipher=None):
-    data = _str_to_bytes(data)
-    _assert_encrypt_length(data)
-    salt = bytes(_random_bytes(SALT_LEN[LATEST]//8))
-    hmac_key, cipher_key = _expand_keys(password, salt, EXPANSION_COUNT[LATEST])
-    counter = Counter.new(HALF_BLOCK, prefix=salt[:HALF_BLOCK//8])
-    if not cipher:
-        cipher = AES.new(cipher_key, AES.MODE_CTR, counter=counter)
-    encrypted = cipher.encrypt(data)
-    hmac = _hmac(hmac_key, HEADER[LATEST] + salt + encrypted)
-    return (HEADER[LATEST] + salt + encrypted + hmac, cipher)
-
-
-def encrypt(password, data):
+def decrypt(password, data):
     '''
-    Encrypt some data.  Input can be bytes or a string (which will be encoded
-    using UTF-8).
+    Decrypt some data.  Input must be bytes.
 
     @param password: The secret value used as the basis for a key.
     This should be as long as varied as possible.  Try to avoid common words.
 
-    @param data: The data to be encrypted.
+    @param data: The data to be decrypted, typically as bytes.
 
-    @return: The encrypted data, as bytes.
+    @return: The decrypted data, as bytes.  If the original message was a
+    string you can re-create that using `result.decode('utf8')`.
     '''
-    return _encrypt_internal(password, data)[0]
+    _decrypt_internal(password, data)
 
 
 def decrypt_file(password, infile):
+    '''
+    Decrypt some file.  Input must be a file-like object.
+
+    @param password: The secret value used as the basis for a key.
+    This should be as long as varied as possible.  Try to avoid common words.
+
+    @param infile: The file to be decrypted, a file-like object.
+
+    @return: A temporary file-like object with the decrypted data. The file position is resetted to 0
+    '''
     cipher = None
     chunksize = 64 * 1024
 
@@ -85,6 +107,23 @@ def decrypt_file(password, infile):
 
     outfile.seek(0)
     return outfile
+
+
+class DecryptionException(Exception): pass
+class EncryptionException(Exception): pass
+
+
+def _encrypt_internal(password, data, cipher=None):
+    data = _str_to_bytes(data)
+    _assert_encrypt_length(data)
+    salt = bytes(_random_bytes(SALT_LEN[LATEST]//8))
+    hmac_key, cipher_key = _expand_keys(password, salt, EXPANSION_COUNT[LATEST])
+    counter = Counter.new(HALF_BLOCK, prefix=salt[:HALF_BLOCK//8])
+    if not cipher:
+        cipher = AES.new(cipher_key, AES.MODE_CTR, counter=counter)
+    encrypted = cipher.encrypt(data)
+    hmac = _hmac(hmac_key, HEADER[LATEST] + salt + encrypted)
+    return (HEADER[LATEST] + salt + encrypted + hmac, cipher)
 
 
 def _decrypt_internal(password, data, cipher=None):
@@ -103,25 +142,6 @@ def _decrypt_internal(password, data, cipher=None):
         cipher = AES.new(cipher_key, AES.MODE_CTR, counter=counter)
     return cipher.decrypt(raw[SALT_LEN[version]//8:-HASH.digest_size])
 
-
-def decrypt(password, data):
-    '''
-    Decrypt some data.  Input must be bytes.
-
-    @param password: The secret value used as the basis for a key.
-    This should be as long as varied as possible.  Try to avoid common words.
-
-    @param data: The data to be decrypted, typically as bytes.
-
-    @return: The decrypted data, as bytes.  If the original message was a
-    string you can re-create that using `result.decode('utf8')`.
-    '''
-    _decrypt_internal(password, data)
-
-
-
-class DecryptionException(Exception): pass
-class EncryptionException(Exception): pass
 
 def _assert_not_unicode(data):
     # warn confused users
