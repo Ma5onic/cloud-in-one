@@ -5,6 +5,7 @@ import threading
 from log import Logger
 import dropboxAccount
 from fileSystemModule import FileSystemModule
+from securityModule import SecurityModule
 from exceptions import RetryException, FullStorageException, APILimitedException, UnknownError
 
 
@@ -22,7 +23,6 @@ class Manager(threading.Thread):
         self.logger.info("Creating Manager")
 
         self.user = user
-        self.password = password
 
         if not config:
             self.config = json.load(open(config_file))
@@ -42,12 +42,11 @@ class Manager(threading.Thread):
             makedirs(database_dir)
         self.database = self.connectDB(database_file)
 
+        self.securityModule = SecurityModule(user, password, self.database)
+
         self.fileSystemModule = FileSystemModule(self.config["sync_folder_name"])
 
         self.cuentas = self.getAccounts()
-
-        #TODO: inicializar los módulos de seguridad y FS
-        self.securityModule = None
 
     def __initLocks(self, event, lock, finish):
         if not event:
@@ -545,7 +544,6 @@ class Manager(threading.Thread):
             files_table.delete(internal_path=path.lower(), accountType=account.getAccountType(), user=account.user)
         else:
             files_table.delete(internal_path=path.lower())
-
 
     def saveFile(self, element):
         size = element['size']
