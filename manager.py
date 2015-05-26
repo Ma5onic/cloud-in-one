@@ -463,9 +463,11 @@ class Manager(threading.Thread):
             elif element['hash']:  # created or modified
                 try:
                     self.logger.debug("Downloading file <" + element['path'] + ">")
-                    streamFile = self.securityModule.decrypt(element['account'].getFile(element["path"]))
+                    streamFile = element['account'].getFile(element["path"])
+                    streamFile_decrypted = self.securityModule.decrypt(streamFile)
                     self.fileSystemModule.createFile(element["path"], streamFile)
                     streamFile.close()
+                    streamFile_decrypted.close()
                 except FileNotFoundError as e:
                     self.logger.error("File not found in the remote. Deleting it")
                     self.logger.exception(e)
