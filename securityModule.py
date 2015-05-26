@@ -1,7 +1,7 @@
 from io import BytesIO
 import hashlib
-import simplecrypt
 from log import Logger
+import simplecrypt
 from exceptions import SecurityError
 
 
@@ -60,13 +60,9 @@ class SecurityModule():
         return hashlib.sha256(('th¡5iS@sal7' + password).encode('utf-8')).hexdigest()
 
     def encrypt(self, streamFile):
-        content = streamFile.read()
-        encrypted = simplecrypt.encrypt(self.password, content)
-        encrypted_IO = BytesIO(encrypted)
-        streamFile.close()
-        return encrypted_IO
+        encrypted = simplecrypt.encrypt_file(self.password, streamFile)
+        return encrypted
 
     def decrypt(self, streamFile):
-        decrypted_IO = BytesIO(simplecrypt.decrypt(self.password, streamFile.read()))
-        streamFile.close()
-        return decrypted_IO
+        decrypted = simplecrypt.decrypt_file(self.password, streamFile)
+        return decrypted
