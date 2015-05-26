@@ -17,3 +17,8 @@ class APILimitedException(Exception):
 class UnknownError(Exception):
     """This exception is generic. We don't know what happened"""
     pass
+
+
+class SecurityError(Exception):
+    """Unrecoverable security breach"""
+    pass
