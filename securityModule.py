@@ -56,13 +56,18 @@ class SecurityModule():
             self.database[i].drop()
 
     def hashPassword(self, password):
+        self.logger.debug("Hashing password")
         # we cannot use a random salt because this should be installed in several computers and give the same password to be able to decrypt...
         return hashlib.sha256(('th¡5iS@sal7' + password).encode('utf-8')).hexdigest()
 
     def encrypt(self, streamFile):
+        self.logger.debug("Encrypting file")
         encrypted = simplecrypt.encrypt_file(self.password, streamFile)
+        self.logger.debug("File encrypted successfully. ")
         return encrypted
 
     def decrypt(self, streamFile):
+        self.logger.debug("Decrypting file")
         decrypted = simplecrypt.decrypt_file(self.password, streamFile)
+        self.logger.debug("File decrypted successfully. ")
         return decrypted
