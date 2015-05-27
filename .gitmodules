@@ -1,4 +1,0 @@
-[submodule "simplecrypt"]
-	path = simplecrypt
-	url = ../simple-crypt
-	branch = encrypt_file
