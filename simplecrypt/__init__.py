@@ -100,7 +100,8 @@ def decrypt_file(password, infile):
     outfile = tempfile.TemporaryFile()
 
     while True:
-        chunk = infile.read(CHUNKSIZE)
+        # adding the overhead of the encryption
+        chunk = infile.read(CHUNKSIZE + 68)
         if len(chunk) == 0:
             break
         decrypted, cipher = _decrypt_internal(password, chunk, cipher)

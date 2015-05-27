@@ -1,6 +1,6 @@
 import dataset
 import tempfile
-from simplecrypt import DecryptionException
+import simplecrypt
 from nose.tools import assert_false
 from nose.tools import assert_true
 from nose.tools import assert_not_equal
@@ -110,7 +110,7 @@ class TestSecurity(object):
 
         assert_equal(outfile.read(), text)
 
-    @raises(DecryptionException)
+    @raises(simplecrypt.DecryptionException)
     def test_wrong_decrypt(self):
         username = 'username'
         password = 'password'
@@ -123,7 +123,7 @@ class TestSecurity(object):
 
         sec.decrypt(infile)
 
-    @raises(DecryptionException)
+    @raises(simplecrypt.DecryptionException)
     def test_wrong_password_decrypt(self):
         username = 'username'
         password = 'password'
@@ -138,3 +138,21 @@ class TestSecurity(object):
         encrypted = sec.encrypt(infile)
         sec.password = 'wrong'
         sec.decrypt(encrypted)
+
+    def test_encrypt_decrypt_two_chunks(self):
+        username = 'username'
+        password = 'password'
+
+        sec = SecurityModule(username, password, self.database)
+
+        infile = tempfile.TemporaryFile()
+
+        simplecrypt.CHUNKSIZE = 1024
+        for i in range(simplecrypt.CHUNKSIZE+10):
+            infile.write(b'x')
+
+        infile.seek(0)
+        outfile = sec.decrypt(sec.encrypt(infile))
+
+        infile.seek(0)
+        assert_equal(infile.read(), outfile.read())
