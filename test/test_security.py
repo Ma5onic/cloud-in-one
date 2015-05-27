@@ -1,6 +1,6 @@
 import dataset
 import tempfile
-from simplecrypt.src.simplecrypt import DecryptionException
+from simplecrypt import DecryptionException
 from nose.tools import assert_false
 from nose.tools import assert_true
 from nose.tools import assert_not_equal

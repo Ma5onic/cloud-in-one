@@ -2,7 +2,7 @@ from io import BytesIO
 import hashlib
 from log import Logger
 
-from simplecrypt.src import simplecrypt
+import simplecrypt
 from exceptions import SecurityError
 
 
