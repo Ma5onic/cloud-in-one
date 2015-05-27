@@ -280,7 +280,7 @@ class DropboxAccountStub(DropboxAccount):
     def getAccountType(self):
         return "dropbox_stub"
 
-    def uploadFile(self, file_path, rev=None):
+    def uploadFile(self, file_path, rev=None, stream=None):
         if rev:
             size = self.fileSystemModule.getFileSize(file_path)
             if not self.fits(size):

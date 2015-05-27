@@ -8,6 +8,7 @@ from nose.tools import assert_false
 import datetime
 from util import *
 from fileSystemModule import FileSystemModuleStub
+from securityModule import SecurityModuleStub
 
 
 class TestExceptions(object):
@@ -27,6 +28,7 @@ class TestExceptions(object):
         """This method is run once before _each_ test method is executed"""
         self.man = manager.Manager('user', 'password', config=self.config_default)
         self.man.fileSystemModule = FileSystemModuleStub()
+        self.man.securityModule = SecurityModuleStub()
 
     def teardown(self):
         """This method is run once after _each_ test method is executed"""

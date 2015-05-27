@@ -1,7 +1,8 @@
 from io import BytesIO
 import hashlib
 from log import Logger
-import simplecrypt
+
+from simplecrypt.src import simplecrypt
 from exceptions import SecurityError
 
 
@@ -71,3 +72,22 @@ class SecurityModule():
         decrypted = simplecrypt.decrypt_file(self.password, streamFile)
         self.logger.debug("File decrypted successfully. ")
         return decrypted
+
+
+class SecurityModuleStub(object):
+    def __init__(self):
+        super(SecurityModuleStub, self).__init__()
+
+    def checkLogin(self, user, password):
+        return True
+
+    def hashPassword(self, password):
+        self.logger.debug("Hashing password")
+        # we cannot use a random salt because this should be installed in several computers and give the same password to be able to decrypt...
+        return password
+
+    def encrypt(self, streamFile):
+        return streamFile
+
+    def decrypt(self, streamFile):
+        return streamFile
