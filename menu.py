@@ -1,3 +1,6 @@
+import os.path
+
+
 class Menu(object):
     """Main menu, with options to start things"""
     def __init__(self, manager, event, lock, finish):
@@ -34,6 +37,34 @@ class Menu(object):
     def _forceSync(self):
         self.event.set()
 
+    def _markFilesEncryption(self, nextFolder=None):
+        current, dirs, files = next(self.manager.walkFiles(nextFolder))
+        while True:
+            try:
+                print("In folder: ", current)
+                for i, folder in enumerate(dirs, 1):
+                    print(i, '(dir)', folder)
+                for i, f in enumerate(files, len(dirs) + 1):
+                    print(i, f)
+                selected = int(input("Select a file (0 to cancel): ")) - 1
+                if selected == -1:
+                    return
+                if selected in range(len(dirs)):
+                    self._markFilesEncryption(os.path.join(current, dirs[selected]))
+                elif selected in range(len(files)):
+                    fullpath = os.path.join(current, files[selected])
+                    print("Marking file", fullpath, "for encryption")
+                    self.manager.markForEncription(fullpath)
+                else:
+                    raise ValueError
+                break
+            except ValueError:
+                print("Input the file index")
+
+
+
+
+
     def _showMenu(self):
         print()
         print("""====================== CLOUD IN ONE ======================
@@ -42,6 +73,7 @@ class Menu(object):
 2. List accounts
 3. Delete account
 4. Force start sync
+5. Select files to encrypt
 0. EXIT
 
         Please select an option: """)
@@ -55,7 +87,7 @@ class Menu(object):
             option = None
             while option != '0':
                 option = self._showMenu()
-                if option in {'1', '2', '3', '4'}:
+                if option in {'1', '2', '3', '4', '5'}:
                     with self.lock:
                         if option == '1':
                             self.__newAccountInteractive()
@@ -65,6 +97,8 @@ class Menu(object):
                             self.__deleteAccountInteractive()
                         elif option == '4':
                             self._forceSync()
+                        elif option == '5':
+                            self._markFilesEncryption()
         except:
             raise
         finally:
