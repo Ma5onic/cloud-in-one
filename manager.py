@@ -587,6 +587,21 @@ class Manager(threading.Thread):
     def listAccounts(self):
         return (str(i) for i in self.cuentas)
 
+    def walkFiles(self, folder=None):
+        return self.fileSystemModule.walk(folder)
+
+    def markForEncription(self, fullpath):
+        path = self.fileSystemModule.getInternalPath(fullpath)
+        self.markEncriptionDB(path, True)
+
+    def unmarkForEncription(self, fullpath):
+        path = self.fileSystemModule.getInternalPath(fullpath)
+        self.markEncriptionDB(path, False)
+
+    def markEncriptionDB(self, path, encryption):
+        files_table = self.database['files']
+        files_table.update(dict(internal_path=path.lower(), encryption=encryption), ['internal_path'])
+
     def run(self):
         timeout = 300.0
         while not self.finish.is_set():

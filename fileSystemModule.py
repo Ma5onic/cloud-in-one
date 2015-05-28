@@ -133,6 +133,14 @@ class FileSystemModule():
         self.logger.debug('file size = <' + str(size) + '>')
         return size
 
+    def walk(self, folder=None):
+        if not folder:
+            folder = self.main_path
+        return os.walk(folder)
+
+    def getInternalPath(self, fullpath):
+        return fullpath.split(self.main_path, 1)[-1].replace(os.sep, '/')
+
 
 class FileSystemModuleStub(FileSystemModule):
     """stub for the filesystem module."""
