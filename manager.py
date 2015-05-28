@@ -611,7 +611,7 @@ class Manager(threading.Thread):
     def shouldEncrypt(self, path):
         files_table = self.database['files']
         row = files_table.find_one(internal_path=path.lower())
-        if row:
+        if row and 'encryption' in row:
             return row['encryption']
         else:
             return False
