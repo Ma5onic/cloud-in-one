@@ -375,7 +375,11 @@ class Manager(threading.Thread):
                     else:  # normal upload
                         try:
                             self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
-                            stream = self.securityModule.encrypt(self.fileSystemModule.openFile(element['path']))
+                            stream = self.fileSystemModule.openFile(element['path'])
+                            if self.shouldEncrypt(element['path']):
+                                stream_unencrypted = stream
+                                stream = self.securityModule.encrypt(stream_unencrypted)
+                                stream_unencrypted.close()
                             revision = element['account'].uploadFile(element["path"], element.get('revision'), stream)
                         except FullStorageException:  # si no cabe en la cuenta...
                             old_account = self.getAccountFromFile(element['path'])
@@ -464,10 +468,12 @@ class Manager(threading.Thread):
                 try:
                     self.logger.debug("Downloading file <" + element['path'] + ">")
                     streamFile = element['account'].getFile(element["path"])
-                    streamFile_decrypted = self.securityModule.decrypt(streamFile)
-                    self.fileSystemModule.createFile(element["path"], streamFile_decrypted)
+                    if self.shouldEncrypt(element['path']):
+                        streamFile_encrypted = streamFile
+                        streamFile = self.securityModule.decrypt(streamFile_encrypted)
+                        streamFile_encrypted.close()
+                    self.fileSystemModule.createFile(element["path"], streamFile)
                     streamFile.close()
-                    streamFile_decrypted.close()
                 except FileNotFoundError as e:
                     self.logger.error("File not found in the remote. Deleting it")
                     self.logger.exception(e)
@@ -601,6 +607,14 @@ class Manager(threading.Thread):
     def markEncriptionDB(self, path, encryption):
         files_table = self.database['files']
         files_table.update(dict(internal_path=path.lower(), encryption=encryption), ['internal_path'])
+
+    def shouldEncrypt(self, path):
+        files_table = self.database['files']
+        row = files_table.find_one(internal_path=path.lower())
+        if row:
+            return row['encryption']
+        else:
+            return False
 
     def run(self):
         timeout = 300.0
