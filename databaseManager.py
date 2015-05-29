@@ -66,10 +66,6 @@ class DatabaseManager(object):
         accounts_table = self.database['accounts']
         accounts_table.delete(accountType=account.getAccountType(), user=account.user)
 
-    def remove(self, path, account):
-        self.fileSystemModule.remove(path)
-        self.deleteFileDB(path, account)
-
     def deleteFileDB(self, path, account=None):
         self.logger.debug('deleting file <' + path + '>')
         files_table = self.database['files']
