@@ -179,12 +179,13 @@ class DropboxAccount(account.Account):
     def getAccountType(self):
         return "dropbox"
 
-    def uploadFile(self, file_path, rev):
+    def uploadFile(self, file_path, rev, stream):
         client = self.__getDropboxClient()
         self.logger.info("Calling uploadFile")
         self.logger.debug("file_path = <" + file_path + ">")
 
-        stream = self.fileSystemModule.openFile(file_path)
+        if not stream:
+            stream = self.fileSystemModule.openFile(file_path)
         try:
             response = client.put_file(file_path, stream, parent_rev=rev)
             self.logger.debug("Response = <" + str(response) + ">")
@@ -279,7 +280,7 @@ class DropboxAccountStub(DropboxAccount):
     def getAccountType(self):
         return "dropbox_stub"
 
-    def uploadFile(self, file_path, rev=None):
+    def uploadFile(self, file_path, rev=None, stream=None):
         if rev:
             size = self.fileSystemModule.getFileSize(file_path)
             if not self.fits(size):
