@@ -38,7 +38,7 @@ class Manager(threading.Thread):
 
         self.databaseManager = DatabaseManager(database_file)
 
-        self.securityModule = SecurityModule(user, password, self.database)
+        self.securityModule = SecurityModule(user, password, self.databaseManager)
 
         self.fileSystemModule = FileSystemModule(self.config["sync_folder_name"])
 
@@ -164,7 +164,7 @@ class Manager(threading.Thread):
                         if old_revision != metadata['rev'] or deltaDict['reset']:
                             newChange = {'path': metadata['path'], 'hash': 'MISSING', 'account': account, 'revision': metadata['rev'], 'size': metadata['bytes']}
 
-                            old_account = self.databaseManager.getAccountFromFile(metadata['path'])
+                            old_account = self.getAccountFromFile(metadata['path'])
                             if old_account and old_account != account:
                                 self.__remote_conflicted_copy(newChange)
 
@@ -383,7 +383,7 @@ class Manager(threading.Thread):
                             stream = self.securityModule.encrypt(self.fileSystemModule.openFile(element['path']))
                             revision = element['account'].uploadFile(element["path"], element.get('revision'), stream)
                         except FullStorageException:  # si no cabe en la cuenta...
-                            old_account = self.databaseManager.getAccountFromFile(element['path'])
+                            old_account = self.getAccountFromFile(element['path'])
                             fits_account = self.fitToNewAccount(element)
                             if fits_account:
                                 if old_account:
