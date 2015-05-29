@@ -35,8 +35,6 @@ class DatabaseManager(object):
         row = None
         if account:
             row = files_table.find_one(internal_path=path.lower(), accountType=account.getAccountType(), user=account.user)
-        else:
-            row = files_table.find_one(internal_path=path.lower())
         if row:
             return row['path']
         else:

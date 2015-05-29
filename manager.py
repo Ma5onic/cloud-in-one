@@ -5,6 +5,7 @@ from log import Logger
 import dropboxAccount
 from fileSystemModule import FileSystemModule
 from databaseManager import DatabaseManager
+from securityModule import SecurityModule
 from exceptions import RetryException, FullStorageException, APILimitedException, UnknownError
 
 
@@ -16,23 +17,12 @@ class Manager(threading.Thread):
     It is responsible for the control flow and coordination of components"""
     def __init__(self, user, password, event=None, lock=None, config=None, finish=None):
         threading.Thread.__init__(self)
-        if not event:
-            event = threading.Event()
-        self.event = event
-
-        if not finish:
-            finish = threading.Event()
-        self.finish = finish
-
-        if not lock:
-            lock = threading.Lock()
-        self.lock = lock
+        self.__initLocks(event, lock, finish)
 
         self.logger = Logger(__name__)
         self.logger.info("Creating Manager")
 
         self.user = user
-        self.password = password
 
         if not config:
             self.config = json.load(open(config_file))
@@ -48,12 +38,24 @@ class Manager(threading.Thread):
 
         self.databaseManager = DatabaseManager(database_file)
 
+        self.securityModule = SecurityModule(user, password, self.database)
+
         self.fileSystemModule = FileSystemModule(self.config["sync_folder_name"])
 
         self.cuentas = self.getAccounts()
 
-        #TODO: inicializar los módulos de seguridad y FS
-        self.securityModule = None
+    def __initLocks(self, event, lock, finish):
+        if not event:
+            event = threading.Event()
+        self.event = event
+
+        if not finish:
+            finish = threading.Event()
+        self.finish = finish
+
+        if not lock:
+            lock = threading.Lock()
+        self.lock = lock
 
     def __CreateAccount(self, type, user):
         if type is "dropbox":
@@ -378,7 +380,8 @@ class Manager(threading.Thread):
                     else:  # normal upload
                         try:
                             self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
-                            revision = element['account'].uploadFile(element["path"], element.get('revision'))  # TODO: Aquí tendré que encriptar el fichero...
+                            stream = self.securityModule.encrypt(self.fileSystemModule.openFile(element['path']))
+                            revision = element['account'].uploadFile(element["path"], element.get('revision'), stream)
                         except FullStorageException:  # si no cabe en la cuenta...
                             old_account = self.databaseManager.getAccountFromFile(element['path'])
                             fits_account = self.fitToNewAccount(element)
@@ -465,9 +468,11 @@ class Manager(threading.Thread):
             elif element['hash']:  # created or modified
                 try:
                     self.logger.debug("Downloading file <" + element['path'] + ">")
-                    streamFile = element['account'].getFile(element["path"])  # TODO: Aquí tendré que DESencriptar el fichero...
-                    self.fileSystemModule.createFile(element["path"], streamFile)
+                    streamFile = element['account'].getFile(element["path"])
+                    streamFile_decrypted = self.securityModule.decrypt(streamFile)
+                    self.fileSystemModule.createFile(element["path"], streamFile_decrypted)
                     streamFile.close()
+                    streamFile_decrypted.close()
                 except FileNotFoundError as e:
                     self.logger.error("File not found in the remote. Deleting it")
                     self.logger.exception(e)
