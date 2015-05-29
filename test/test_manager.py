@@ -32,8 +32,7 @@ class TestManager(object):
 
     def teardown(self):
         """This method is run once after _each_ test method is executed"""
-        for i in self.man.databaseManager.database.tables:
-            self.man.databaseManager.database[i].drop()
+        self.man.databaseManager.cleanDatabase()
 
         self.man = None
 
@@ -59,7 +58,7 @@ class TestManager(object):
     @Ignore
     def test_deleteAccountAndFiles(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'testPath', 'hash': 'hash', 'revision': 'revision_number', 'size': len('testPath')})
+        self.man.databaseManager.saveFile({'account': self.man.cuentas[0], 'path': 'testPath', 'hash': 'hash', 'revision': 'revision_number', 'size': len('testPath')})
         self.man.deleteAccount(self.man.cuentas[0])
         assert_false(self.man.cuentas)
 
@@ -164,7 +163,7 @@ class TestManager(object):
     def test_integrationSync_6(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
+        self.man.databaseManager.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # "modify" it
@@ -186,7 +185,7 @@ class TestManager(object):
     def test_integrationSync_7(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
+        self.man.databaseManager.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.cuentas[0].deleteFile('/test/muerte.txt')  # delete it
@@ -208,7 +207,7 @@ class TestManager(object):
     def test_integrationSync_8(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte2.txt')  # create a file
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
+        self.man.databaseManager.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.fileSystemModule.renameFile('/test/muerte2.txt', '/test/muerte.txt')  # we modify it locally
@@ -230,7 +229,7 @@ class TestManager(object):
     def test_integrationSync_9(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte2.txt')  # create a file
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
+        self.man.databaseManager.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.fileSystemModule.renameFile('/test/muerte2.txt', '/test/muerte.txt')  # we modify it locally
@@ -253,7 +252,7 @@ class TestManager(object):
     def test_integrationSync_10(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
+        self.man.databaseManager.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.fileSystemModule.remove('/test/muerte.txt')  # delete it
@@ -275,7 +274,7 @@ class TestManager(object):
     def test_integrationSync_11(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
+        self.man.databaseManager.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.fileSystemModule.remove('/test/muerte.txt')  # delete it

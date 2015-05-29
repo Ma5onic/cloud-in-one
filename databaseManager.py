@@ -17,6 +17,11 @@ class DatabaseManager(object):
             makedirs(database_dir)
         self.database = self.connectDB(database_file)
 
+    def cleanDatabase(self):
+        self.logger.debug("Cleaning database")
+        for i in self.database.tables:
+            self.database[i].drop()
+
     def getMD5BD(self, filename):
         files_table = self.database['files']
         row = files_table.find_one(internal_path=filename.lower())
@@ -109,3 +114,20 @@ class DatabaseManager(object):
         files_table = self.database['files']
         files = files_table.find(accountType=account.getAccountType(), user=account.user)
         return [{'path': element['path'], 'hash': element['hash'], 'account': account, 'revision': element['revision']} for element in files]
+
+    def getUser(self, username):
+        user_table = self.database['user']
+
+        return user_table.find_one(user=username)
+
+    def getUserCount(self):
+        user_table = self.database['user']
+        return len(user_table)
+
+    def saveUser(self, username, hash):
+        user_table = self.database['user']
+        user_table.upsert(dict(id=1, user=username, hash=hash), ['id'])
+
+    def _insertUser(self, username, hash):
+        user_table = self.database['user']
+        user_table.upsert(dict(user=username, hash=hash), ['id'])
