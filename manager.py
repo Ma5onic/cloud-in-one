@@ -381,7 +381,7 @@ class Manager(threading.Thread):
                         try:
                             self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
                             stream = self.fileSystemModule.openFile(element['path'])
-                            if self.shouldEncrypt(element['path']):
+                            if self.databaseManager.shouldEncrypt(element['path']):
                                 stream_unencrypted = stream
                                 stream = self.securityModule.encrypt(stream_unencrypted)
                                 stream_unencrypted.close()
@@ -473,7 +473,7 @@ class Manager(threading.Thread):
                 try:
                     self.logger.debug("Downloading file <" + element['path'] + ">")
                     streamFile = element['account'].getFile(element["path"])
-                    if self.shouldEncrypt(element['path']):
+                    if self.databaseManager.shouldEncrypt(element['path']):
                         streamFile_encrypted = streamFile
                         streamFile = self.securityModule.decrypt(streamFile_encrypted)
                         streamFile_encrypted.close()
@@ -506,23 +506,11 @@ class Manager(threading.Thread):
 
     def markForEncription(self, fullpath):
         path = self.fileSystemModule.getInternalPath(fullpath)
-        self.markEncriptionDB(path, True)
+        self.databaseManager.markEncriptionDB(path, True)
 
     def unmarkForEncription(self, fullpath):
         path = self.fileSystemModule.getInternalPath(fullpath)
-        self.markEncriptionDB(path, False)
-
-    def markEncriptionDB(self, path, encryption):
-        files_table = self.database['files']
-        files_table.update(dict(internal_path=path.lower(), encryption=encryption), ['internal_path'])
-
-    def shouldEncrypt(self, path):
-        files_table = self.database['files']
-        row = files_table.find_one(internal_path=path.lower())
-        if row and 'encryption' in row:
-            return row['encryption']
-        else:
-            return False
+        self.databaseManager.markEncriptionDB(path, False)
 
     def run(self):
         timeout = 300.0

@@ -131,3 +131,15 @@ class DatabaseManager(object):
     def _insertUser(self, username, hash):
         user_table = self.database['user']
         user_table.upsert(dict(user=username, hash=hash), ['id'])
+
+    def markEncriptionDB(self, path, encryption):
+        files_table = self.database['files']
+        files_table.update(dict(internal_path=path.lower(), encryption=encryption), ['internal_path'])
+
+    def shouldEncrypt(self, path):
+        files_table = self.database['files']
+        row = files_table.find_one(internal_path=path.lower())
+        if row and 'encryption' in row:
+            return row['encryption']
+        else:
+            return False
