@@ -142,7 +142,6 @@ class DatabaseManager(object):
         self.logger.debug("Calling shouldEncrypt for <" + path + ">")
         files_table = self.database['files']
         row = files_table.find_one(internal_path=path.lower())
-        import pdb; pdb.set_trace()  # breakpoint 00ef372e //
         if row and 'encryption' in row:
             self.logger.debug("Returning <" + str(bool(row['encryption'])) + ">")
             return bool(row['encryption'])
