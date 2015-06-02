@@ -32,8 +32,7 @@ class TestManager(object):
 
     def teardown(self):
         """This method is run once after _each_ test method is executed"""
-        for i in self.man.database.tables:
-            self.man.database[i].drop()
+        self.man.databaseManager.cleanDatabase()
 
         self.man = None
 
@@ -44,29 +43,29 @@ class TestManager(object):
         self.man.newAccount('dropbox_stub', 'user')
         assert_true(self.man.cuentas)
 
-        accounts_table = self.man.database['accounts']
+        accounts_table = self.man.databaseManager.database['accounts']
         assert_true(list(accounts_table.all()))
 
     def test_deleteAccount(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.deleteAccount(self.man.cuentas[0])
         assert_false(self.man.cuentas)
-        files_table = self.man.database['files']
+        files_table = self.man.databaseManager.database['files']
         assert_false(list(files_table.all()))
-        accounts_table = self.man.database['accounts']
+        accounts_table = self.man.databaseManager.database['accounts']
         assert_false(list(accounts_table.all()))
 
     @Ignore
     def test_deleteAccountAndFiles(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': 'testPath', 'hash': 'hash', 'revision': 'revision_number', 'size': len('testPath')})
+        self.man.databaseManager.saveFile({'account': self.man.cuentas[0], 'path': 'testPath', 'hash': 'hash', 'revision': 'revision_number', 'size': len('testPath')})
         self.man.deleteAccount(self.man.cuentas[0])
         assert_false(self.man.cuentas)
 
         # TODO: should be deleted??
-        files_table = self.man.database['files']
+        files_table = self.man.databaseManager.database['files']
         assert_false(list(files_table.all()))
-        accounts_table = self.man.database['accounts']
+        accounts_table = self.man.databaseManager.database['accounts']
         assert_false(list(accounts_table.all()))
 
     def test_integrationSync(self):
@@ -75,7 +74,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList = self.man.cuentas[0].getFileList()
 
         expected_fileList = []
@@ -93,7 +92,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList = self.man.cuentas[0].getFileList()
 
         expected_fileList = ['/test/muerte.txt']
@@ -111,7 +110,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList = self.man.cuentas[0].getFileList()
 
         expected_fileList = ['/test/muerte.txt']
@@ -130,7 +129,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList = self.man.cuentas[0].getFileList()
 
         date = datetime.date.today()
@@ -150,7 +149,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList = self.man.cuentas[0].getFileList()
 
         expected_fileList = ['/test/muerte.txt', '/test/muerte2.txt']
@@ -164,7 +163,7 @@ class TestManager(object):
     def test_integrationSync_6(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
+        self.man.databaseManager.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # "modify" it
@@ -172,7 +171,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'revision': i['revision']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'revision': i['revision']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList = self.man.cuentas[0].getFileList()
 
         expected_fileList = ['/test/muerte.txt']
@@ -186,7 +185,7 @@ class TestManager(object):
     def test_integrationSync_7(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
+        self.man.databaseManager.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.cuentas[0].deleteFile('/test/muerte.txt')  # delete it
@@ -194,7 +193,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList = self.man.cuentas[0].getFileList()
 
         expected_fileList = []
@@ -208,7 +207,7 @@ class TestManager(object):
     def test_integrationSync_8(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte2.txt')  # create a file
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
+        self.man.databaseManager.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.fileSystemModule.renameFile('/test/muerte2.txt', '/test/muerte.txt')  # we modify it locally
@@ -216,7 +215,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'revision': i['revision']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'revision': i['revision']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList = self.man.cuentas[0].getFileList()
 
         expected_fileList = ['/test/muerte.txt']
@@ -230,7 +229,7 @@ class TestManager(object):
     def test_integrationSync_9(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte2.txt')  # create a file
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
+        self.man.databaseManager.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.fileSystemModule.renameFile('/test/muerte2.txt', '/test/muerte.txt')  # we modify it locally
@@ -239,7 +238,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'revision': i['revision']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'revision': i['revision']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList = self.man.cuentas[0].getFileList()
 
         expected_fileList = ['/test/muerte.txt']
@@ -253,7 +252,7 @@ class TestManager(object):
     def test_integrationSync_10(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
+        self.man.databaseManager.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.fileSystemModule.remove('/test/muerte.txt')  # delete it
@@ -261,7 +260,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList = self.man.cuentas[0].getFileList()
 
         expected_fileList = []
@@ -275,7 +274,7 @@ class TestManager(object):
     def test_integrationSync_11(self):
         self.man.newAccount('dropbox_stub', 'user')
         self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
-        self.man.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
+        self.man.databaseManager.saveFile({'account': self.man.cuentas[0], 'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'revision': 'revision_number', 'size': len('/test/muerte.txt')})
         self.man.cuentas[0].uploadFile('/test/muerte.txt')  # we had a file uploaded
         self.man.cuentas[0].resetChanges()
         self.man.fileSystemModule.remove('/test/muerte.txt')  # delete it
@@ -284,7 +283,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList = self.man.cuentas[0].getFileList()
 
         expected_fileList = []
@@ -308,7 +307,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()  # this conflicts again, and the name is already taken
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList = self.man.cuentas[0].getFileList()
 
         date = datetime.date.today()
@@ -330,7 +329,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()  # this conflicts
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
         remoteFileList_1 = self.man.cuentas[1].getFileList()
 
@@ -357,7 +356,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()  # this conflicts
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
         remoteFileList_1 = self.man.cuentas[1].getFileList()
         remoteFileList_2 = self.man.cuentas[2].getFileList()
@@ -383,7 +382,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList1 = self.man.cuentas[0].getFileList()
         remoteFileList2 = self.man.cuentas[1].getFileList()
 
@@ -406,7 +405,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList1 = self.man.cuentas[0].getFileList()
         remoteFileList2 = self.man.cuentas[1].getFileList()
 
@@ -430,7 +429,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList1 = self.man.cuentas[0].getFileList()
         remoteFileList2 = self.man.cuentas[1].getFileList()
 
@@ -453,7 +452,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList = self.man.cuentas[0].getFileList()
 
         expected_fileList = []
@@ -473,7 +472,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList = self.man.cuentas[0].getFileList()
 
         expected_fileList = [filename, filename+'2']
@@ -494,7 +493,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'size': i['size']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'size': i['size']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
         remoteFileList_1 = self.man.cuentas[1].getFileList()
 
@@ -520,7 +519,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'size': i['size']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'size': i['size']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
         remoteFileList_1 = self.man.cuentas[1].getFileList()
 
@@ -546,7 +545,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'size': i['size']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'size': i['size']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
         remoteFileList_1 = self.man.cuentas[1].getFileList()
 
@@ -571,7 +570,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'size': i['size']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'size': i['size']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
 
         expected_fileList = [filename]
@@ -594,7 +593,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'size': i['size']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'size': i['size']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
 
         expected_fileList = [filename]
@@ -617,7 +616,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'size': i['size']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'size': i['size']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
 
         expected_fileList = []
@@ -641,7 +640,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'size': i['size']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user'], 'size': i['size']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
 
         date = datetime.date.today()
@@ -668,7 +667,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
         remoteFileList_1 = self.man.cuentas[1].getFileList()
 
@@ -702,7 +701,7 @@ class TestManager(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
         remoteFileList_1 = self.man.cuentas[1].getFileList()
 
