@@ -84,9 +84,10 @@ class DatabaseManager(object):
         account = element['account']
         path = element['path']
         file_hash = element['hash']
+        encryption = element.get('encryption', False)
         self.logger.debug('saving file <' + path + '> with hash <' + str(file_hash) + '> to account <' + account.getAccountType() + ', ' + account.user + '>')
         files_table = self.database['files']
-        files_table.upsert(dict(accountType=account.getAccountType(), user=account.user, path=path, internal_path=path.lower(), hash=file_hash, revision=element['revision'], size=size), ['internal_path'])
+        files_table.upsert(dict(accountType=account.getAccountType(), user=account.user, path=path, internal_path=path.lower(), hash=file_hash, revision=element['revision'], size=size, encryption=encryption), ['internal_path'])
         # TODO: check if can be inserted and this...
         return True
 
@@ -133,13 +134,18 @@ class DatabaseManager(object):
         user_table.upsert(dict(user=username, hash=hash), ['id'])
 
     def markEncriptionDB(self, path, encryption):
+        self.logger.debug("markEncriptionDB <" + path + "> -> <" + str(encryption) + ">")
         files_table = self.database['files']
         files_table.update(dict(internal_path=path.lower(), encryption=encryption), ['internal_path'])
 
     def shouldEncrypt(self, path):
+        self.logger.debug("Calling shouldEncrypt for <" + path + ">")
         files_table = self.database['files']
         row = files_table.find_one(internal_path=path.lower())
+        import pdb; pdb.set_trace()  # breakpoint 00ef372e //
         if row and 'encryption' in row:
-            return row['encryption']
+            self.logger.debug("Returning <" + str(bool(row['encryption'])) + ">")
+            return bool(row['encryption'])
         else:
+            self.logger.debug("Returning <False>")
             return False

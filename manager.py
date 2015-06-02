@@ -7,6 +7,7 @@ from fileSystemModule import FileSystemModule
 from databaseManager import DatabaseManager
 from securityModule import SecurityModule
 from exceptions import RetryException, FullStorageException, APILimitedException, UnknownError
+from simplecrypt import DecryptionException, EncryptionException
 
 
 config_file = "config/config.json"
@@ -473,10 +474,16 @@ class Manager(threading.Thread):
                 try:
                     self.logger.debug("Downloading file <" + element['path'] + ">")
                     streamFile = element['account'].getFile(element["path"])
-                    if self.databaseManager.shouldEncrypt(element['path']):
+                    try:
                         streamFile_encrypted = streamFile
                         streamFile = self.securityModule.decrypt(streamFile_encrypted)
                         streamFile_encrypted.close()
+                        # if it's decrypted, we mark it as such
+                        element['encryption'] = True
+                    except DecryptionException as dec_exc:
+                        self.logger.warn("Decryption Exception: " + str(dec_exc))
+                        self.logger.debug("Using basic streamFile")
+
                     self.fileSystemModule.createFile(element["path"], streamFile)
                     streamFile.close()
                 except FileNotFoundError as e:
