@@ -1,6 +1,7 @@
 import json
 import datetime
 import threading
+import tempfile
 from log import Logger
 import dropboxAccount
 from fileSystemModule import FileSystemModule
@@ -383,9 +384,12 @@ class Manager(threading.Thread):
                             self.logger.debug("Uploading file <" + element['path'] + "> to account <" + str(element['account']) + ">")
                             stream = self.fileSystemModule.openFile(element['path'])
                             if self.databaseManager.shouldEncrypt(element['path']):
-                                stream_unencrypted = stream
-                                stream = self.securityModule.encrypt(stream_unencrypted)
-                                stream_unencrypted.close()
+                                try:
+                                    stream_unencrypted = stream
+                                    stream = self.securityModule.encrypt(stream_unencrypted)
+                                    stream_unencrypted.close()
+                                except EncryptionException as e:
+                                    self.logger.error("Could not encrypt: " + str(e))
                             revision = element['account'].uploadFile(element["path"], element.get('revision'), stream)
                         except FullStorageException:  # si no cabe en la cuenta...
                             old_account = self.getAccountFromFile(element['path'])
@@ -473,7 +477,11 @@ class Manager(threading.Thread):
             elif element['hash']:  # created or modified
                 try:
                     self.logger.debug("Downloading file <" + element['path'] + ">")
-                    streamFile = element['account'].getFile(element["path"])
+                    streamFile = tempfile.TemporaryFile()
+                    import shutil
+                    shutil.copyfileobj(element['account'].getFile(element["path"]), streamFile)
+                    streamFile.seek(0)
+
                     try:
                         streamFile_encrypted = streamFile
                         streamFile = self.securityModule.decrypt(streamFile_encrypted)
@@ -483,6 +491,7 @@ class Manager(threading.Thread):
                     except DecryptionException as dec_exc:
                         self.logger.warn("Decryption Exception: " + str(dec_exc))
                         self.logger.debug("Using basic streamFile")
+                        streamFile.seek(0)
 
                     self.fileSystemModule.createFile(element["path"], streamFile)
                     streamFile.close()
