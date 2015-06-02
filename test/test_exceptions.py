@@ -32,8 +32,7 @@ class TestExceptions(object):
 
     def teardown(self):
         """This method is run once after _each_ test method is executed"""
-        for i in self.man.database.tables:
-            self.man.database[i].drop()
+        self.man.databaseManager.cleanDatabase()
 
         self.man = None
 
@@ -54,7 +53,7 @@ class TestExceptions(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
 
         expected_fileList = []
@@ -81,7 +80,7 @@ class TestExceptions(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
 
         expected_fileList = []
@@ -106,7 +105,7 @@ class TestExceptions(object):
         self.man.updateLocalSyncFolder()  # this conflicts
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
         remoteFileList_1 = self.man.cuentas[1].getFileList()
 
@@ -133,7 +132,7 @@ class TestExceptions(object):
         self.man.updateLocalSyncFolder()  # this conflicts
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
 
         expected_fileList = []
@@ -154,7 +153,7 @@ class TestExceptions(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
 
         expected_fileList = [filename]
@@ -175,7 +174,7 @@ class TestExceptions(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
 
         expected_fileList = []
@@ -198,7 +197,7 @@ class TestExceptions(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
 
         expected_fileList = [filename_local]
@@ -224,7 +223,7 @@ class TestExceptions(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
         remoteFileList_1 = self.man.cuentas[1].getFileList()
 
@@ -260,7 +259,7 @@ class TestExceptions(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
         remoteFileList_1 = self.man.cuentas[1].getFileList()
 
@@ -299,7 +298,7 @@ class TestExceptions(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
         remoteFileList_1 = self.man.cuentas[1].getFileList()
 
@@ -344,7 +343,7 @@ class TestExceptions(object):
         self.man.updateLocalSyncFolder()
 
         fileList = self.man.fileSystemModule.getFileList()
-        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.database['files'].all()]
+        DBFiles = [{'path': i['path'], 'hash': i['hash'], 'account': i['accountType'], 'user': i['user']} for i in self.man.databaseManager.database['files'].all()]
         remoteFileList_0 = self.man.cuentas[0].getFileList()
         remoteFileList_1 = self.man.cuentas[1].getFileList()
 
