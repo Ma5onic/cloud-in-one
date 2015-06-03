@@ -531,15 +531,19 @@ class Manager(threading.Thread):
     def run(self):
         timeout = 300.0
         while not self.finish.is_set():
-            if self.event.is_set():
-                self.event.clear()
+            try:
+                if self.event.is_set():
+                    self.event.clear()
 
-                self.logger.debug("Acquiring lock")
-                self.lock.acquire()
-                self.logger.debug("Lock acquired")
+                    self.logger.debug("Acquiring lock")
+                    self.lock.acquire()
+                    self.logger.debug("Lock acquired")
 
-                self.updateLocalSyncFolder()
+                    self.updateLocalSyncFolder()
 
+            except Exception:
+                raise
+            finally:
                 self.logger.debug("Releasing lock")
                 self.lock.release()
                 self.logger.debug("Lock released")
