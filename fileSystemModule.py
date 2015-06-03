@@ -145,7 +145,7 @@ class FileSystemModule():
 class FileSystemModuleStub(FileSystemModule):
     """stub for the filesystem module."""
     def __init__(self):
-        self.main_path = 'test'
+        self.main_path = '/test/folder'
         self.__file_list = []
 
     def createDirectory(self, dir_path):
