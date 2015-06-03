@@ -1,6 +1,7 @@
 import os.path
 import os
 import hashlib
+import tempfile
 from functools import partial
 from log import Logger
 
@@ -152,6 +153,8 @@ class FileSystemModuleStub(FileSystemModule):
         return os.path.join(self.main_path, dir_path)
 
     def createFile(self, file_path, stream=None):
+        if not stream:
+            stream = tempfile.TemporaryFile()
         try:
             # If the file already existed
             file_info = (next(item for item in self.__file_list if item['path'] == file_path))
