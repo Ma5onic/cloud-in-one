@@ -55,14 +55,14 @@ class TestManager(object):
         accounts_table = self.man.databaseManager.database['accounts']
         assert_false(list(accounts_table.all()))
 
-    @Ignore
     def test_deleteAccountAndFiles(self):
         self.man.newAccount('dropbox_stub', 'user')
-        self.man.databaseManager.saveFile({'account': self.man.cuentas[0], 'path': 'testPath', 'hash': 'hash', 'revision': 'revision_number', 'size': len('testPath')})
+        self.man.fileSystemModule.createFile('/test/muerte.txt')  # create a file
+        self.man.updateLocalSyncFolder()
+
         self.man.deleteAccount(self.man.cuentas[0])
         assert_false(self.man.cuentas)
 
-        # TODO: should be deleted??
         files_table = self.man.databaseManager.database['files']
         assert_false(list(files_table.all()))
         accounts_table = self.man.databaseManager.database['accounts']

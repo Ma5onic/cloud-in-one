@@ -11,7 +11,7 @@ from securityModule import SecurityModule
 from fileSystemModule import FileSystemModuleStub
 from manager import Manager
 from exceptions import SecurityError
-from util import raise_always_decorator
+from util import *
 
 
 class TestSecurity(object):
@@ -241,3 +241,25 @@ class TestSecuritySelective(object):
         localFile = self.man.fileSystemModule.openFile(filename)
         assert_equal(remoteFile.read(), ctext)
         assert_equal(localFile.read(), b'text')
+
+    def test_deleteAccount_decrypt(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        filename = 'test_file.txt'
+        self.man.fileSystemModule.createFile(filename)  # create a file
+        self.man.updateLocalSyncFolder()
+
+        self.man.markForEncription(filename)
+        self.man.fileSystemModule.createFile(filename)  # modify the file
+
+        self.man.updateLocalSyncFolder()  # it should try to encrypt
+
+        account = self.man.cuentas[0]
+        self.man.deleteAccount(account)
+
+        remoteFile = account.getFile(filename)
+        fileList = self.man.fileSystemModule.getFileList()
+
+        expected_fileList = []
+
+        compareFileLists(fileList, expected_fileList)
+        assert_equal(remoteFile.read(), b'text')

@@ -86,9 +86,19 @@ class Manager(threading.Thread):
         self.logger.info("Deleting account")
         self.logger.debug("account = %s", account)
 
-        self.databaseManager.deleteAccountDB(account)
         self.cuentas.remove(account)
-        #TODO: Do things to delete an account
+
+        fileList = self.databaseManager.getFiles(account)
+        for file_element in fileList:
+            # upload decrypted versions of each file to the account
+            account.uploadFile(file_element['path'], file_element['revision'], self.fileSystemModule.openFile(file_element['path']))
+            # remove these files from the local filesystem
+            self.fileSystemModule.remove(file_element['path'])
+            # remove these files from the DB
+            self.databaseManager.deleteFileDB(file_element['path'])
+
+        # remove the account from the DB
+        self.databaseManager.deleteAccountDB(account)
         return True
 
     def getAccounts(self):
