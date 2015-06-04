@@ -47,9 +47,9 @@ class FileSystemModule():
         self.logger.debug("Opened, REMEMBER TO CLOSE IT")
         return out
 
-    def closeFile(self, file_path, file):
+    def closeFile(self, file_path, fileStream):
         self.logger.debug("Closing file <" + file_path + ">")
-        file.close()
+        fileStream.close()
 
     def renameFile(self, oldpath, newpath):
         self.logger.debug("Renaming file <" + oldpath + "> to <" + newpath + ">")
@@ -155,6 +155,9 @@ class FileSystemModuleStub(FileSystemModule):
     def createFile(self, file_path, stream=None):
         if not stream:
             stream = tempfile.TemporaryFile()
+
+        stream.write(b'text')
+        stream.seek(0)
         try:
             # If the file already existed
             file_info = (next(item for item in self.__file_list if item['path'] == file_path))
@@ -167,6 +170,7 @@ class FileSystemModuleStub(FileSystemModule):
     def openFile(self, file_path):
         for i in self.__file_list:
             if i['path'] == file_path:
+                i['stream'].seek(0)
                 return i['stream']
         return None
 

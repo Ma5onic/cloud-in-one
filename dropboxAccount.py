@@ -274,6 +274,7 @@ class DropboxAccountStub(DropboxAccount):
     def getFile(self, file_path):
         fileStream = next((i['stream'] for i in self.__file_list if i['path'] == file_path.lower()), None)
         if fileStream:
+            fileStream.seek(0)
             return fileStream
         else:
             raise FileNotFoundError(file_path)
@@ -284,13 +285,23 @@ class DropboxAccountStub(DropboxAccount):
     def uploadFile(self, file_path, rev=None, stream=None):
         if not stream:
             stream = tempfile.TemporaryFile()
+        else:
+            import shutil
+            oldStream = stream
+            newFileObj = tempfile.TemporaryFile()
+            shutil.copyfileobj(oldStream, newFileObj)
+            stream = newFileObj
+        stream.seek(0)
 
         if rev:
             size = self.fileSystemModule.getFileSize(file_path)
             if not self.fits(size):
                 raise FullStorageException(file_path)
 
-        if file_path.lower() not in (i['path'] for i in self.__file_list):
+        index = next((i for i, element in enumerate(self.__file_list) if element['path'] == file_path.lower()), -1)
+        if index >= 0:
+            self.__file_list[index] = {'path': file_path.lower(), 'original_path': file_path, 'stream': stream}
+        else:
             self.__file_list.append({'path': file_path.lower(), 'original_path': file_path, 'stream': stream})
 
         if not rev:

@@ -387,7 +387,7 @@ class Manager(threading.Thread):
                                 try:
                                     stream_unencrypted = stream
                                     stream = self.securityModule.encrypt(stream_unencrypted)
-                                    stream_unencrypted.close()
+                                    self.fileSystemModule.closeFile(element['path'], stream_unencrypted)
                                 except EncryptionException as e:
                                     self.logger.error("Could not encrypt: " + str(e))
                             revision = element['account'].uploadFile(element["path"], element.get('revision'), stream)
@@ -485,7 +485,7 @@ class Manager(threading.Thread):
                     try:
                         streamFile_encrypted = streamFile
                         streamFile = self.securityModule.decrypt(streamFile_encrypted)
-                        streamFile_encrypted.close()
+                        self.fileSystemModule.closeFile(element['path'], streamFile_encrypted)
                         # if it's decrypted, we mark it as such
                         element['encryption'] = True
                     except DecryptionException as dec_exc:
@@ -494,7 +494,7 @@ class Manager(threading.Thread):
                         streamFile.seek(0)
 
                     self.fileSystemModule.createFile(element["path"], streamFile)
-                    streamFile.close()
+                    self.fileSystemModule.closeFile(element['path'], streamFile)
                 except FileNotFoundError as e:
                     self.logger.error("File not found in the remote. Deleting it")
                     self.logger.exception(e)
