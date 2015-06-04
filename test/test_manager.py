@@ -81,9 +81,9 @@ class TestManager(object):
         expected_DBFiles = []
         expected_remoteFileList = []
 
-        assert_equal(fileList, expected_fileList)
+        compareFileLists(fileList, expected_fileList)
         compareChangeLists(DBFiles, expected_DBFiles)
-        assert_equal(remoteFileList, expected_remoteFileList)
+        compareFileLists(remoteFileList, expected_remoteFileList)
 
     def test_integrationSync_2(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -99,9 +99,9 @@ class TestManager(object):
         expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
         expected_remoteFileList = ['/test/muerte.txt']
 
-        assert_equal(fileList, expected_fileList)
+        compareFileLists(fileList, expected_fileList)
         compareChangeLists(DBFiles, expected_DBFiles)
-        assert_equal(remoteFileList, expected_remoteFileList)
+        compareFileLists(remoteFileList, expected_remoteFileList)
 
     def test_integrationSync_3(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -117,9 +117,9 @@ class TestManager(object):
         expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
         expected_remoteFileList = ['/test/muerte.txt']
 
-        assert_equal(fileList, expected_fileList)
+        compareFileLists(fileList, expected_fileList)
         compareChangeLists(DBFiles, expected_DBFiles)
-        assert_equal(remoteFileList, expected_remoteFileList)
+        compareFileLists(remoteFileList, expected_remoteFileList)
 
     def test_integrationSync_4(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -137,9 +137,9 @@ class TestManager(object):
         expected_DBFiles = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}, {'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
         expected_remoteFileList = ['/test/muerte.txt', '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat()]
 
-        assert_equal(fileList, expected_fileList)
+        compareFileLists(fileList, expected_fileList)
         compareChangeLists(DBFiles, expected_DBFiles)
-        assert_equal(remoteFileList, expected_remoteFileList)
+        compareFileLists(remoteFileList, expected_remoteFileList)
 
     def test_integrationSync_5(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -156,9 +156,9 @@ class TestManager(object):
         expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}, {'path': '/test/muerte2.txt', 'hash': '/test/muerte2.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
         expected_remoteFileList = ['/test/muerte2.txt', '/test/muerte.txt']
 
-        assert_equal(fileList, expected_fileList)
+        compareFileLists(fileList, expected_fileList)
         compareChangeLists(DBFiles, expected_DBFiles)
-        assert_equal(remoteFileList, expected_remoteFileList)
+        compareFileLists(remoteFileList, expected_remoteFileList)
 
     def test_integrationSync_6(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -178,9 +178,9 @@ class TestManager(object):
         expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user, 'revision': 'revision_number'}]
         expected_remoteFileList = ['/test/muerte.txt']
 
-        assert_equal(fileList, expected_fileList)
+        compareFileLists(fileList, expected_fileList)
         compareChangeLists(DBFiles, expected_DBFiles)
-        assert_equal(remoteFileList, expected_remoteFileList)
+        compareFileLists(remoteFileList, expected_remoteFileList)
 
     def test_integrationSync_7(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -200,9 +200,9 @@ class TestManager(object):
         expected_DBFiles = []
         expected_remoteFileList = []
 
-        assert_equal(fileList, expected_fileList)
+        compareFileLists(fileList, expected_fileList)
         compareChangeLists(DBFiles, expected_DBFiles)
-        assert_equal(remoteFileList, expected_remoteFileList)
+        compareFileLists(remoteFileList, expected_remoteFileList)
 
     def test_integrationSync_8(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -222,9 +222,9 @@ class TestManager(object):
         expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte2.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user, 'revision': 'revision_number1'}]
         expected_remoteFileList = ['/test/muerte.txt']
 
-        assert_equal(fileList, expected_fileList)
+        compareFileLists(fileList, expected_fileList)
         compareChangeLists(DBFiles, expected_DBFiles)
-        assert_equal(remoteFileList, expected_remoteFileList)
+        compareFileLists(remoteFileList, expected_remoteFileList)
 
     def test_integrationSync_9(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -245,9 +245,9 @@ class TestManager(object):
         expected_DBFiles = [{'path': '/test/muerte.txt', 'hash': '/test/muerte2.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user, 'revision': 'revision_number1'}]
         expected_remoteFileList = ['/test/muerte.txt']
 
-        assert_equal(fileList, expected_fileList)
+        compareFileLists(fileList, expected_fileList)
         compareChangeLists(DBFiles, expected_DBFiles)
-        assert_equal(remoteFileList, expected_remoteFileList)
+        compareFileLists(remoteFileList, expected_remoteFileList)
 
     def test_integrationSync_10(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -267,9 +267,9 @@ class TestManager(object):
         expected_DBFiles = []
         expected_remoteFileList = []
 
-        assert_equal(fileList, expected_fileList)
+        compareFileLists(fileList, expected_fileList)
         compareChangeLists(DBFiles, expected_DBFiles)
-        assert_equal(remoteFileList, expected_remoteFileList)
+        compareFileLists(remoteFileList, expected_remoteFileList)
 
     def test_integrationSync_11(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -290,9 +290,9 @@ class TestManager(object):
         expected_DBFiles = []
         expected_remoteFileList = []
 
-        assert_equal(fileList, expected_fileList)
+        compareFileLists(fileList, expected_fileList)
         compareChangeLists(DBFiles, expected_DBFiles)
-        assert_equal(remoteFileList, expected_remoteFileList)
+        compareFileLists(remoteFileList, expected_remoteFileList)
 
     def test_integrationSync_12(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -315,9 +315,9 @@ class TestManager(object):
         expected_DBFiles = [{'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}, {'path': '/test/muerte.txt', 'hash': '/test/muerte.txt', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}, {'path': '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat() + '_1', 'hash': 'modified', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
         expected_remoteFileList = ['/test/muerte.txt', '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), '/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat() + '_1']
 
-        assert_equal(sorted(fileList), sorted(expected_fileList))
+        compareFileLists(sorted(fileList), sorted(expected_fileList))
         compareChangeLists(DBFiles, expected_DBFiles)
-        assert_equal(sorted(remoteFileList), sorted(expected_remoteFileList))
+        compareFileLists(sorted(remoteFileList), sorted(expected_remoteFileList))
 
     def test_integrationSync_two_accounts(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -339,10 +339,10 @@ class TestManager(object):
         expected_remoteFileList_0 = ['/test/muerte.txt__CONFLICTED_COPY__' + date.isoformat(), '/test/muerte.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[0]) + '_' + date.isoformat()]
         expected_remoteFileList_1 = ['/test/muerte.txt']
 
-        assert_equal(sorted(fileList), sorted(expected_fileList))
+        compareFileLists(sorted(fileList), sorted(expected_fileList))
         compareChangeLists(DBFiles, expected_DBFiles)
-        assert_equal(sorted(remoteFileList_0), sorted(expected_remoteFileList_0))
-        assert_equal(sorted(remoteFileList_1), sorted(expected_remoteFileList_1))
+        compareFileLists(sorted(remoteFileList_0), sorted(expected_remoteFileList_0))
+        compareFileLists(sorted(remoteFileList_1), sorted(expected_remoteFileList_1))
 
     def test_integrationSync_three_accounts(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -368,11 +368,11 @@ class TestManager(object):
         expected_remoteFileList_1 = ['/test/muerte.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[1]) + '_' + date.isoformat()]
         expected_remoteFileList_2 = ['/test/muerte.txt']
 
-        assert_equal(sorted(fileList), sorted(expected_fileList))
+        compareFileLists(sorted(fileList), sorted(expected_fileList))
         compareChangeLists(DBFiles, expected_DBFiles)
-        assert_equal(sorted(remoteFileList_0), sorted(expected_remoteFileList_0))
-        assert_equal(sorted(remoteFileList_1), sorted(expected_remoteFileList_1))
-        assert_equal(sorted(remoteFileList_2), sorted(expected_remoteFileList_2))
+        compareFileLists(sorted(remoteFileList_0), sorted(expected_remoteFileList_0))
+        compareFileLists(sorted(remoteFileList_1), sorted(expected_remoteFileList_1))
+        compareFileLists(sorted(remoteFileList_2), sorted(expected_remoteFileList_2))
 
     def test_twoAccounts_fits_first(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -391,10 +391,10 @@ class TestManager(object):
         expected_remoteFileList1 = ['/test/muerte.txt']
         expected_remoteFileList2 = []
 
-        assert_equal(fileList, expected_fileList)
+        compareFileLists(fileList, expected_fileList)
         compareChangeLists(DBFiles, expected_DBFiles)
-        assert_equal(remoteFileList1, expected_remoteFileList1)
-        assert_equal(remoteFileList2, expected_remoteFileList2)
+        compareFileLists(remoteFileList1, expected_remoteFileList1)
+        compareFileLists(remoteFileList2, expected_remoteFileList2)
 
     def test_twoAccounts_fits_second(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -414,10 +414,10 @@ class TestManager(object):
         expected_remoteFileList1 = []
         expected_remoteFileList2 = ['/test/muerte.txt']
 
-        assert_equal(fileList, expected_fileList)
+        compareFileLists(fileList, expected_fileList)
         compareChangeLists(DBFiles, expected_DBFiles)
-        assert_equal(remoteFileList1, expected_remoteFileList1)
-        assert_equal(remoteFileList2, expected_remoteFileList2)
+        compareFileLists(remoteFileList1, expected_remoteFileList1)
+        compareFileLists(remoteFileList2, expected_remoteFileList2)
 
     def test_twoAccounts_fits_none(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -438,10 +438,10 @@ class TestManager(object):
         expected_remoteFileList1 = []
         expected_remoteFileList2 = []
 
-        assert_equal(fileList, expected_fileList)
+        compareFileLists(fileList, expected_fileList)
         compareChangeLists(DBFiles, expected_DBFiles)
-        assert_equal(remoteFileList1, expected_remoteFileList1)
-        assert_equal(remoteFileList2, expected_remoteFileList2)
+        compareFileLists(remoteFileList1, expected_remoteFileList1)
+        compareFileLists(remoteFileList2, expected_remoteFileList2)
 
     def test_caseName(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -459,9 +459,9 @@ class TestManager(object):
         expected_DBFiles = []
         expected_remoteFileList = []
 
-        assert_equal(fileList, expected_fileList)
+        compareFileLists(fileList, expected_fileList)
         compareChangeLists(DBFiles, expected_DBFiles)
-        assert_equal(remoteFileList, expected_remoteFileList)
+        compareFileLists(remoteFileList, expected_remoteFileList)
 
     def test_fileSize(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -479,9 +479,9 @@ class TestManager(object):
         expected_DBFiles = [{'path': filename, 'hash': filename, 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
         expected_remoteFileList = [filename]
 
-        assert_equal(fileList, expected_fileList)
+        compareFileLists(fileList, expected_fileList)
         compareChangeLists(DBFiles, expected_DBFiles)
-        assert_equal(remoteFileList, expected_remoteFileList)
+        compareFileLists(remoteFileList, expected_remoteFileList)
 
     def test_fileSize_2(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -503,10 +503,10 @@ class TestManager(object):
         expected_remoteFileList_0 = [filename]
         expected_remoteFileList_1 = [filename+'2']
 
-        assert_equal(fileList, expected_fileList)
+        compareFileLists(fileList, expected_fileList)
         compareChangeLists(DBFiles, expected_DBFiles)
-        assert_equal(remoteFileList_0, expected_remoteFileList_0)
-        assert_equal(remoteFileList_1, expected_remoteFileList_1)
+        compareFileLists(remoteFileList_0, expected_remoteFileList_0)
+        compareFileLists(remoteFileList_1, expected_remoteFileList_1)
 
     def test_fileSize_3(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -528,10 +528,10 @@ class TestManager(object):
         expected_remoteFileList_0 = []
         expected_remoteFileList_1 = [filename]
 
-        assert_equal(fileList, expected_fileList)
+        compareFileLists(fileList, expected_fileList)
         compareChangeLists(DBFiles, expected_DBFiles)
-        assert_equal(remoteFileList_0, expected_remoteFileList_0)
-        assert_equal(remoteFileList_1, expected_remoteFileList_1)
+        compareFileLists(remoteFileList_0, expected_remoteFileList_0)
+        compareFileLists(remoteFileList_1, expected_remoteFileList_1)
 
     def test_fileSize_doesnt_fit(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -554,9 +554,9 @@ class TestManager(object):
         expected_remoteFileList_0 = [filename]
         expected_remoteFileList_1 = []
 
-        assert_equal(fileList, expected_fileList)
-        assert_equal(remoteFileList_0, expected_remoteFileList_0)
-        assert_equal(remoteFileList_1, expected_remoteFileList_1)
+        compareFileLists(fileList, expected_fileList)
+        compareFileLists(remoteFileList_0, expected_remoteFileList_0)
+        compareFileLists(remoteFileList_1, expected_remoteFileList_1)
         compareChangeLists(DBFiles, expected_DBFiles)
 
     def test_integrationSync_13(self):
@@ -577,8 +577,8 @@ class TestManager(object):
         expected_DBFiles = [{'path': filename, 'hash': 'modified', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user, 'size': len(filename) + 1}]
         expected_remoteFileList_0 = [filename]
 
-        assert_equal(fileList, expected_fileList)
-        assert_equal(remoteFileList_0, expected_remoteFileList_0)
+        compareFileLists(fileList, expected_fileList)
+        compareFileLists(remoteFileList_0, expected_remoteFileList_0)
         compareChangeLists(DBFiles, expected_DBFiles)
 
     def test_integrationSync_14(self):
@@ -600,8 +600,8 @@ class TestManager(object):
         expected_DBFiles = [{'path': filename, 'hash': filename, 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
         expected_remoteFileList_0 = [filename]
 
-        assert_equal(fileList, expected_fileList)
-        assert_equal(remoteFileList_0, expected_remoteFileList_0)
+        compareFileLists(fileList, expected_fileList)
+        compareFileLists(remoteFileList_0, expected_remoteFileList_0)
         compareChangeLists(DBFiles, expected_DBFiles)
 
     def test_integrationSync_15(self):
@@ -623,8 +623,8 @@ class TestManager(object):
         expected_DBFiles = []
         expected_remoteFileList_0 = []
 
-        assert_equal(fileList, expected_fileList)
-        assert_equal(remoteFileList_0, expected_remoteFileList_0)
+        compareFileLists(fileList, expected_fileList)
+        compareFileLists(remoteFileList_0, expected_remoteFileList_0)
         compareChangeLists(DBFiles, expected_DBFiles)
 
     def test_integrationSync_16(self):
@@ -649,8 +649,8 @@ class TestManager(object):
                             {'path': filename + '__CONFLICTED_COPY__' + date.isoformat(), 'hash': 'modified', 'account': self.man.cuentas[0].getAccountType(), 'user': self.man.cuentas[0].user}]
         expected_remoteFileList_0 = [filename + '__CONFLICTED_COPY__' + date.isoformat(), filename]
 
-        assert_equal(sorted(fileList), sorted(expected_fileList))
-        assert_equal(sorted(remoteFileList_0), sorted(expected_remoteFileList_0))
+        compareFileLists(sorted(fileList), sorted(expected_fileList))
+        compareFileLists(sorted(remoteFileList_0), sorted(expected_remoteFileList_0))
         compareChangeLists(DBFiles, expected_DBFiles)
 
     def test_remote_collision_two_accounts(self):
@@ -679,10 +679,10 @@ class TestManager(object):
         expected_remoteFileList_0 = ['/test/muerte.txt']
         expected_remoteFileList_1 = ['/test/muerte.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[1]) + '_' + date.isoformat()]
 
-        assert_equal(fileList, expected_fileList)
-        assert_equal(DBFiles, expected_DBFiles)
-        assert_equal(remoteFileList_0, expected_remoteFileList_0)
-        assert_equal(remoteFileList_1, expected_remoteFileList_1)
+        compareFileLists(fileList, expected_fileList)
+        compareChangeLists(DBFiles, expected_DBFiles)
+        compareFileLists(remoteFileList_0, expected_remoteFileList_0)
+        compareFileLists(remoteFileList_1, expected_remoteFileList_1)
 
     def test_remote_collision_two_accounts_case(self):
         self.man.newAccount('dropbox_stub', 'user')
@@ -713,7 +713,7 @@ class TestManager(object):
         expected_remoteFileList_0 = ['/test/muerte.txt']
         expected_remoteFileList_1 = ['/test/MuErTe.txt__CONFLICTED_COPY__FROM_' + str(self.man.cuentas[1]) + '_' + date.isoformat()]
 
-        assert_equal(fileList, expected_fileList)
-        assert_equal(DBFiles, expected_DBFiles)
-        assert_equal(remoteFileList_0, expected_remoteFileList_0)
-        assert_equal(remoteFileList_1, expected_remoteFileList_1)
+        compareFileLists(fileList, expected_fileList)
+        compareChangeLists(DBFiles, expected_DBFiles)
+        compareFileLists(remoteFileList_0, expected_remoteFileList_0)
+        compareFileLists(remoteFileList_1, expected_remoteFileList_1)

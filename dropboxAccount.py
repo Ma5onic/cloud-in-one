@@ -1,6 +1,7 @@
 import os
 import webbrowser
 import dropbox
+import tempfile
 from dropbox.rest import ErrorResponse
 
 from log import *
@@ -271,9 +272,9 @@ class DropboxAccountStub(DropboxAccount):
         return returnDict
 
     def getFile(self, file_path):
-        if file_path in self.__file_list:
-            f = open('test/muerte.txt', 'rb')
-            return f
+        fileStream = next((i['stream'] for i in self.__file_list if i['path'] == file_path.lower()), None)
+        if fileStream:
+            return fileStream
         else:
             raise FileNotFoundError(file_path)
 
@@ -281,13 +282,16 @@ class DropboxAccountStub(DropboxAccount):
         return "dropbox_stub"
 
     def uploadFile(self, file_path, rev=None, stream=None):
+        if not stream:
+            stream = tempfile.TemporaryFile()
+
         if rev:
             size = self.fileSystemModule.getFileSize(file_path)
             if not self.fits(size):
                 raise FullStorageException(file_path)
 
-        if file_path not in self.__file_list:
-            self.__file_list.append(file_path)
+        if file_path.lower() not in (i['path'] for i in self.__file_list):
+            self.__file_list.append({'path': file_path.lower(), 'original_path': file_path, 'stream': stream})
 
         if not rev:
             rev = 'revision_number'
@@ -301,26 +305,30 @@ class DropboxAccountStub(DropboxAccount):
 
     def renameFile(self, oldpath, newpath):
         try:
-            index = self.__file_list.index(oldpath)
-            self.__file_list[index] = newpath
+            index = next((i for i, element in enumerate(self.__file_list) if element['path'] == oldpath.lower()))
+
+            self.__file_list[index]['path'] = newpath.lower()
+            self.__file_list[index]['original_path'] = newpath
             deltaItem = [oldpath.lower(), None]
             self.__delta_acum.append(deltaItem)
-            deltaItem = [newpath.lower(), {'is_dir': False, 'path': newpath, 'rev': 'renamed', 'bytes': len(newpath)}]
-            self.__delta_acum.append(deltaItem)
-            return deltaItem[1]['rev']
-        except ValueError as e:
+            deltaItem2 = [newpath.lower(), {'is_dir': False, 'path': newpath, 'rev': 'renamed', 'bytes': len(newpath)}]
+            self.__delta_acum.append(deltaItem2)
+            return deltaItem2[1]['rev']
+
+        except StopIteration as e:
             raise FileNotFoundError from e
 
     def deleteFile(self, file_path):
         try:
-            self.__file_list.remove(file_path)
+            element = next((i for i in self.__file_list if i['path'] == file_path.lower()))
+            self.__file_list.remove(element)
             self.__delta_acum.append([file_path.lower(), None])
             return True
-        except ValueError as e:
+        except StopIteration as e:
             raise FileNotFoundError(file_path)
 
     def getFileList(self):
-        return self.__file_list
+        return [i['original_path'] for i in self.__file_list]
 
     def resetChanges(self):
         self.__delta_acum = []
