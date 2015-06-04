@@ -29,6 +29,10 @@ def compareChangeLists(changeList, expected_changeList):
     # assert_true(expected_changeList <= changeList)
 
 
+def compareFileLists(fileList, expected_fileList):
+    assert_equal(sorted(fileList), sorted(expected_fileList))
+
+
 def pre_execute_decorator(previous_fn, fn):
     def wrapped(*args, **kwargs):
         print('This is wrapped')

@@ -76,7 +76,7 @@ class SecurityModuleStub(object):
     def hashPassword(self, password):
         self.logger.debug("Hashing password")
         # we cannot use a random salt because this should be installed in several computers and give the same password to be able to decrypt...
-        return password
+        return 'hashed' + password
 
     def encrypt(self, streamFile):
         return streamFile
