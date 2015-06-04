@@ -8,7 +8,10 @@ from nose.tools import assert_equal
 from nose.tools import raises
 from databaseManager import DatabaseManager
 from securityModule import SecurityModule
+from fileSystemModule import FileSystemModuleStub
+from manager import Manager
 from exceptions import SecurityError
+from util import raise_always_decorator
 
 
 class TestSecurity(object):
@@ -154,3 +157,87 @@ class TestSecurity(object):
 
         infile.seek(0)
         assert_equal(infile.read(), outfile.read())
+
+
+class TestSecuritySelective(object):
+    """docstring for TestSecuritySelective"""
+    def __init__(self):
+        super(TestSecuritySelective, self).__init__()
+        self.config_default = {"sync_folder_name": "./test/sync_folder", "database": ":memory:"}
+        self.man = None
+
+    @classmethod
+    def setup_class(klass):
+        """This method is run once for each class before any tests are run"""
+
+    @classmethod
+    def teardown_class(klass):
+        """This method is run once for each class _after_ all tests are run"""
+
+    def setUp(self):
+        """This method is run once before _each_ test method is executed"""
+        self.man = Manager('user', 'password', config=self.config_default)
+        self.man.fileSystemModule = FileSystemModuleStub()
+
+    def teardown(self):
+        """This method is run once after _each_ test method is executed"""
+        self.man.databaseManager.cleanDatabase()
+
+        self.man = None
+
+    def test_manager(self):
+        assert_true(self.man)
+
+    def test_markEncryption(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        filename = 'test_file.txt'
+        self.man.fileSystemModule.createFile(filename)  # create a file
+        self.man.updateLocalSyncFolder()
+
+        self.man.markForEncription(filename)
+        self.man.fileSystemModule.createFile(filename)  # modify the file
+
+        self.man.updateLocalSyncFolder()  # it should try to encrypt
+
+        remoteFile = self.man.cuentas[0].getFile(filename)
+        localFile = self.man.fileSystemModule.openFile(filename)
+        assert_equal(localFile.read(), b'text')
+        assert_not_equal(remoteFile.read(), b'text')
+
+    def test_unmarkEncryption(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        filename = 'test_file.txt'
+        self.man.fileSystemModule.createFile(filename)  # create a file
+        self.man.updateLocalSyncFolder()
+
+        self.man.unmarkForEncription(filename)
+        self.man.fileSystemModule.createFile(filename)  # modify the file
+
+        self.man.updateLocalSyncFolder()  # it should try to encrypt
+
+        remoteFile = self.man.cuentas[0].getFile(filename)
+        localFile = self.man.fileSystemModule.openFile(filename)
+        assert_equal(remoteFile.read(), b'text')
+        assert_equal(localFile.read(), b'text')
+
+    def test_unmarked_decryption(self):
+        self.man.newAccount('dropbox_stub', 'user')
+        filename = 'test_file.txt'
+
+        self.man.fileSystemModule.createFile(filename)  # temporally create a file
+        # "text" -('user', 'password')->
+        ctext = b'sc\x00\x02\xe8zt\xf5\x99!(\xbb\x08\xc1\xd0\x00)\xf6\xfb5Q\xed\xe87H\xad\x97\xd88tt\xd0\x1c\x00\xd8\xf9\xe8\xe4R\x88\x1d\x83\x10\xb0*\xe9r;\xa4A<t\x99@\xa6\xa1\xac\xda\t\x92\xa8\xbfZ\xce\xd8\xf9,-U\x1d>\x9d'
+        stream = tempfile.TemporaryFile()
+        stream.write(ctext)
+        stream.seek(0)
+        self.man.cuentas[0].uploadFile(filename, 'different_revision', stream)  # we upload it to the second account
+        self.man.fileSystemModule.remove(filename)  # we have the file only in the remote
+
+        self.man.updateLocalSyncFolder()  # it should try to decrypt, and the file get marked to encrypt
+
+        assert_true(self.man.databaseManager.shouldEncrypt(filename))
+
+        remoteFile = self.man.cuentas[0].getFile(filename)
+        localFile = self.man.fileSystemModule.openFile(filename)
+        assert_equal(remoteFile.read(), ctext)
+        assert_equal(localFile.read(), b'text')
