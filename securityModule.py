@@ -17,7 +17,7 @@ class SecurityModule():
         self.databaseManager = databaseManager
         self.user = user
 
-        self.password = self.hashPassword(password)
+        self.password = self.hashPassword(user, password)
         del(password)
         if not self.checkLogin(user, self.password):
             raise PermissionError("Wrong user/password")
@@ -48,10 +48,10 @@ class SecurityModule():
 
         self.databaseManager.saveUser(user, password)
 
-    def hashPassword(self, password):
+    def hashPassword(self, username, password):
         self.logger.debug("Hashing password")
         # we cannot use a random salt because this should be installed in several computers and give the same password to be able to decrypt...
-        return hashlib.sha256(('th¡5iS@sal7' + password).encode('utf-8')).hexdigest()
+        return hashlib.sha256(('th¡5iS@sal7' + username + '||' + password).encode('utf-8')).hexdigest()
 
     def encrypt(self, streamFile):
         self.logger.debug("Encrypting file")
