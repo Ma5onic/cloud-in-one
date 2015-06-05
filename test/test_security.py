@@ -243,15 +243,8 @@ class TestSecuritySelective(object):
         assert_equal(localFile.read(), b'text')
 
     def test_deleteAccount_decrypt(self):
-        self.man.newAccount('dropbox_stub', 'user')
+        self.test_markEncryption()
         filename = 'test_file.txt'
-        self.man.fileSystemModule.createFile(filename)  # create a file
-        self.man.updateLocalSyncFolder()
-
-        self.man.markForEncription(filename)
-        self.man.fileSystemModule.createFile(filename)  # modify the file
-
-        self.man.updateLocalSyncFolder()  # it should try to encrypt
 
         account = self.man.cuentas[0]
         self.man.deleteAccount(account)
