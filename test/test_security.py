@@ -226,7 +226,7 @@ class TestSecuritySelective(object):
 
         self.man.fileSystemModule.createFile(filename)  # temporally create a file
         # "text" -('user', 'password')->
-        ctext = b'sc\x00\x02\xe8zt\xf5\x99!(\xbb\x08\xc1\xd0\x00)\xf6\xfb5Q\xed\xe87H\xad\x97\xd88tt\xd0\x1c\x00\xd8\xf9\xe8\xe4R\x88\x1d\x83\x10\xb0*\xe9r;\xa4A<t\x99@\xa6\xa1\xac\xda\t\x92\xa8\xbfZ\xce\xd8\xf9,-U\x1d>\x9d'
+        ctext = simplecrypt.encrypt(self.man.securityModule.hashPassword('user', 'password'), b'text')
         stream = tempfile.TemporaryFile()
         stream.write(ctext)
         stream.seek(0)
