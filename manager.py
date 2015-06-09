@@ -168,25 +168,31 @@ class Manager(threading.Thread):
             for filePath, metadata in deltaDict['entries']:
                 self.logger.debug('filePath <' + str(filePath) + '> metadata <' + str(metadata) + '>')
                 if metadata:  # create/edit path
-                    if metadata["is_dir"]:
-                        self.logger.debug('is_dir = True')
-                    else:
-                        self.logger.debug('is_dir = False')
-                        old_revision = self.databaseManager.getRevisionDB(metadata['path'])
-                        if old_revision != metadata['rev'] or deltaDict['reset']:
-                            newChange = {'path': metadata['path'], 'hash': 'MISSING', 'account': account, 'revision': metadata['rev'], 'size': metadata['bytes']}
-
-                            old_account = self.getAccountFromFile(metadata['path'])
-                            if old_account and old_account != account:
-                                self.__remote_conflicted_copy(newChange)
-
-                            remoteChanges.append(newChange)
+                    newChange = self._metadata2Change(metadata, account, deltaDict['reset'])
+                    if newChange:
+                        remoteChanges.append(newChange)
 
                 else:  # delete path
                     remoteChanges.append({'path': filePath, 'hash': None, 'account': account})
 
         self.logger.debug(remoteChanges)
         return remoteChanges
+
+    def _metadata2Change(self, metadata, account, reset=False):
+        newChange = None
+        if metadata["is_dir"]:
+            self.logger.debug('is_dir = True')
+        else:
+            self.logger.debug('is_dir = False')
+            old_revision = self.databaseManager.getRevisionDB(metadata['path'])
+            if old_revision != metadata['rev'] or reset:
+                newChange = {'path': metadata['path'], 'hash': 'MISSING', 'account': account, 'revision': metadata['rev'], 'size': metadata['bytes']}
+
+                old_account = self.getAccountFromFile(metadata['path'])
+                if old_account and old_account != account:
+                    self.__remote_conflicted_copy(newChange)
+
+        return newChange
 
     def __fixAutoCollisions(self, changeList):
         self.logger.debug('changeList <' + str(changeList) + '>')
@@ -529,6 +535,20 @@ class Manager(threading.Thread):
 
     def walkFiles(self, folder=None):
         return self.fileSystemModule.walk(folder)
+
+    def walkRemoteFiles(self):
+        fileList = []
+        for account in self.cuentas:
+            fileList += account.getFileList()
+
+        fileList.sort(key=lambda k: k['path'])
+        return fileList
+
+    def donwloadFile(self, account, path):
+        metadata = account.getMetadata(path)
+        change = [self._metadata2Change(metadata, account, True)]
+        self.applyChangesOnLocal(change)
+        self.applyChangesOnDB(change)
 
     def markForEncription(self, fullpath):
         path = self.fileSystemModule.getInternalPath(fullpath)

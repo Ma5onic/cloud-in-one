@@ -221,6 +221,26 @@ class DropboxAccount(account.Account):
     def fits(self, file_size):
         return file_size <= self.free_quota
 
+    def getFileList(self, folder='/'):
+        client = self.__getDropboxClient()
+        self.logger.info("Getting file list from <" + str(self) + ">")
+        fileList = []
+
+        try:
+            self.logger.info("Getting metadata from <" + str(folder) + ">")
+            metadata = client.metadata(folder)
+            contents = metadata['contents']
+            for element in contents:
+                if element['is_dir']:
+                    fileList += self.getFileList(element['path'])
+                else:
+                    fileList.append({'account': self, 'path': element['path']})
+
+            return fileList
+
+        except ErrorResponse as error:
+            self.__manageException(error)
+
     def __repr__(self):
         return self.getAccountType() + '-' + self.user + '-' + self.email
 

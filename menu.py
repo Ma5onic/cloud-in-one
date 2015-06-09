@@ -61,9 +61,19 @@ class Menu(object):
             except ValueError:
                 print("Input the file index")
 
+    def _downloadFile(self):
+        walkedFiles = self.manager.walkRemoteFiles()
+        paths = [d['path'] for d in walkedFiles]
+        accounts = [d['account'] for d in walkedFiles]
+        for i, path in enumerate(paths, 1):
+            print(i, path)
 
-
-
+        selected = int(input("Select a file (0 to cancel): ")) - 1
+        if selected == -1:
+            return
+        elif selected < len(paths):
+            print("Downloading <" + paths[selected] + ">")
+            self.manager.donwloadFile(accounts[selected], paths[selected])
 
     def _showMenu(self):
         print()
@@ -74,6 +84,7 @@ class Menu(object):
 3. Delete account
 4. Force start sync
 5. Select files to encrypt
+6. Download one file
 0. EXIT
 
         Please select an option: """)
@@ -87,7 +98,7 @@ class Menu(object):
             option = None
             while option != '0':
                 option = self._showMenu()
-                if option in {'1', '2', '3', '4', '5'}:
+                if option in {'1', '2', '3', '4', '5', '6'}:
                     with self.lock:
                         if option == '1':
                             self.__newAccountInteractive()
@@ -99,6 +110,8 @@ class Menu(object):
                             self._forceSync()
                         elif option == '5':
                             self._markFilesEncryption()
+                        elif option == '6':
+                            self._downloadFile()
         except:
             raise
         finally:
