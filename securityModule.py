@@ -54,15 +54,25 @@ class SecurityModule():
         return hashlib.sha256(('th¡5iS@sal7' + username + '||' + password).encode('utf-8')).hexdigest()
 
     def encrypt(self, streamFile):
-        self.logger.debug("Encrypting file")
-        encrypted = simplecrypt.encrypt_file(self.password, streamFile)
-        self.logger.debug("File encrypted successfully. ")
+        if hasattr(streamFile, 'read'):
+            self.logger.debug("Encrypting file")
+            encrypted = simplecrypt.encrypt_file(self.password, streamFile)
+            self.logger.debug("File encrypted successfully. ")
+        else:
+            self.logger.debug("Encrypting bytes")
+            encrypted = simplecrypt.encrypt(self.password, streamFile)
+            self.logger.debug("Encrypted successfully. ")
         return encrypted
 
     def decrypt(self, streamFile):
-        self.logger.debug("Decrypting file")
-        decrypted = simplecrypt.decrypt_file(self.password, streamFile)
-        self.logger.debug("File decrypted successfully. ")
+        if hasattr(streamFile, 'read'):
+            self.logger.debug("Decrypting file")
+            decrypted = simplecrypt.decrypt_file(self.password, streamFile)
+            self.logger.debug("File decrypted successfully. ")
+        else:
+            self.logger.debug("Decrypting bytes")
+            decrypted = simplecrypt.decrypt(self.password, streamFile)
+            self.logger.debug("Decrypted successfully. ")
         return decrypted
 
 

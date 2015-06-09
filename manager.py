@@ -59,23 +59,22 @@ class Manager(threading.Thread):
             lock = threading.Lock()
         self.lock = lock
 
-    def __CreateAccount(self, type, user):
-        if type is "dropbox":
-            return dropboxAccount.DropboxAccount(self.fileSystemModule, user)
-        elif type is "dropbox_stub":
+    def __CreateAccount(self, type, user, cursor=None, access_token=None, user_id=None, email=None):
+        if type == "dropbox":
+            return dropboxAccount.DropboxAccount(self.fileSystemModule, user, cursor, access_token, user_id, email)
+        elif type == "dropbox_stub":
             return dropboxAccount.DropboxAccountStub(self.fileSystemModule, user)
 
-    def newAccount(self, type, user):
+    def newAccount(self, type, user, cursor=None, access_token=None, user_id=None, email=None):
         self.logger.info("Adding new account")
         self.logger.debug("type = %s", type)
         self.logger.debug("user = %s", user)
 
         try:
-            newAcc = self.__CreateAccount(type, user)
+            newAcc = self.__CreateAccount(type, user, cursor, access_token, user_id, email)
             self.cuentas.append(newAcc)
+            newAcc.updateAccountInfo()
             self.databaseManager.saveAccount(newAcc)
-
-            #TODO: Do whatever it's needed to add a new account
             return True
         except UnknownError as e:
             self.logger.error("Cannot create the new account")
@@ -472,6 +471,8 @@ class Manager(threading.Thread):
             if element['hash']:  # created or modified, upsert in the db
                 if element['hash'] == 'MISSING':
                     element['hash'] = self.fileSystemModule.md5sum(element['path'])
+                if 'size' not in element:
+                    element['size'] = self.fileSystemModule.getFileSize(element['path'])
                 self.databaseManager.saveFile(element)
 
             else:  # deleted, remove from the db
@@ -537,14 +538,17 @@ class Manager(threading.Thread):
         return self.fileSystemModule.walk(folder)
 
     def walkRemoteFiles(self):
+        self.logger.debug("walkRemoteFiles")
         fileList = []
         for account in self.cuentas:
             fileList += account.getFileList()
 
         fileList.sort(key=lambda k: k['path'])
+        self.logger.debug("fileList = <" + str(fileList) + ">")
         return fileList
 
     def donwloadFile(self, account, path):
+        self.logger.debug("Downloading file <" + path + "> from <" + str(account) + ">")
         metadata = account.getMetadata(path)
         change = [self._metadata2Change(metadata, account, True)]
         self.applyChangesOnLocal(change)
@@ -557,6 +561,31 @@ class Manager(threading.Thread):
     def unmarkForEncription(self, fullpath):
         path = self.fileSystemModule.getInternalPath(fullpath)
         self.databaseManager.markEncriptionDB(path, False)
+
+    def serializeAccounts(self, destination_path):
+        self.logger.debug("Serializing accounts")
+        import pickle
+        summList = [account.summarize() for account in self.cuentas]
+        self.logger.debug("summList = <" + str(summList) + ">")
+        pickedList = pickle.dumps(summList)
+        encryptedList = self.securityModule.encrypt(pickedList)
+
+        self.logger.debug("writing to <" + str(destination_path) + ">")
+        with open(destination_path, 'wb') as f:
+            f.write(encryptedList)
+
+    def deserializeAccounts(self, origin_path):
+        self.logger.debug("Deserializing accounts")
+        import pickle
+
+        with open(origin_path, 'rb') as f:
+            encryptedList = f.read()
+        pickedList = self.securityModule.decrypt(encryptedList)
+        summList = pickle.loads(pickedList)
+        self.logger.debug("summList = <" + str(summList) + ">")
+
+        for summary in summList:
+            self.newAccount(summary['type'], summary['name'], cursor=None, access_token=summary['token'], user_id=summary['id'])
 
     def run(self):
         timeout = 300.0

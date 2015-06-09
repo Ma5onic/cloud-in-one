@@ -244,6 +244,9 @@ class DropboxAccount(account.Account):
     def __repr__(self):
         return self.getAccountType() + '-' + self.user + '-' + self.email
 
+    def summarize(self):
+        return {'name': self.user, 'token': self.access_token, 'id': self.user_id, 'type': self.getAccountType()}
+
 
 class DropboxAccountStub(DropboxAccount):
     """Stub for testing the DBAccount"""

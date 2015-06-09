@@ -75,6 +75,14 @@ class Menu(object):
             print("Downloading <" + paths[selected] + ">")
             self.manager.donwloadFile(accounts[selected], paths[selected])
 
+    def exportAccounts(self):
+        dest = input("Input the destination file: ")
+        self.manager.serializeAccounts(dest)
+
+    def importAccounts(self):
+        orig = input("Input the origin file: ")
+        self.manager.deserializeAccounts(orig)
+
     def _showMenu(self):
         print()
         print("""====================== CLOUD IN ONE ======================
@@ -85,6 +93,8 @@ class Menu(object):
 4. Force start sync
 5. Select files to encrypt
 6. Download one file
+7. Export accounts
+8. Import accounts
 0. EXIT
 
         Please select an option: """)
@@ -98,7 +108,7 @@ class Menu(object):
             option = None
             while option != '0':
                 option = self._showMenu()
-                if option in {'1', '2', '3', '4', '5', '6'}:
+                if option in {'1', '2', '3', '4', '5', '6', '7', '8'}:
                     with self.lock:
                         if option == '1':
                             self.__newAccountInteractive()
@@ -112,6 +122,10 @@ class Menu(object):
                             self._markFilesEncryption()
                         elif option == '6':
                             self._downloadFile()
+                        elif option == '7':
+                            self.exportAccounts()
+                        elif option == '8':
+                            self.importAccounts()
         except:
             raise
         finally:
