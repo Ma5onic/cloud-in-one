@@ -17,14 +17,12 @@ config_file = "config/config.json"
 class Manager(threading.Thread):
     """Manager of the Cloud-In-One application.
     It is responsible for the control flow and coordination of components"""
-    def __init__(self, user, password, event=None, lock=None, config=None, finish=None):
+    def __init__(self, user='', password='', event=None, lock=None, config=None, finish=None):
         threading.Thread.__init__(self)
         self.__initLocks(event, lock, finish)
 
         self.logger = Logger(__name__)
         self.logger.info("Creating Manager")
-
-        self.user = user
 
         if not config:
             self.config = json.load(open(config_file))
@@ -40,7 +38,7 @@ class Manager(threading.Thread):
 
         self.databaseManager = DatabaseManager(database_file)
 
-        self.securityModule = SecurityModule(user, password, self.databaseManager)
+        self.securityModule = SecurityModule(self.databaseManager, user, password)
 
         self.fileSystemModule = FileSystemModule(self.config["sync_folder_name"])
 

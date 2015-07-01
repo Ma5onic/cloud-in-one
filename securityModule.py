@@ -1,5 +1,7 @@
 from io import BytesIO
 import hashlib
+import getpass
+
 from log import Logger
 
 import simplecrypt
@@ -8,36 +10,50 @@ from exceptions import SecurityError
 
 class SecurityModule():
     """docstring for SecurityModule"""
-    def __init__(self, user, password, databaseManager):
+    def __init__(self, databaseManager, user='', password=''):
         super(SecurityModule, self).__init__()
 
         self.logger = Logger(__name__)
         self.logger.info("Creating SecurityModule")
 
         self.databaseManager = databaseManager
-        self.user = user
+        self.user, self.password = self.getCredentials(user, password)
 
-        self.password = self.hashPassword(user, password)
-        del(password)
-        if not self.checkLogin(user, self.password):
+        if not self.checkLogin(self.user, self.password):
             raise PermissionError("Wrong user/password")
 
-    def checkLogin(self, username, password):
-        self.logger.info("Checking Login")
+    def getCredentials(self, user='', passw=''):
+
         users_count = self.databaseManager.getUserCount()
-        user = self.databaseManager.getUser(username)
 
         if users_count == 1:
             if user:
-                stored_hash = user['hash']
-                return password == stored_hash
+                password = self.hashPassword(user, passw)
+            else:
+                user = input("CLOUD-IN-ONE Username: ")
+                password = self.hashPassword(user, getpass.getpass())
         elif users_count == 0:
             self.logger.debug("There are no users, registering a new one")
-            self.register(username, password)
-            return True
+            if user:
+                password = self.hashPassword(user, passw)
+            else:
+                user = input("Register a new username. This will be used to encrypt your files and authenticate you in the application:\n")
+                password = self.hashPassword(user, getpass.getpass())
+            self.register(user, password)
         else:
             self.databaseManager.cleanDatabase()
             raise SecurityError("More than one user. Security breach")
+        return (user, password)
+
+    def checkLogin(self, username, password):
+        self.logger.info("Checking Login")
+        user = self.databaseManager.getUser(username)
+
+        if user:
+            stored_hash = user['hash']
+            self.logger.info("Logged in")
+            return password == stored_hash
+
         return False
 
     def register(self, user, password):
