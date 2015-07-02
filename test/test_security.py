@@ -41,7 +41,7 @@ class TestSecurity(object):
 
         assert_false(self.databaseManager.database.tables)
 
-        SecurityModule(username, password, self.databaseManager)
+        SecurityModule(self.databaseManager, username, password)
 
         assert_true(self.databaseManager.database.tables)
         row = self.databaseManager.getUser(username)
@@ -52,40 +52,40 @@ class TestSecurity(object):
         username = 'username'
         password = 'password'
 
-        SecurityModule(username, password, self.databaseManager)  # this registers
-        SecurityModule(username, password, self.databaseManager)  # this logs in
+        SecurityModule(self.databaseManager, username, password)  # this registers
+        SecurityModule(self.databaseManager, username, password)  # this logs in
 
     @raises(PermissionError)
     def test_login_wrong(self):
         username = 'username'
         password = 'password'
 
-        SecurityModule(username, password, self.databaseManager)  # this registers
-        SecurityModule(username + '2', password, self.databaseManager)  # this logs in
+        SecurityModule(self.databaseManager, username, password)  # this registers
+        SecurityModule(self.databaseManager, username + '2', password)  # this logs in
 
     @raises(PermissionError)
     def test_login_wrong_2(self):
         username = 'username'
         password = 'password'
 
-        SecurityModule(username, password, self.databaseManager)  # this registers
-        SecurityModule(username, password + '2', self.databaseManager)  # this logs in
+        SecurityModule(self.databaseManager, username, password)  # this registers
+        SecurityModule(self.databaseManager, username, password + '2')  # this logs in
 
     @raises(SecurityError)
     def test_login_two_users(self):
         username = 'username'
         password = 'password'
 
-        SecurityModule(username, password, self.databaseManager)  # this registers
+        SecurityModule(self.databaseManager, username, password)  # this registers
         self.databaseManager._insertUser(username, password)
 
-        SecurityModule(username, password, self.databaseManager)  # this tries to login
+        SecurityModule(self.databaseManager, username, password)  # this tries to login
 
     def test_encrypt(self):
         username = 'username'
         password = 'password'
 
-        sec = SecurityModule(username, password, self.databaseManager)
+        sec = SecurityModule(self.databaseManager, username, password)
         infile = tempfile.TemporaryFile()
         text = b'test'
         infile.write(text)
@@ -101,7 +101,7 @@ class TestSecurity(object):
         username = 'username'
         password = 'password'
 
-        sec = SecurityModule(username, password, self.databaseManager)
+        sec = SecurityModule(self.databaseManager, username, password)
         infile = tempfile.TemporaryFile()
         text = b'test'
         infile.write(text)
@@ -116,7 +116,7 @@ class TestSecurity(object):
         username = 'username'
         password = 'password'
 
-        sec = SecurityModule(username, password, self.databaseManager)
+        sec = SecurityModule(self.databaseManager, username, password)
         infile = tempfile.TemporaryFile()
         text = b'thisisnotencrypted'
         infile.write(text)
@@ -129,7 +129,7 @@ class TestSecurity(object):
         username = 'username'
         password = 'password'
 
-        sec = SecurityModule(username, password, self.databaseManager)
+        sec = SecurityModule(self.databaseManager, username, password)
 
         infile = tempfile.TemporaryFile()
         text = b'thisisnotencrypted'
@@ -144,7 +144,7 @@ class TestSecurity(object):
         username = 'username'
         password = 'password'
 
-        sec = SecurityModule(username, password, self.databaseManager)
+        sec = SecurityModule(self.databaseManager, username, password)
 
         infile = tempfile.TemporaryFile()
 
