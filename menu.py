@@ -18,7 +18,7 @@ class Menu(object):
     def __newAccountInteractive(self):
         account_type = "dropbox"
         print("Select the account type: ", account_type)
-        user = input("Enter a username: ")
+        user = input("Enter a name for the new account: ")
         self.manager.newAccount(account_type, user)
 
     def __deleteAccountInteractive(self):
