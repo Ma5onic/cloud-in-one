@@ -4,7 +4,7 @@ CLOUD-IN-ONE
 Travis CI Status:
 [![Build Status](https://travis-ci.org/vguzmanp/cloud-in-one.svg?branch=master)](https://travis-ci.org/vguzmanp/cloud-in-one)
 
-CLOUD-IN-ONE es un proyecto orientado a proporcionar una interfaz transparente y segura de servicios de almancenamiento en la nube.
+CLOUD-IN-ONE es un proyecto orientado a proporcionar una interfaz transparente y segura de servicios de almacenamiento en la nube.
 
 Esto se consigue mediante una aplicación que sincroniza en segundo plano los archivos de la carpeta de sincronización con todas las cuentas vinculadas al sistema. La sincronización es similar al cliente oficial de Dropbox, pero conectada a diferentes cuentas.
 Además, todos los ficheros de los diferentes servicios de almacenamiento se agregan en una misma carpeta de forma transparente al usuario, por lo que el usuario no necesita saber a qué servicio está subiendo sus ficheros, solo necesita saber que se han almacenado de forma segura.
