@@ -26,6 +26,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "C:\Users\Víctor\Dropbox\__Universidad\5o\Cloud-In-One\dist\cloud-in-one.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\Víctor\Dropbox\__Universidad\5o\Cloud-In-One\dist\cio-crypt.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\Víctor\Dropbox\__Universidad\5o\Cloud-In-One\dist\sqlite3.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\Víctor\Dropbox\__Universidad\5o\Cloud-In-One\dist\msvcr100.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\Víctor\Dropbox\__Universidad\5o\Cloud-In-One\dist\trusted-certs.crt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\Víctor\Dropbox\__Universidad\5o\Cloud-In-One\dist\config\*"; DestDir: "{app}\config"; Flags: ignoreversion recursesubdirs createallsubdirs  ; BeforeInstall: WriteAppPath
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
