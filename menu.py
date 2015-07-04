@@ -3,12 +3,13 @@ import os.path
 
 class Menu(object):
     """Main menu, with options to start things"""
-    def __init__(self, manager, event, lock, finish):
+    def __init__(self, manager, event, lock, finish, event_menu):
         super(Menu, self).__init__()
         self.manager = manager
         self.event = event
         self.finish = finish
         self.lock = lock
+        self.event_menu = event_menu
 
     def _listAccounts(self):
         print("Account list:")
@@ -36,6 +37,8 @@ class Menu(object):
 
     def _forceSync(self):
         self.event.set()
+        self.event_menu.clear()
+
 
     def _markFilesEncryption(self, nextFolder=None):
         current, dirs, files = next(self.manager.walkFiles(nextFolder))
@@ -84,6 +87,7 @@ class Menu(object):
         self.manager.deserializeAccounts(orig)
 
     def _showMenu(self):
+        self.event_menu.wait()
         print()
         print("""====================== CLOUD IN ONE ======================
                       MAIN MENU

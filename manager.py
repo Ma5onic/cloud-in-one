@@ -17,9 +17,9 @@ config_file = "config/config.json"
 class Manager(threading.Thread):
     """Manager of the Cloud-In-One application.
     It is responsible for the control flow and coordination of components"""
-    def __init__(self, user='', password='', event=None, lock=None, config=None, finish=None):
+    def __init__(self, user='', password='', event=None, lock=None, config=None, finish=None, event_menu=None):
         threading.Thread.__init__(self)
-        self.__initLocks(event, lock, finish)
+        self.__initLocks(event, lock, finish, event_menu)
 
         self.logger = Logger(__name__)
         self.logger.info("Creating Manager")
@@ -44,7 +44,7 @@ class Manager(threading.Thread):
 
         self.cuentas = self.getAccounts()
 
-    def __initLocks(self, event, lock, finish):
+    def __initLocks(self, event, lock, finish, event_menu):
         if not event:
             event = threading.Event()
         self.event = event
@@ -56,6 +56,10 @@ class Manager(threading.Thread):
         if not lock:
             lock = threading.Lock()
         self.lock = lock
+
+        if not event_menu:
+            event_menu = threading.Event()
+        self.event_menu = event_menu
 
     def __CreateAccount(self, type, user, cursor=None, access_token=None, user_id=None, email=None):
         if type == "dropbox":
@@ -597,6 +601,7 @@ class Manager(threading.Thread):
                     self.logger.debug("Lock acquired")
 
                     self.updateLocalSyncFolder()
+
                 except Exception:
                     raise
                 finally:
@@ -604,6 +609,7 @@ class Manager(threading.Thread):
                     self.lock.release()
                     self.logger.debug("Lock released")
 
+            self.event_menu.set()
             self.logger.debug("Waiting " + str(timeout) + " seconds or until forced by menu")
             self.event.wait(timeout)
             self.event.set()
