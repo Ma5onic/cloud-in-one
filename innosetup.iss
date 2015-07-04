@@ -9,9 +9,9 @@ AppId={{DCEA27B3-F601-4340-93B3-63DA04613409}
 AppName=Cloud-In-One
 AppVersion=0.5
 ;AppVerName=Cloud-In-One 0.5
-DefaultDirName={pf}\CLOUDINONE
+DefaultDirName={pf}\CLOUD_IN_ONE
 DefaultGroupName=CLOUD_IN_ONE
-OutputDir=C:\Users\Víctor\Dropbox\__Universidad\5o\Cloud-In-One\dist
+OutputDir=dist
 OutputBaseFilename=setup
 Compression=lzma
 SolidCompression=yes
@@ -23,12 +23,12 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\Víctor\Dropbox\__Universidad\5o\Cloud-In-One\dist\cloud-in-one.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Víctor\Dropbox\__Universidad\5o\Cloud-In-One\dist\cio-crypt.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Víctor\Dropbox\__Universidad\5o\Cloud-In-One\dist\sqlite3.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Víctor\Dropbox\__Universidad\5o\Cloud-In-One\dist\msvcr100.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Víctor\Dropbox\__Universidad\5o\Cloud-In-One\dist\trusted-certs.crt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Víctor\Dropbox\__Universidad\5o\Cloud-In-One\dist\config\*"; DestDir: "{app}\config"; Flags: ignoreversion recursesubdirs createallsubdirs  ; BeforeInstall: WriteAppPath
+Source: "dist\cloud-in-one.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\cio-crypt.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\sqlite3.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\msvcr100.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\trusted-certs.crt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\config\*"; DestDir: "{app}\config"; Flags: ignoreversion recursesubdirs createallsubdirs  ; BeforeInstall: WriteAppPath
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
