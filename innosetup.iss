@@ -86,5 +86,8 @@ var
 begin
     LoadStringFromFile(ExpandConstant('{app}\config\config.json'), FileData);
     StringChange(FileData, 'XXXXXMARKERXXXXX', GetDataDir(''));
+    S := ExpandConstant('{userappdata}\CLOUD_IN_ONE');
+    StringChangeEx(S, '\', '/', True);
+    StringChange(FileData, 'XXXXXDATA_FOLDERXXXXX', S);
     SaveStringToFile(ExpandConstant('{app}\config\config.json'), FileData, False);
 end;
