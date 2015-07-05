@@ -28,7 +28,7 @@ Source: "dist\cio-crypt.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\sqlite3.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\msvcr100.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\trusted-certs.crt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "dist\config\*"; DestDir: "{app}\config"; Flags: ignoreversion recursesubdirs createallsubdirs  ; BeforeInstall: WriteAppPath
+Source: "dist\config\*"; DestDir: "{app}\config"; Flags: ignoreversion recursesubdirs createallsubdirs  ; AfterInstall: WriteAppPath
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -83,6 +83,7 @@ end;
 procedure WriteAppPath;
 var
     FileData: String;
+    S: String;
 begin
     LoadStringFromFile(ExpandConstant('{app}\config\config.json'), FileData);
     StringChange(FileData, 'XXXXXMARKERXXXXX', GetDataDir(''));
@@ -90,4 +91,31 @@ begin
     StringChangeEx(S, '\', '/', True);
     StringChange(FileData, 'XXXXXDATA_FOLDERXXXXX', S);
     SaveStringToFile(ExpandConstant('{app}\config\config.json'), FileData, False);
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  ResultCode: Integer;
+  Error: Boolean;
+begin
+  if CurUninstallStep = usUninstall then
+  begin
+      if MsgBox('Do you want to delete the stored data?',
+        mbConfirmation, MB_YESNO) = IDYES
+      then
+        Error := True;
+        if Exec(ExpandConstant('{app}\cloud-in-one.exe'), '--uninstall', '', SW_SHOW, ewWaitUntilTerminated, ResultCode) then
+        begin
+           if ResultCode = 0 then
+           begin
+              DelTree(ExpandConstant('{userappdata}\CLOUD_IN_ONE'), True, True, True);
+              Error := False;
+           end;
+        end;
+        if Error then
+        begin
+           MsgBox('Could not delete the stored data. Continuing the uninstall without deleting.', mbError, MB_OK);
+        end;
+
+  end;
 end;
