@@ -12,7 +12,7 @@ AppVersion=0.5
 DefaultDirName={pf}\CLOUD_IN_ONE
 DefaultGroupName=CLOUD_IN_ONE
 OutputDir=dist
-OutputBaseFilename=setup
+OutputBaseFilename=cloud_in_one_setup
 Compression=lzma
 SolidCompression=yes
 
@@ -50,7 +50,7 @@ begin
   DataDirPage := CreateInputDirPage(wpSelectDir,
     'Select Synchronization Directory', 'Where should your data be synced?',
     'Select the folder in which the Application should sync your files, then click Next.',
-    False, '');
+    False, 'CLOUD_IN_ONE');
   DataDirPage.Add('');
 
   { Set default values, using settings that were stored last time if possible }
@@ -103,6 +103,7 @@ begin
       if MsgBox('Do you want to delete the stored data?',
         mbConfirmation, MB_YESNO) = IDYES
       then
+      begin
         Error := True;
         if Exec(ExpandConstant('{app}\cloud-in-one.exe'), '--uninstall', '', SW_SHOW, ewWaitUntilTerminated, ResultCode) then
         begin
@@ -116,6 +117,6 @@ begin
         begin
            MsgBox('Could not delete the stored data. Continuing the uninstall without deleting.', mbError, MB_OK);
         end;
-
+      end;
   end;
 end;
