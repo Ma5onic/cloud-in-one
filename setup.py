@@ -16,5 +16,5 @@ setup(
         "dest_base": "cio-crypt"
     }],
     zipfile=None,
-    data_files=[('config', ['config/config.json', 'config/log.json']), ('', ['trusted-certs.crt'])]
+    data_files=[('config', ['config/config.json']), ('', ['trusted-certs.crt'])]
 )

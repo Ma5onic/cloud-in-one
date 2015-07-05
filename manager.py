@@ -34,7 +34,7 @@ class Manager(threading.Thread):
         self.logger.debug(self.config)
         self.logger.debug("===== END Config contents: ======")
 
-        database_file = self.config["data_folder"] + '/' + self.config["database"]
+        database_file = self.config["database"]
 
         self.databaseManager = DatabaseManager(database_file)
 
