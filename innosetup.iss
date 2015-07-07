@@ -86,7 +86,7 @@ var
     S: String;
 begin
     LoadStringFromFile(ExpandConstant('{app}\config\config.json'), FileData);
-    StringChange(FileData, 'XXXXXMARKERXXXXX', GetDataDir(''));
+    StringChange(FileData, '~/Documents/CLOUD_IN_ONE', GetDataDir(''));
     S := ExpandConstant('{userappdata}\CLOUD_IN_ONE');
     StringChangeEx(S, '\', '/', True);
     StringChange(FileData, 'XXXXXDATA_FOLDERXXXXX', S);

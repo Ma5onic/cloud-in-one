@@ -1,5 +1,5 @@
 {
-    "sync_folder_name": "XXXXXMARKERXXXXX",
+    "sync_folder_name": "~/Documents/CLOUD_IN_ONE",
     "database": "XXXXXDATA_FOLDERXXXXX/db/manager.db",
     "log_config":{
                     "version": 1,

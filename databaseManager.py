@@ -112,6 +112,7 @@ class DatabaseManager(object):
         return filesPaths
 
     def getFiles(self, account):
+        self.logger.debug("getFiles <" + str(account) + ">")
         files_table = self.database['files']
         files = files_table.find(accountType=account.getAccountType(), user=account.user)
         return [{'path': element['path'], 'hash': element['hash'], 'account': account, 'revision': element['revision']} for element in files]
@@ -136,7 +137,7 @@ class DatabaseManager(object):
     def markEncriptionDB(self, path, encryption):
         self.logger.debug("markEncriptionDB <" + path + "> -> <" + str(encryption) + ">")
         files_table = self.database['files']
-        files_table.update(dict(internal_path=path.lower(), encryption=encryption), ['internal_path'])
+        files_table.upsert(dict(internal_path=path.lower(), encryption=encryption), ['internal_path'])
 
     def shouldEncrypt(self, path):
         self.logger.debug("Calling shouldEncrypt for <" + path + ">")

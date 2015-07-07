@@ -162,9 +162,14 @@ class Manager(threading.Thread):
             if deltaDict['reset']:
                 self.logger.debug('Reset recieved. Resetting account <' + str(account) + '>')
                 resetChanges = self.databaseManager.getFiles(account)
+                self.logger.debug('resetChanges <' + str(resetChanges) + '>')
+
                 for i in resetChanges:
                     i['hash'] = None
+                self.logger.debug('remoteChanges <' + str(remoteChanges) + '>')
+
                 remoteChanges += resetChanges
+                self.logger.debug('remoteChanges <' + str(remoteChanges) + '>')
 
             for filePath, metadata in deltaDict['entries']:
                 self.logger.debug('filePath <' + str(filePath) + '> metadata <' + str(metadata) + '>')
@@ -608,8 +613,10 @@ class Manager(threading.Thread):
                     self.logger.debug("Releasing lock")
                     self.lock.release()
                     self.logger.debug("Lock released")
+                    self.event_menu.set()
 
-            self.event_menu.set()
+            if not self.event_menu.is_set():
+                self.event_menu.set()
             self.logger.debug("Waiting " + str(timeout) + " seconds or until forced by menu")
             self.event.wait(timeout)
             self.event.set()

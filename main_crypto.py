@@ -11,7 +11,7 @@ def processFile(file_in_name, file_out_name, encrypt_flag):
     password = getpass.getpass()
 
     databaseManager = DatabaseManager(':memory:')
-    sec = SecurityModule(user, password, databaseManager)
+    sec = SecurityModule(databaseManager, user, password)
 
     file_processed = None
     with open(file_in_name, 'rb') as f_in:

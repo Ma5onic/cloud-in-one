@@ -143,6 +143,7 @@ class DropboxAccount(account.Account):
 
         try:
             if longpoll and self.last_cursor:
+                self.logger.info("Waiting for changes in the remote")
                 self.logger.debug("Calling longpoll_delta")
                 longpoll_dict = client.longpoll_delta(cursor=self.last_cursor, timeout=self.timeout)
                 self.logger.debug("longpoll_dict = <" + str(longpoll_dict) + ">")
