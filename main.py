@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys
 import threading
 import argparse
@@ -23,21 +25,32 @@ def uninstall():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--uninstall", help=argparse.SUPPRESS, action="store_true")
+    parser.add_argument("--cli", help="Invoke a REPL", action="store_true")
     args = parser.parse_args()
 
     if args.uninstall:
         uninstall()
     else:
         try:
-            event = threading.Event()
-            finish_event = threading.Event()
-            lock = threading.Lock()
-            event_menu = threading.Event()
+            if args.cli:
+                event = threading.Event()
+                finish_event = threading.Event()
+                lock = threading.Lock()
+                event_menu = threading.Event()
 
-            man = Manager(event=event, lock=lock, finish=finish_event, event_menu=event_menu)
-            menu = Menu(man, event=event, lock=lock, finish=finish_event, event_menu=event_menu)
-            man.start()
-            menu.start()
+                man = Manager(event=event, lock=lock, finish=finish_event, event_menu=event_menu)
+                menu = Menu(man, event=event, lock=lock, finish=finish_event, event_menu=event_menu)
+                man.start()
+                menu.start()
+            else:
+                man = Manager()
+                if man.cuentas == []:
+                    account_type = "dropbox"
+                    print("Select the account type: ", account_type)
+                    user = input("Enter a name for the new account: ")
+                    man.newAccount(account_type, user)
+                import pdb; pdb.set_trace()
+                man.updateLocalSyncFolder()
         except Exception as e:
             logger = Logger(__name__)
             logger.critical(str(e))
