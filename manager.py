@@ -115,12 +115,12 @@ class Manager(threading.Thread):
         self.logger.info("Updating sync folder")
         self.logger.debug("Folder = <" + folder + ">")
 
-        remoteChanges = self.findRemoteChanges()
-        localChanges = self.findLocalChanges()
+        remoteChanges = self.__findRemoteChanges()
+        localChanges = self.__findLocalChanges()
 
-        changesOnLocal, changesOnDB, changesOnRemote = self.fixCollisions(localChanges, remoteChanges)
+        changesOnLocal, changesOnDB, changesOnRemote = self.__fixCollisions(localChanges, remoteChanges)
 
-        self.syncAccounts(changesOnLocal, changesOnDB, changesOnRemote)
+        self.__syncAccounts(changesOnLocal, changesOnDB, changesOnRemote)
         for i in self.cuentas:
             try:
                 i.updateAccountInfo()
@@ -129,12 +129,12 @@ class Manager(threading.Thread):
                 self.logger.error("Error updating account information.")
                 self.logger.exception(e)
 
-    def syncAccounts(self, changesOnLocal, changesOnDB, changesOnRemote):
-        self.applyChangesOnRemote(changesOnRemote)
-        self.applyChangesOnLocal(changesOnLocal)
-        self.applyChangesOnDB(changesOnDB)
+    def __syncAccounts(self, changesOnLocal, changesOnDB, changesOnRemote):
+        self.__applyChangesOnRemote(changesOnRemote)
+        self.__applyChangesOnLocal(changesOnLocal)
+        self.__applyChangesOnDB(changesOnDB)
 
-    def findRemoteChanges(self):
+    def __findRemoteChanges(self):
         self.logger.info('Getting Remote differences')
         remoteChanges = []
 
@@ -270,9 +270,9 @@ class Manager(threading.Thread):
         self.logger.debug('Both modified. New name = <' + newname + '>')
         change_info['path'] = newname
         change_info['oldpath'] = oldpath
-        self.applyChangesOnLocal([change_info])
+        self.__applyChangesOnLocal([change_info])
 
-    def fixCollisions(self, localChanges, remoteChanges):
+    def __fixCollisions(self, localChanges, remoteChanges):
         self.logger.info('fixCollisions')
         self.logger.debug('localChanges <' + str(localChanges) + '>')
         self.logger.debug('remoteChanges <' + str(remoteChanges) + '>')
@@ -346,7 +346,7 @@ class Manager(threading.Thread):
 
         return (changesOnLocal, changesOnDB, changesOnRemote)
 
-    def findLocalChanges(self):
+    def __findLocalChanges(self):
         self.logger.info('Getting Local differences')
         fileList = self.fileSystemModule.getFileList()
 
@@ -380,13 +380,13 @@ class Manager(threading.Thread):
         self.logger.debug('localChanges = <' + str(localChanges) + '>')
         return localChanges
 
-    def applyChangesOnRemote(self, changesOnRemote):
+    def __applyChangesOnRemote(self, changesOnRemote):
         self.logger.info("Applying changes on remote")
         for i, element in enumerate(changesOnRemote):
             try:
                 if element['hash']:  # created or modified, upload to account
                     if 'account' not in element or not element['account']:  # if newly created
-                        fits_account = self.fitToNewAccount(element)
+                        fits_account = self.__fitToNewAccount(element)
                         if not fits_account:  # doesn't fit! We log it and continue with the others.
                             self.logger.error("The file <" + element['path'] + "> doesn't fit anywhere")
                             element['account'] = None
@@ -415,7 +415,7 @@ class Manager(threading.Thread):
                             revision = element['account'].uploadFile(element["path"], element.get('revision'), stream)
                         except FullStorageException:  # si no cabe en la cuenta...
                             old_account = self.getAccountFromFile(element['path'])
-                            fits_account = self.fitToNewAccount(element)
+                            fits_account = self.__fitToNewAccount(element)
                             if fits_account:
                                 if old_account:
                                     try:
@@ -451,7 +451,7 @@ class Manager(threading.Thread):
                 self.logger.debug("Adding to the current list to retry")
                 changesOnRemote.insert(i+1, element)
 
-    def fitToNewAccount(self, element):
+    def __fitToNewAccount(self, element):
         current_account = element.get('account', None)
         for account in self.cuentas:
             if account is current_account:
@@ -467,7 +467,7 @@ class Manager(threading.Thread):
 
         return False
 
-    def applyChangesOnDB(self, changesOnDB):
+    def __applyChangesOnDB(self, changesOnDB):
         self.logger.info("Applying changes on database")
         self.logger.debug(changesOnDB)
         for element in changesOnDB:
@@ -485,7 +485,7 @@ class Manager(threading.Thread):
             else:  # deleted, remove from the db
                 self.databaseManager.deleteFileDB(element['path'], element['account'])
 
-    def applyChangesOnLocal(self, changesOnLocal):
+    def __applyChangesOnLocal(self, changesOnLocal):
         self.logger.info("Applying changes on local")
         self.logger.debug(changesOnLocal)
         for i, element in enumerate(changesOnLocal):
@@ -554,17 +554,19 @@ class Manager(threading.Thread):
         self.logger.debug("fileList = <" + str(fileList) + ">")
         return fileList
 
+    # TODO: Remove account from this method
     def donwloadFile(self, account, path):
         self.logger.debug("Downloading file <" + path + "> from <" + str(account) + ">")
         metadata = account.getMetadata(path)
         change = [self._metadata2Change(metadata, account, True)]
-        self.applyChangesOnLocal(change)
-        self.applyChangesOnDB(change)
+        self.__applyChangesOnLocal(change)
+        self.__applyChangesOnDB(change)
 
     def markForEncription(self, fullpath):
         path = self.fileSystemModule.getInternalPath(fullpath)
         self.databaseManager.markEncriptionDB(path, True)
 
+    # TODO: Merge in markForEncription
     def unmarkForEncription(self, fullpath):
         path = self.fileSystemModule.getInternalPath(fullpath)
         self.databaseManager.markEncriptionDB(path, False)
