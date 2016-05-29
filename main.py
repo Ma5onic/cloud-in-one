@@ -7,7 +7,7 @@ import argparse
 from menu import Menu
 from manager import Manager
 from log import Logger
-
+from repl import Repl
 
 def uninstall():
     print("")
@@ -33,15 +33,9 @@ def main():
     else:
         try:
             if args.cli:
-                event = threading.Event()
-                finish_event = threading.Event()
-                lock = threading.Lock()
-                event_menu = threading.Event()
-
-                man = Manager(event=event, lock=lock, finish=finish_event, event_menu=event_menu)
-                menu = Menu(man, event=event, lock=lock, finish=finish_event, event_menu=event_menu)
-                man.start()
-                menu.start()
+                man = Manager()
+                repl = Repl(man)
+                repl.start()
             else:
                 man = Manager()
                 if man.cuentas == []:
