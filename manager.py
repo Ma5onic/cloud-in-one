@@ -14,12 +14,12 @@ from simplecrypt import DecryptionException, EncryptionException
 config_file = "config/config.json"
 
 
-class Manager(threading.Thread):
+class Manager():
     """Manager of the Cloud-In-One application.
     It is responsible for the control flow and coordination of components"""
     def __init__(self, user='', password='', event=None, lock=None, config=None, finish=None, event_menu=None):
-        threading.Thread.__init__(self)
-        self.__initLocks(event, lock, finish, event_menu)
+        # TODO: Check if we need locks when calling this from UI
+        # self.__initLocks(event, lock, finish, event_menu)
 
         self.logger = Logger(__name__)
         self.logger.info("Creating Manager")
@@ -595,31 +595,3 @@ class Manager(threading.Thread):
 
         for summary in summList:
             self.newAccount(summary['type'], summary['name'], cursor=None, access_token=summary['token'], user_id=summary['id'])
-
-    def run(self):
-        timeout = 300.0
-        while not self.finish.is_set():
-            if self.event.is_set():
-                try:
-                    self.event.clear()
-
-                    self.logger.debug("Acquiring lock")
-                    self.lock.acquire()
-                    self.logger.debug("Lock acquired")
-
-                    self.updateLocalSyncFolder()
-
-                except Exception:
-                    raise
-                finally:
-                    self.logger.debug("Releasing lock")
-                    self.lock.release()
-                    self.logger.debug("Lock released")
-                    self.event_menu.set()
-
-            if not self.event_menu.is_set():
-                self.event_menu.set()
-            self.logger.debug("Waiting " + str(timeout) + " seconds or until forced by menu")
-            self.event.wait(timeout)
-            self.event.set()
-            self.logger.debug("Awaken")
