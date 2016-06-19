@@ -2,12 +2,12 @@ import json
 import datetime
 import threading
 import tempfile
-from log import Logger
-import dropboxAccount
-from fileSystemModule import FileSystemModule
-from databaseManager import DatabaseManager
-from securityModule import SecurityModule
-from exceptions import RetryException, FullStorageException, APILimitedException, UnknownError
+from core.log import Logger
+import core.dropboxAccount as dropboxAccount
+from core.fileSystemModule import FileSystemModule
+from core.databaseManager import DatabaseManager
+from core.securityModule import SecurityModule
+from core.exceptions import RetryException, FullStorageException, APILimitedException, UnknownError
 from simplecrypt import DecryptionException, EncryptionException
 
 

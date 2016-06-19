@@ -1,5 +1,5 @@
 import dataset
-from log import Logger
+from core.log import Logger
 
 
 class DatabaseManager(object):

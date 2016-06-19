@@ -4,10 +4,10 @@ import dropbox
 import tempfile
 from dropbox.rest import ErrorResponse
 
-from log import *
-import account
-from exceptions import RetryException, FullStorageException, APILimitedException, UnknownError
-from fileSystemModule import FileSystemModule
+from core.log import *
+import core.account as account
+from core.exceptions import RetryException, FullStorageException, APILimitedException, UnknownError
+from core.fileSystemModule import FileSystemModule
 
 app_key = os.getenv("APP_KEY")
 app_secret = os.getenv("APP_SECRET")

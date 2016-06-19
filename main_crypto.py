@@ -4,8 +4,8 @@ import getpass
 import argparse
 import shutil
 
-from databaseManager import DatabaseManager
-from securityModule import SecurityModule
+from core.databaseManager import DatabaseManager
+from core.securityModule import SecurityModule
 
 
 def processFile(file_in_name, file_out_name, encrypt_flag):

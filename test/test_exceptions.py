@@ -1,4 +1,4 @@
-import manager
+import core.manager as manager
 from nose.tools import assert_equal
 from nose.tools import assert_not_equal
 from nose.tools import assert_raises
@@ -7,8 +7,8 @@ from nose.tools import assert_true
 from nose.tools import assert_false
 import datetime
 from util import *
-from fileSystemModule import FileSystemModuleStub
-from securityModule import SecurityModuleStub
+from core.fileSystemModule import FileSystemModuleStub
+from core.securityModule import SecurityModuleStub
 
 
 class TestExceptions(object):

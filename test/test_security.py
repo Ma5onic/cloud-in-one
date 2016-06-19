@@ -6,11 +6,11 @@ from nose.tools import assert_true
 from nose.tools import assert_not_equal
 from nose.tools import assert_equal
 from nose.tools import raises
-from databaseManager import DatabaseManager
-from securityModule import SecurityModule
-from fileSystemModule import FileSystemModuleStub
-from manager import Manager
-from exceptions import SecurityError
+from core.databaseManager import DatabaseManager
+from core.securityModule import SecurityModule
+from core.fileSystemModule import FileSystemModuleStub
+from core.manager import Manager
+from core.exceptions import SecurityError
 from util import *
 
 

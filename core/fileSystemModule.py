@@ -3,7 +3,7 @@ import os
 import hashlib
 import tempfile
 from functools import partial
-from log import Logger
+from core.log import Logger
 
 
 class FileSystemModule():

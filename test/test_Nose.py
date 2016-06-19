@@ -1,4 +1,4 @@
-import manager as man
+import core.manager as man
 
 #def test_fail():
 #    assert True == False

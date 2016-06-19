@@ -4,10 +4,10 @@ import sys
 import threading
 import argparse
 
-from menu import Menu
-from manager import Manager
-from log import Logger
-from repl import Repl
+from core.menu import Menu
+from core.manager import Manager
+from core.log import Logger
+from core.repl import Repl
 
 def uninstall():
     print("")

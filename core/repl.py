@@ -1,6 +1,6 @@
 import os.path
 from cmd import Cmd
-from log import Logger
+from core.log import Logger
 
 class Repl(Cmd):
     """

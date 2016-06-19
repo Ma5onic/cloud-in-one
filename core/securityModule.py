@@ -2,10 +2,10 @@ from io import BytesIO
 import hashlib
 import getpass
 
-from log import Logger
+from core.log import Logger
 
 import simplecrypt
-from exceptions import SecurityError
+from core.exceptions import SecurityError
 
 
 class SecurityModule():

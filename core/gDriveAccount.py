@@ -1,4 +1,4 @@
-import account
+import core.account as account
 
 
 class GDriveAccount(account.Account):

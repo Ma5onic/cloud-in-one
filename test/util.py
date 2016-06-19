@@ -1,7 +1,7 @@
 from nose.tools import assert_equal
 from nose.tools import assert_greater_equal
 from nose.tools import assert_true
-from exceptions import RetryException, FullStorageException, APILimitedException, UnknownError
+from core.exceptions import RetryException, FullStorageException, APILimitedException, UnknownError
 
 
 def Ignore(fn):
