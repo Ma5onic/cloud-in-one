@@ -43,7 +43,6 @@ def main():
                     print("Select the account type: ", account_type)
                     user = input("Enter a name for the new account: ")
                     man.newAccount(account_type, user)
-                import pdb; pdb.set_trace()
                 man.updateLocalSyncFolder()
         except Exception as e:
             logger = Logger(__name__)
