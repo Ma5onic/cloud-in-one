@@ -25,7 +25,9 @@ def uninstall():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--uninstall", help=argparse.SUPPRESS, action="store_true")
-    parser.add_argument("--cli", help="Invoke a REPL", action="store_true")
+    ui_group = parser.add_mutually_exclusive_group()
+    ui_group.add_argument("--cli", help="Invoke a REPL", action="store_true")
+    ui_group.add_argument("--gui", help="Invoke a Graphic User Interface - using Kivy", action="store_true")
     args = parser.parse_args()
 
     if args.uninstall:
@@ -36,6 +38,14 @@ def main():
                 man = Manager()
                 repl = Repl(man)
                 repl.start()
+            elif args.gui:
+                # Kivy's import tries to argparse everything in argv, and errors in --gui
+                sys.argv.remove("--gui")
+                from ui.kivy_main import TestApp
+
+                man = Manager()
+                app = TestApp()
+                app.run()
             else:
                 man = Manager()
                 if man.cuentas == []:
